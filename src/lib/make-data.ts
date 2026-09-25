@@ -1,6 +1,7 @@
 // Build-time payload for a "make" page: everything any answer combination can show
 import type { MakePayload } from '../components/MakeApp';
 import { type Block, h3Text, plain, SEC, SECS, stripNo, subBlocks } from './guide';
+import { iconOf } from './icons';
 import { secHref } from './inline';
 import { CASE_ROWS, CHOICES, LOOKUP } from './lookup';
 import { dictionary, hrefOf } from './tools';
@@ -45,7 +46,7 @@ export function makePayload(kind: Kind): MakePayload {
       for (const id of row.tools) {
         const t = listed.get(id);
         if (!t || id in p.tools) continue;
-        const v = toolView(t);
+        const v = { ...toolView(t), icon: iconOf(id) };
         p.tools[id] = v;
         // Names mentioned inside the card (alternatives, defaults, growth targets) link too
         for (const x of [

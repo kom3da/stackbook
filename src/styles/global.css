@@ -524,6 +524,9 @@
   .s-layer {
     @apply text-sm text-mute;
   }
+  .s-icons {
+    @apply mr-2 inline-flex translate-y-[2px] gap-1 text-faint;
+  }
   .s-val {
     @apply font-medium;
   }

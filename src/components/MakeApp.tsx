@@ -232,6 +232,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
                     <>
                       <span className="s-layer">{r.layer}</span>
                       <span className="s-val">
+                        <RowIcons tools={r.cards} />
                         <Inline text={r.text} linkTools={false} />
                         {r.edited && <span className="tag">差し替え</span>}
                         {r.warn.map((n) => (
@@ -467,5 +468,23 @@ function Bands({ tools }: { tools: ToolView[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+/** Monochrome marks of the tools in a row (Simple Icons); decorative, the names follow in text */
+function RowIcons({ tools }: { tools: ToolView[] }) {
+  const icons = [...new Map(tools.flatMap((t) => (t.icon ? [[t.icon.title, t.icon] as const] : []))).values()].slice(
+    0,
+    3,
+  );
+  if (!icons.length) return null;
+  return (
+    <span className="s-icons" aria-hidden="true">
+      {icons.map((i) => (
+        <svg key={i.title} viewBox="0 0 24 24" width="15" height="15">
+          <path d={i.path} fill="currentColor" />
+        </svg>
+      ))}
+    </span>
   );
 }
