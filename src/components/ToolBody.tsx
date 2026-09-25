@@ -29,7 +29,7 @@ export function ToolBody({ tool: t, links }: { tool: ToolView; links: Links }) {
     <LinksContext.Provider value={links}>
       {t.lang && (
         <div className="tb">
-          <Head right={<Ref id="2" sub={t.lang.ref} />}>言語別の既定セット</Head>
+          <Head right={<Ref id="2" sub={t.lang.ref} />}>言語別の既定</Head>
           {t.lang.lead && (
             <p>
               <Inline text={t.lang.lead} />
@@ -85,7 +85,7 @@ export function ToolBody({ tool: t, links }: { tool: ToolView; links: Links }) {
                 <strong>
                   <Inline text={r.when} />
                 </strong>{' '}
-                に切り替える
+                に乗り換える
               </>
             )}
             。
@@ -121,7 +121,7 @@ export function ToolBody({ tool: t, links }: { tool: ToolView; links: Links }) {
       {t.growth.map((e) => (
         <div className="tb" key={e.to + e.trigger}>
           <Head right={<Ref id={t.refs.growth} />}>
-            育ったら → <Inline text={e.to} tools={e.to_tools} />
+            成長したら → <Inline text={e.to} tools={e.to_tools} />
           </Head>
           <KV
             className="kv sm"

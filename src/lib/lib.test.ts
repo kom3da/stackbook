@@ -152,7 +152,7 @@ describe('decide (§2-9, §2-10, §19)', () => {
 
   it('uses Rails for a CRUD business app', () => {
     const d = run('web');
-    expect(d.title).toBe('Ruby / Rails 8');
+    expect(d.title).toBe('Ruby / Rails');
     expect(d.cases).toEqual(['19-4']);
   });
   it('keeps small SaaS teams on TypeScript and moves to Go in production', () => {
@@ -188,7 +188,7 @@ describe('markdown for agents', () => {
   it('bundles recommendation, §19 case and commands', () => {
     const m = makeMd('web');
     expect(m).toContain('最新安定版');
-    expect(m).toContain('## 推奨：Ruby / Rails 8');
+    expect(m).toContain('## 推奨：Ruby / Rails');
     expect(m).toContain('## §19-4');
     expect(m).toContain('## §26-4');
   });

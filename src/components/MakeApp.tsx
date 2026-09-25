@@ -146,7 +146,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
 
         <section className="blk">
           <h2 className="sh">
-            構成<span className="sh-d">行を開くと、乗り換える条件・根拠・費用・習熟度</span>
+            構成<span className="sh-d">行を開くと詳細（乗り換える条件・根拠・費用・習熟度）</span>
           </h2>
           <div className="sheet">
             {rows.map((r) => {

@@ -35,9 +35,9 @@ export type Decision = {
 export const KINDS: [Kind, string, string][] = [
   ['web', '業務システム・管理画面', '社内ツール、予約、受発注'],
   ['saas', 'SaaS・Web API', 'B2Bの自社サービス、公開API'],
-  ['toc', 'toCサービス', 'Web＋スマホアプリ'],
+  ['toc', '一般向けサービス', 'Web＋スマホアプリ'],
   ['ai', 'AI・LLMプロダクト', 'LLM API、RAG、エージェント'],
-  ['rt', 'リアルタイム', 'チャット、通知、共同編集'],
+  ['rt', 'リアルタイム通信', 'チャット、通知、共同編集'],
   ['site', 'コーポレートサイト・メディア', 'LP、ブログ、非エンジニアが更新'],
   ['ec', 'EC', 'ネットショップ、定期購入'],
   ['data', 'データ集計・バッチ', '夜間の一括計算、分析'],
@@ -50,7 +50,7 @@ export const KINDS: [Kind, string, string][] = [
 export const QUESTIONS: { q: keyof Answers; label: string; multi?: true; opts: [string, string, string][] }[] = [
   {
     q: 'load',
-    label: '一番重い負荷',
+    label: '処理の中心',
     opts: [
       ['db', 'DBの読み書き・業務ロジック', 'DB中心'],
       ['io', '外部APIの待ち時間', '外部API待ち'],
@@ -131,8 +131,8 @@ const L: Record<Lang, { n: Part; fw: Part; db: Part; job: Part; test: Part; ref:
     ref: '2-2',
   },
   rails: {
-    n: ['Ruby / Rails 8', 'ruby', 'rails'],
-    fw: ['Rails 8', 'rails'],
+    n: ['Ruby / Rails', 'ruby', 'rails'],
+    fw: ['Rails', 'rails'],
     db: ['PostgreSQL（ActiveRecord）', 'postgresql', 'active-record'],
     job: ['Solid Queue', 'solid-queue'],
     test: ['Minitest＋システムテスト', 'minitest'],
@@ -338,12 +338,12 @@ export function decide(kind: Kind, answers: Answers): Decision {
     const next = fe.includes('next-js');
     parts.push(['言語', l.n], ['フロント', fe]);
     if (!(p.lang === 'rails' && a.kind === 'web')) parts.push(['バックエンド', l.fw]);
-    else parts.push(['フレームワーク', ['Rails 8（管理画面はAvo、認可はPundit）', 'rails', 'avo', 'pundit']]);
+    else parts.push(['フレームワーク', ['Rails（管理画面はAvo、認可はPundit）', 'rails', 'avo', 'pundit']]);
     parts.push(['DB', l.db], ['ジョブ', l.job]);
     const auth: Part = {
       web: join(
         ['社内ならGoogle Workspace／Entra IDのSSO、社外向けは', 'google-workspace', 'microsoft-entra-id'],
-        p.lang === 'rails' ? ['Rails 8認証ジェネレータ', 'rails'] : ['Better Auth', 'better-auth'],
+        p.lang === 'rails' ? ['Railsの認証ジェネレータ', 'rails'] : ['Better Auth', 'better-auth'],
       ),
       saas: ['Clerk（SSO・SCIMが必要になったらWorkOS）', 'clerk', 'workos'] as Part,
       toc: ['Supabase Auth または Clerk', 'supabase-auth', 'clerk'] as Part,

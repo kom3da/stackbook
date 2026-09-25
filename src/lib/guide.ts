@@ -168,7 +168,7 @@ export const GROUPS = {
   kit: [SECS.checklist, SECS.commands, SECS.prof, 'memo'],
 } as const;
 export type Group = keyof typeof GROUPS;
-export const GROUP_LABEL: Record<Group, string> = { tools: '辞書（分野別）', read: '考え方', kit: '手元' };
+export const GROUP_LABEL: Record<Group, string> = { tools: '辞書（分野別）', read: '考え方', kit: '準備' };
 export const groupOf = (id: string): Group =>
   (Object.keys(GROUPS) as Group[]).find((g) => (GROUPS[g] as readonly string[]).includes(id)) ?? 'read';
 

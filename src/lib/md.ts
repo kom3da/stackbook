@@ -63,7 +63,7 @@ export const toMarkdown = (raw: string) =>
 
 export function toolMd(t: Tool) {
   const out = [`# ${t.name}`, '', `分類：${category(t)}`];
-  if (t.lang) out.push('', `言語別の既定セット：§${t.lang.ref}（/s/2.md）`, t.lang.lead && plain(t.lang.lead));
+  if (t.lang) out.push('', `言語別の既定：§${t.lang.ref}（/s/2.md）`, t.lang.lead && plain(t.lang.lead));
   if (t.uses.length)
     out.push(
       '',
@@ -101,7 +101,7 @@ export function toolMd(t: Tool) {
   for (const e of t.growth)
     out.push(
       '',
-      `## 育ったときの移行（§${SECS.growth}）→ ${plain(e.to)}`,
+      `## 成長したときの移行（§${SECS.growth}）→ ${plain(e.to)}`,
       `- きっかけ：${plain(e.trigger)}`,
       `- 最初からの備え：${plain(e.prepare)}`,
     );
@@ -138,6 +138,9 @@ export const dictMd = () =>
     '',
   ].join('\n');
 
+// Absolute URLs in llms.txt so agents can fetch links directly
+const abs = (path: string) => (import.meta.env.SITE ?? '').replace(/\/$/, '') + path;
+
 // Context an agent needs before trusting any recommendation
 const PREAMBLE = () =>
   [
@@ -173,12 +176,16 @@ export function makeMd(kind: Kind) {
     .find((s) => s.id === SECS.commands)
     ?.blocks.find((b) => b.t === 'h3' && d.cases.some((c) => b.text.includes(`§${c}`)));
   if (cmd?.t === 'h3') out.push('', toMarkdown(rawSub(cmd.id)).replace(/^### (\d+-\d+)\. /, '## §$1 '));
-  out.push('', `次に読む：${[...new Set(d.refs)].map((r) => `§${r}`).join('、')}（/s/<N>.md）`);
+  out.push(
+    '',
+    '## 次に読む',
+    ...[...new Set(d.refs)].map((r) => {
+      const [n, sub] = r.split('-');
+      return `- §${r}: ${abs(`/s/${n}.md`)}${sub ? `（「### ${r}.」の節）` : ''}`;
+    }),
+  );
   return `${out.join('\n').replace(/\n{3,}/g, '\n\n')}\n`;
 }
-
-// Absolute URLs in llms.txt so agents can fetch links directly
-const abs = (path: string) => (import.meta.env.SITE ?? '').replace(/\/$/, '') + path;
 
 export function llmsTxt() {
   const sec = (id: string) => guide.sections.find((s) => s.id === id);
@@ -189,7 +196,7 @@ export function llmsTxt() {
   return [
     `# ${guide.title}`,
     '',
-    '> 新規プロジェクトの技術スタックを決めるための個人用ガイド。各カテゴリの「既定」は1つだけで、代替には乗り換える条件が付いている。PHPは選択肢に含めない。',
+    '> 新規プロジェクトの技術スタックを決めるための個人用ガイド。各カテゴリの「既定」は1つだけで、代替には乗り換える条件が付いている。',
     '',
     PREAMBLE(),
     '',
@@ -204,7 +211,7 @@ export function llmsTxt() {
     '## 考え方',
     ...GROUPS.read.map(line),
     '',
-    '## 手元',
+    '## 準備',
     ...GROUPS.kit.filter((id) => id !== 'memo').map(line),
     '',
     '## 辞書',
