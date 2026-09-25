@@ -1,13 +1,13 @@
 import type { ReactNode } from 'react';
 import { HEADS } from '../lib/heads';
-import { secHref } from '../lib/inline';
+import { refText, secHref } from '../lib/inline';
 import type { ToolView, Where } from '../lib/view';
 import { Alts, KV, ProfSeg } from './Blocks';
 import { Inline, type Links, LinksContext } from './Inline';
 
 const Ref = ({ id, sub }: { id: string; sub?: string }) => (
   <a className="ref" href={secHref(id, sub)}>
-    {sub ?? id}
+    {refText({ v: `§${sub ?? id}`, sec: id, sub })}
   </a>
 );
 const WhereLink = ({ w }: { w: Where }) => (
