@@ -1,8 +1,8 @@
 import { createContext, Fragment, type ReactNode, useContext } from 'react';
-import { findName, type Seg, secHref, segments, toolHref } from '../lib/inline';
+import { findName, type Seg, secHref, segments } from '../lib/inline';
 
-/** Tool id → display name and dictionary slug, for linking names inside text */
-export type Links = Record<string, { name: string; slug: string }>;
+/** Tool id → display name and link target (dictionary page or official site), for linking names inside text */
+export type Links = Record<string, { name: string; href: string }>;
 export const LinksContext = createContext<Links>({});
 
 type Props = {
@@ -25,7 +25,7 @@ export function Inline({ text, tools = [], linkTools = true }: Props) {
       pending.splice(n, 1);
       return [
         ...linkify(hit[0], `${key}a`),
-        <a key={key} className="tl" href={toolHref(l.slug)}>
+        <a key={key} className="tl" href={l.href}>
           {l.name}
         </a>,
         ...linkify(hit[1], `${key}b`),

@@ -3,7 +3,7 @@ import type { MakePayload } from '../components/MakeApp';
 import { type Block, h3Text, plain, SEC, SECS, stripNo, subBlocks } from './guide';
 import { secHref } from './inline';
 import { CASE_ROWS, CHOICES, LOOKUP } from './lookup';
-import { dictionary } from './tools';
+import { dictionary, hrefOf } from './tools';
 import { toolView } from './view';
 import { allAnswers, decide, type Kind, resolve, sources, srcKey } from './wizard';
 
@@ -22,7 +22,7 @@ export function makePayload(kind: Kind): MakePayload {
   };
   const addLink = (id: string) => {
     const t = listed.get(id);
-    if (t) p.links[id] = { name: t.name, slug: t.slug };
+    if (t) p.links[id] = { name: t.name, href: hrefOf(t) };
   };
   const linkBlocks = (bl: Block[]) => {
     for (const b of bl) if (b.t === 'data') for (const r of b.d.rows) for (const id of r.tools) addLink(id);

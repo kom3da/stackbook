@@ -1,545 +1,529 @@
-# Tool registry: id -> display name (or {name, lang}). Ids are referenced from data blocks in content/guide/*.md
-1password: 1Password
-acm: ACM
-action-cable: Action Cable
-action-policy: Action Policy
-actionlint: actionlint
-active-record: Active Record
-active-storage: Active Storage
-actix-web: Actix Web
-administrate: Administrate
-adr: ADR
-ag-grid: AG Grid
-age: age
-air: air
-alb: ALB
-alembic: Alembic
-algolia: Algolia
-amazon-cognito: Amazon Cognito
-amazon-corretto: Amazon Corretto
-amazon-msk: Amazon MSK
-amazon-opensearch-service: Amazon OpenSearch Service
-amazon-rds-for-postgresql: Amazon RDS for PostgreSQL
-amazon-ses: Amazon SES
-amazon-sns: Amazon SNS
-amplitude: Amplitude
-anycable: AnyCable
-anyhow: anyhow
-apache-echarts: Apache ECharts
-app-runner: App Runner
-argon2id: Argon2id
-arq: arq
-asdf: asdf
-asp-net-core: ASP.NET Core
-astro: Astro
-astro-assets: astro:assets
-astro-starlight: Astro Starlight
-asynq: Asynq
-atlantis: Atlantis
-atlas: Atlas
-aurora-postgresql: Aurora PostgreSQL
-auth-js: Auth.js
-auth0: Auth0
-avo: Avo
-aws: AWS
-aws-cdk: AWS CDK
-aws-secrets-manager: AWS Secrets Manager
-aws-step-functions: AWS Step Functions
-aws-systems-manager-session-manager: AWS Systems Manager Session Manager
-aws-waf: AWS WAF
-axe: axe
-axum: axum
-better-auth: Better Auth
-better-stack: Better Stack
-bigquery: BigQuery
-biome: Biome
-brakeman: Brakeman
-broadway: Broadway
-bruno: Bruno
-buf: Buf
-bullet: Bullet
-bullmq: BullMQ
-bun: Bun
-bundler: Bundler
-bundler-audit: bundler-audit
-candle: candle
-capybara: Capybara
-capybara-playwright-driver: capybara-playwright-driver
-cargo: Cargo
-cargo-audit: cargo-audit
-cargo-deny: cargo-deny
-cargo-dist: cargo-dist
-cargo-nextest: cargo-nextest
-cargo-zigbuild: cargo-zigbuild
-celery: Celery
-chainguard-images: Chainguard Images
-changesets: Changesets
-checkov: Checkov
-chi: chi
-clamav: ClamAV
-clap: clap
-claude-code: Claude Code
-clerk: Clerk
-clippy: clippy
-cloud-run: Cloud Run
-cloud-sql: Cloud SQL
-cloudflare: Cloudflare
-cloudflare-access: Cloudflare Access
-cloudflare-d1: Cloudflare D1
-cloudflare-dns: Cloudflare DNS
-cloudflare-durable-objects: Cloudflare Durable Objects
-cloudflare-hyperdrive: Cloudflare Hyperdrive
-cloudflare-images: Cloudflare Images
-cloudflare-pages: Cloudflare Pages
-cloudflare-r2: Cloudflare R2
-cloudflare-stream: Cloudflare Stream
-cloudflare-tunnel: Cloudflare Tunnel
-cloudflare-turnstile: Cloudflare Turnstile
-cloudflare-waf: Cloudflare WAF
-cloudflare-waiting-room: Cloudflare Waiting Room
-cloudflare-web-analytics: Cloudflare Web Analytics
-cloudflare-workers: Cloudflare Workers
-cloudfront: CloudFront
-cloudwatch: CloudWatch
-cobra: Cobra
-codeql: CodeQL
-conform: Conform
-connect: Connect
-contentful: Contentful
-context: Context
-conventional-commits: Conventional Commits
-copilot-code-review: Copilot code review
-credo: Credo
-criterion: criterion
-cross: cross
-csharp:
-  name: C#
-  lang: 2-8
-csp: CSP
-css-modules: CSS Modules
-d2: D2
-dapper: Dapper
-datadog: Datadog
-date-fns: date-fns
-day-js: Day.js
-dbeaver: DBeaver
-deno: Deno
-dependabot: Dependabot
-detekt: detekt
-dev-containers: Dev Containers
-devise: Devise
-dialyxir: Dialyxir
-direnv: direnv
-distroless: distroless
-divan: divan
-django: Django
-dkim: DKIM
-dmarc: DMARC
-dnd-kit: dnd kit
-docker: Docker
-docker-compose: Docker Compose
-dockerfile: Dockerfile
-docusaurus: Docusaurus
-doppler: Doppler
-dotnet-cli: dotnet CLI
-dotnet-format: dotnet format
-dotnet-publish: dotnet publish
-dramatiq: Dramatiq
-draw-io: draw.io
-drizzle: Drizzle
-drizzle-kit: drizzle-kit
-duckdb: DuckDB
-eas-build: EAS Build
-eas-submit: EAS Submit
-eas-update: EAS Update
-echo: Echo
-eclipse-temurin: Eclipse Temurin
-ecr: ECR
-ecs-on-fargate: ECS on Fargate
-ecto: Ecto
-ef-core: EF Core
-ef-core-migrations: EF Core Migrations
-eks: EKS
-electron: Electron
-elixir:
-  name: Elixir
-  lang: 2-7
-embassy: Embassy
-ent: ent
-envconfig: envconfig
-esbuild: esbuild
-eslint: ESLint
-eventbridge: EventBridge
-expo: Expo
-expo-notifications: Expo Notifications
-expo-router: Expo Router
-exposed: Exposed
-exunit: ExUnit
-factorybot: FactoryBot
-fastapi: FastAPI
-fastify: Fastify
-fcm: FCM
-fetch: fetch
-firebase-authentication: Firebase Authentication
+# Tool registry: id -> display name (or {name, lang?, url?}). Ids are referenced from data blocks in content/guide/*.md
+1password: { name: 1Password, url: https://1password.com/ }
+acm: { name: ACM, url: https://aws.amazon.com/certificate-manager/ }
+action-cable: { name: Action Cable, url: https://guides.rubyonrails.org/action_cable_overview.html }
+action-policy: { name: Action Policy, url: https://actionpolicy.evilmartians.io/ }
+actionlint: { name: actionlint, url: https://github.com/rhysd/actionlint }
+active-record: { name: Active Record, url: https://guides.rubyonrails.org/active_record_basics.html }
+active-storage: { name: Active Storage, url: https://guides.rubyonrails.org/active_storage_overview.html }
+actix-web: { name: Actix Web, url: https://actix.rs/ }
+administrate: { name: Administrate, url: https://github.com/thoughtbot/administrate }
+adr: { name: ADR, url: https://adr.github.io/ }
+ag-grid: { name: AG Grid, url: https://www.ag-grid.com/ }
+age: { name: age, url: https://github.com/FiloSottile/age }
+air: { name: air, url: https://github.com/air-verse/air }
+alb: { name: ALB, url: https://aws.amazon.com/elasticloadbalancing/application-load-balancer/ }
+alembic: { name: Alembic, url: https://alembic.sqlalchemy.org/ }
+algolia: { name: Algolia, url: https://www.algolia.com/ }
+amazon-cognito: { name: Amazon Cognito, url: https://aws.amazon.com/cognito/ }
+amazon-corretto: { name: Amazon Corretto, url: https://aws.amazon.com/corretto/ }
+amazon-msk: { name: Amazon MSK, url: https://aws.amazon.com/msk/ }
+amazon-opensearch-service: { name: Amazon OpenSearch Service, url: https://aws.amazon.com/opensearch-service/ }
+amazon-rds-for-postgresql: { name: Amazon RDS for PostgreSQL, url: https://aws.amazon.com/rds/postgresql/ }
+amazon-ses: { name: Amazon SES, url: https://aws.amazon.com/ses/ }
+amazon-sns: { name: Amazon SNS, url: https://aws.amazon.com/sns/ }
+amplitude: { name: Amplitude, url: https://amplitude.com/ }
+anycable: { name: AnyCable, url: https://anycable.io/ }
+anyhow: { name: anyhow, url: https://github.com/dtolnay/anyhow }
+apache-echarts: { name: Apache ECharts, url: https://echarts.apache.org/ }
+app-runner: { name: App Runner, url: https://aws.amazon.com/apprunner/ }
+argon2id: { name: Argon2id, url: https://github.com/P-H-C/phc-winner-argon2 }
+arq: { name: arq, url: https://github.com/python-arq/arq }
+asdf: { name: asdf, url: https://asdf-vm.com/ }
+asp-net-core: { name: ASP.NET Core, url: https://dotnet.microsoft.com/apps/aspnet }
+astro: { name: Astro, url: https://astro.build/ }
+astro-assets: { name: astro:assets, url: https://docs.astro.build/en/guides/images/ }
+astro-starlight: { name: Astro Starlight, url: https://starlight.astro.build/ }
+asynq: { name: Asynq, url: https://github.com/hibiken/asynq }
+atlantis: { name: Atlantis, url: https://www.runatlantis.io/ }
+atlas: { name: Atlas, url: https://atlasgo.io/ }
+aurora-postgresql: { name: Aurora PostgreSQL, url: https://aws.amazon.com/rds/aurora/ }
+auth-js: { name: Auth.js, url: https://authjs.dev/ }
+auth0: { name: Auth0, url: https://auth0.com/ }
+avo: { name: Avo, url: https://avohq.io/ }
+aws: { name: AWS, url: https://aws.amazon.com/ }
+aws-cdk: { name: AWS CDK, url: https://aws.amazon.com/cdk/ }
+aws-secrets-manager: { name: AWS Secrets Manager, url: https://aws.amazon.com/secrets-manager/ }
+aws-step-functions: { name: AWS Step Functions, url: https://aws.amazon.com/step-functions/ }
+aws-systems-manager-session-manager: { name: AWS Systems Manager Session Manager, url: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager.html }
+aws-waf: { name: AWS WAF, url: https://aws.amazon.com/waf/ }
+axe: { name: axe, url: https://github.com/dequelabs/axe-core }
+axum: { name: axum, url: https://github.com/tokio-rs/axum }
+better-auth: { name: Better Auth, url: https://www.better-auth.com/ }
+better-stack: { name: Better Stack, url: https://betterstack.com/ }
+bigquery: { name: BigQuery, url: https://cloud.google.com/bigquery }
+biome: { name: Biome, url: https://biomejs.dev/ }
+brakeman: { name: Brakeman, url: https://brakemanscanner.org/ }
+broadway: { name: Broadway, url: https://github.com/dashbitco/broadway }
+bruno: { name: Bruno, url: https://www.usebruno.com/ }
+buf: { name: Buf, url: https://buf.build/ }
+bullet: { name: Bullet, url: https://github.com/flyerhzm/bullet }
+bullmq: { name: BullMQ, url: https://bullmq.io/ }
+bun: { name: Bun, url: https://bun.sh/ }
+bundler: { name: Bundler, url: https://bundler.io/ }
+bundler-audit: { name: bundler-audit, url: https://github.com/rubysec/bundler-audit }
+candle: { name: candle, url: https://github.com/huggingface/candle }
+capybara: { name: Capybara, url: https://github.com/teamcapybara/capybara }
+capybara-playwright-driver: { name: capybara-playwright-driver, url: https://github.com/YusukeIwaki/capybara-playwright-driver }
+cargo: { name: Cargo, url: https://doc.rust-lang.org/cargo/ }
+cargo-audit: { name: cargo-audit, url: https://github.com/rustsec/rustsec/tree/main/cargo-audit }
+cargo-deny: { name: cargo-deny, url: https://github.com/EmbarkStudios/cargo-deny }
+cargo-dist: { name: cargo-dist, url: https://github.com/axodotdev/cargo-dist }
+cargo-nextest: { name: cargo-nextest, url: https://nexte.st/ }
+cargo-zigbuild: { name: cargo-zigbuild, url: https://github.com/rust-cross/cargo-zigbuild }
+celery: { name: Celery, url: https://docs.celeryq.dev/ }
+chainguard-images: { name: Chainguard Images, url: https://www.chainguard.dev/chainguard-images }
+changesets: { name: Changesets, url: https://github.com/changesets/changesets }
+checkov: { name: Checkov, url: https://www.checkov.io/ }
+chi: { name: chi, url: https://go-chi.io/ }
+clamav: { name: ClamAV, url: https://www.clamav.net/ }
+clap: { name: clap, url: https://github.com/clap-rs/clap }
+claude-code: { name: Claude Code, url: https://docs.anthropic.com/en/docs/claude-code/overview }
+clerk: { name: Clerk, url: https://clerk.com/ }
+clippy: { name: clippy, url: https://github.com/rust-lang/rust-clippy }
+cloud-run: { name: Cloud Run, url: https://cloud.google.com/run }
+cloud-sql: { name: Cloud SQL, url: https://cloud.google.com/sql }
+cloudflare: { name: Cloudflare, url: https://www.cloudflare.com/ }
+cloudflare-access: { name: Cloudflare Access, url: https://www.cloudflare.com/zero-trust/products/access/ }
+cloudflare-d1: { name: Cloudflare D1, url: https://developers.cloudflare.com/d1/ }
+cloudflare-dns: { name: Cloudflare DNS, url: https://www.cloudflare.com/application-services/products/dns/ }
+cloudflare-durable-objects: { name: Cloudflare Durable Objects, url: https://developers.cloudflare.com/durable-objects/ }
+cloudflare-hyperdrive: { name: Cloudflare Hyperdrive, url: https://developers.cloudflare.com/hyperdrive/ }
+cloudflare-images: { name: Cloudflare Images, url: https://developers.cloudflare.com/images/ }
+cloudflare-pages: { name: Cloudflare Pages, url: https://pages.cloudflare.com/ }
+cloudflare-r2: { name: Cloudflare R2, url: https://developers.cloudflare.com/r2/ }
+cloudflare-stream: { name: Cloudflare Stream, url: https://developers.cloudflare.com/stream/ }
+cloudflare-tunnel: { name: Cloudflare Tunnel, url: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/ }
+cloudflare-turnstile: { name: Cloudflare Turnstile, url: https://developers.cloudflare.com/turnstile/ }
+cloudflare-waf: { name: Cloudflare WAF, url: https://developers.cloudflare.com/waf/ }
+cloudflare-waiting-room: { name: Cloudflare Waiting Room, url: https://developers.cloudflare.com/waiting-room/ }
+cloudflare-web-analytics: { name: Cloudflare Web Analytics, url: https://developers.cloudflare.com/web-analytics/ }
+cloudflare-workers: { name: Cloudflare Workers, url: https://developers.cloudflare.com/workers/ }
+cloudfront: { name: CloudFront, url: https://aws.amazon.com/cloudfront/ }
+cloudwatch: { name: CloudWatch, url: https://aws.amazon.com/cloudwatch/ }
+cobra: { name: Cobra, url: https://cobra.dev/ }
+codeql: { name: CodeQL, url: https://codeql.github.com/ }
+conform: { name: Conform, url: https://conform.guide/ }
+connect: { name: Connect, url: https://connectrpc.com/ }
+contentful: { name: Contentful, url: https://www.contentful.com/ }
+context: { name: Context, url: https://react.dev/reference/react/createContext }
+conventional-commits: { name: Conventional Commits, url: https://www.conventionalcommits.org/ }
+copilot-code-review: { name: Copilot code review, url: https://docs.github.com/en/copilot/using-github-copilot/code-review/using-copilot-code-review }
+credo: { name: Credo, url: https://github.com/rrrene/credo }
+criterion: { name: criterion, url: https://github.com/bheisler/criterion.rs }
+cross: { name: cross, url: https://github.com/cross-rs/cross }
+csharp: { name: C#, lang: 2-8, url: https://learn.microsoft.com/dotnet/csharp/ }
+csp: { name: CSP, url: https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP }
+css-modules: { name: CSS Modules, url: https://github.com/css-modules/css-modules }
+d2: { name: D2, url: https://d2lang.com/ }
+dapper: { name: Dapper, url: https://github.com/DapperLib/Dapper }
+datadog: { name: Datadog, url: https://www.datadoghq.com/ }
+date-fns: { name: date-fns, url: https://date-fns.org/ }
+day-js: { name: Day.js, url: https://day.js.org/ }
+dbeaver: { name: DBeaver, url: https://dbeaver.io/ }
+deno: { name: Deno, url: https://deno.com/ }
+dependabot: { name: Dependabot, url: https://docs.github.com/en/code-security/dependabot }
+detekt: { name: detekt, url: https://detekt.dev/ }
+dev-containers: { name: Dev Containers, url: https://containers.dev/ }
+devise: { name: Devise, url: https://github.com/heartcombo/devise }
+dialyxir: { name: Dialyxir, url: https://github.com/jeremyjh/dialyxir }
+direnv: { name: direnv, url: https://direnv.net/ }
+distroless: { name: distroless, url: https://github.com/GoogleContainerTools/distroless }
+divan: { name: divan, url: https://github.com/nvzqz/divan }
+django: { name: Django, url: https://www.djangoproject.com/ }
+dkim: { name: DKIM, url: https://datatracker.ietf.org/doc/html/rfc6376 }
+dmarc: { name: DMARC, url: https://dmarc.org/ }
+dnd-kit: { name: dnd kit, url: https://dndkit.com/ }
+docker: { name: Docker, url: https://www.docker.com/ }
+docker-compose: { name: Docker Compose, url: https://docs.docker.com/compose/ }
+dockerfile: { name: Dockerfile, url: https://docs.docker.com/reference/dockerfile/ }
+docusaurus: { name: Docusaurus, url: https://docusaurus.io/ }
+doppler: { name: Doppler, url: https://www.doppler.com/ }
+dotnet-cli: { name: dotnet CLI, url: https://learn.microsoft.com/dotnet/core/tools/ }
+dotnet-format: { name: dotnet format, url: https://learn.microsoft.com/dotnet/core/tools/dotnet-format }
+dotnet-publish: { name: dotnet publish, url: https://learn.microsoft.com/dotnet/core/tools/dotnet-publish }
+dramatiq: { name: Dramatiq, url: https://dramatiq.io/ }
+draw-io: { name: draw.io, url: https://www.drawio.com/ }
+drizzle: { name: Drizzle, url: https://orm.drizzle.team/ }
+drizzle-kit: { name: drizzle-kit, url: https://orm.drizzle.team/docs/kit-overview }
+duckdb: { name: DuckDB, url: https://duckdb.org/ }
+eas-build: { name: EAS Build, url: https://docs.expo.dev/build/introduction/ }
+eas-submit: { name: EAS Submit, url: https://docs.expo.dev/submit/introduction/ }
+eas-update: { name: EAS Update, url: https://docs.expo.dev/eas-update/introduction/ }
+echo: { name: Echo, url: https://echo.labstack.com/ }
+eclipse-temurin: { name: Eclipse Temurin, url: https://adoptium.net/ }
+ecr: { name: ECR, url: https://aws.amazon.com/ecr/ }
+ecs-on-fargate: { name: ECS on Fargate, url: https://aws.amazon.com/fargate/ }
+ecto: { name: Ecto, url: https://hexdocs.pm/ecto/ }
+ef-core: { name: EF Core, url: https://learn.microsoft.com/ef/core/ }
+ef-core-migrations: { name: EF Core Migrations, url: https://learn.microsoft.com/ef/core/managing-schemas/migrations/ }
+eks: { name: EKS, url: https://aws.amazon.com/eks/ }
+electron: { name: Electron, url: https://www.electronjs.org/ }
+elixir: { name: Elixir, lang: 2-7, url: https://elixir-lang.org/ }
+embassy: { name: Embassy, url: https://embassy.dev/ }
+ent: { name: ent, url: https://entgo.io/ }
+envconfig: { name: envconfig, url: https://github.com/caarlos0/env }
+esbuild: { name: esbuild, url: https://esbuild.github.io/ }
+eslint: { name: ESLint, url: https://eslint.org/ }
+eventbridge: { name: EventBridge, url: https://aws.amazon.com/eventbridge/ }
+expo: { name: Expo, url: https://expo.dev/ }
+expo-notifications: { name: Expo Notifications, url: https://docs.expo.dev/versions/latest/sdk/notifications/ }
+expo-router: { name: Expo Router, url: https://docs.expo.dev/router/introduction/ }
+exposed: { name: Exposed, url: https://github.com/JetBrains/Exposed }
+exunit: { name: ExUnit, url: https://hexdocs.pm/ex_unit/ExUnit.html }
+factorybot: { name: FactoryBot, url: https://github.com/thoughtbot/factory_bot }
+fastapi: { name: FastAPI, url: https://fastapi.tiangolo.com/ }
+fastify: { name: Fastify, url: https://fastify.dev/ }
+fcm: { name: FCM, url: https://firebase.google.com/docs/cloud-messaging }
+fetch: { name: fetch, url: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API }
+firebase-authentication: { name: Firebase Authentication, url: https://firebase.google.com/docs/auth }
 fixtures: fixtures
-flutter: Flutter
-fly-io: Fly.io
-flyway: Flyway
-ga4: GA4
-ghcr: GHCR
-github-actions: GitHub Actions
-github-copilot: GitHub Copilot
-github-flow: GitHub Flow
-github-pages: GitHub Pages
-github-releases: GitHub Releases
-gitlab-ci: GitLab CI
-gitleaks: gitleaks
-gke: GKE
-go:
-  name: Go
-  lang: 2-2
-go-cmp: go-cmp
-go-modules: Go modules
-gofmt: gofmt
-gofumpt: gofumpt
-golang-migrate: golang-migrate
-golangci-lint: golangci-lint
-gomock: gomock
-google-workspace: Google Workspace
-goose: goose
-goreleaser: GoReleaser
-gorm: GORM
-govulncheck: govulncheck
-gqlgen: gqlgen
-graalvm: GraalVM
-gradle: Gradle
-grafana: Grafana
-grafana-cloud: Grafana Cloud
-graphql: GraphQL
-graphql-yoga: GraphQL Yoga
-grpc: gRPC
-hadolint: hadolint
-hcp-terraform: HCP Terraform
-hex: Hex
-homebrew: Homebrew
-hono: Hono
-hono-rpc: Hono RPC
-hotwire: Hotwire
-hotwire-native: Hotwire Native
-htmx: htmx
-httpx: httpx
-husky: husky
-i18next: i18next
+flutter: { name: Flutter, url: https://flutter.dev/ }
+fly-io: { name: Fly.io, url: https://fly.io/ }
+flyway: { name: Flyway, url: https://flywaydb.org/ }
+ga4: { name: GA4, url: https://marketingplatform.google.com/about/analytics/ }
+ghcr: { name: GHCR, url: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry }
+github-actions: { name: GitHub Actions, url: https://github.com/features/actions }
+github-copilot: { name: GitHub Copilot, url: https://github.com/features/copilot }
+github-flow: { name: GitHub Flow, url: https://docs.github.com/en/get-started/using-github/github-flow }
+github-pages: { name: GitHub Pages, url: https://pages.github.com/ }
+github-releases: { name: GitHub Releases, url: https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases }
+gitlab-ci: { name: GitLab CI, url: https://docs.gitlab.com/ci/ }
+gitleaks: { name: gitleaks, url: https://github.com/gitleaks/gitleaks }
+gke: { name: GKE, url: https://cloud.google.com/kubernetes-engine }
+go: { name: Go, lang: 2-2, url: https://go.dev/ }
+go-cmp: { name: go-cmp, url: https://github.com/google/go-cmp }
+go-modules: { name: Go modules, url: https://go.dev/ref/mod }
+gofmt: { name: gofmt, url: https://pkg.go.dev/cmd/gofmt }
+gofumpt: { name: gofumpt, url: https://github.com/mvdan/gofumpt }
+golang-migrate: { name: golang-migrate, url: https://github.com/golang-migrate/migrate }
+golangci-lint: { name: golangci-lint, url: https://golangci-lint.run/ }
+gomock: { name: gomock, url: https://github.com/uber-go/mock }
+google-workspace: { name: Google Workspace, url: https://workspace.google.com/ }
+goose: { name: goose, url: https://github.com/pressly/goose }
+goreleaser: { name: GoReleaser, url: https://goreleaser.com/ }
+gorm: { name: GORM, url: https://gorm.io/ }
+govulncheck: { name: govulncheck, url: https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck }
+gqlgen: { name: gqlgen, url: https://gqlgen.com/ }
+graalvm: { name: GraalVM, url: https://www.graalvm.org/ }
+gradle: { name: Gradle, url: https://gradle.org/ }
+grafana: { name: Grafana, url: https://grafana.com/ }
+grafana-cloud: { name: Grafana Cloud, url: https://grafana.com/products/cloud/ }
+graphql: { name: GraphQL, url: https://graphql.org/ }
+graphql-yoga: { name: GraphQL Yoga, url: https://the-guild.dev/graphql/yoga-server }
+grpc: { name: gRPC, url: https://grpc.io/ }
+hadolint: { name: hadolint, url: https://github.com/hadolint/hadolint }
+hcp-terraform: { name: HCP Terraform, url: https://developer.hashicorp.com/terraform/cloud-docs }
+hex: { name: Hex, url: https://hex.pm/ }
+homebrew: { name: Homebrew, url: https://brew.sh/ }
+hono: { name: Hono, url: https://hono.dev/ }
+hono-rpc: { name: Hono RPC, url: https://hono.dev/docs/guides/rpc }
+hotwire: { name: Hotwire, url: https://hotwired.dev/ }
+hotwire-native: { name: Hotwire Native, url: https://native.hotwired.dev/ }
+htmx: { name: htmx, url: https://htmx.org/ }
+httpx: { name: httpx, url: https://www.python-httpx.org/ }
+husky: { name: husky, url: https://typicode.github.io/husky/ }
+i18next: { name: i18next, url: https://www.i18next.com/ }
 idp: IdP
-imgproxy: imgproxy
-importmap: importmap
-incident-io: incident.io
-inngest: Inngest
-jackson: Jackson
-jest: Jest
-jib: Jib
-jooq: jOOQ
-jotai: Jotai
-jsbundling: jsbundling
-junit: JUnit
-jupyter: Jupyter
-k6: k6
-kafka: Kafka
-kafka-streams: Kafka Streams
-kamal: Kamal
-keycloak: Keycloak
-knock: Knock
-koanf: koanf
-komoju: KOMOJU
-kotest: Kotest
-kotlin:
-  name: Kotlin
-  lang: 2-6
-kotlinx-serialization: kotlinx.serialization
-ktlint: ktlint
-ktor: Ktor
-ky: ky
-kysely: Kysely
-ladle: Ladle
-lambda: Lambda
-langfuse: Langfuse
-lefthook: lefthook
-lexical: Lexical
-liquibase: Liquibase
-liquid: Liquid
-liveblocks: Liveblocks
-localstack: LocalStack
-locust: Locust
-log-slog: log/slog
-logback: Logback
-lucide-react: lucide-react
-magiconion: MagicOnion
-mailpit: Mailpit
-mantine: Mantine
-marimo: marimo
+imgproxy: { name: imgproxy, url: https://imgproxy.net/ }
+importmap: { name: importmap, url: https://github.com/rails/importmap-rails }
+incident-io: { name: incident.io, url: https://incident.io/ }
+inngest: { name: Inngest, url: https://www.inngest.com/ }
+jackson: { name: Jackson, url: https://github.com/FasterXML/jackson }
+jest: { name: Jest, url: https://jestjs.io/ }
+jib: { name: Jib, url: https://github.com/GoogleContainerTools/jib }
+jooq: { name: jOOQ, url: https://www.jooq.org/ }
+jotai: { name: Jotai, url: https://jotai.org/ }
+jsbundling: { name: jsbundling, url: https://github.com/rails/jsbundling-rails }
+junit: { name: JUnit, url: https://junit.org/ }
+jupyter: { name: Jupyter, url: https://jupyter.org/ }
+k6: { name: k6, url: https://k6.io/ }
+kafka: { name: Kafka, url: https://kafka.apache.org/ }
+kafka-streams: { name: Kafka Streams, url: https://kafka.apache.org/documentation/streams/ }
+kamal: { name: Kamal, url: https://kamal-deploy.org/ }
+keycloak: { name: Keycloak, url: https://www.keycloak.org/ }
+knock: { name: Knock, url: https://knock.app/ }
+koanf: { name: koanf, url: https://github.com/knadh/koanf }
+komoju: { name: KOMOJU, url: https://komoju.com/ }
+kotest: { name: Kotest, url: https://kotest.io/ }
+kotlin: { name: Kotlin, lang: 2-6, url: https://kotlinlang.org/ }
+kotlinx-serialization: { name: kotlinx.serialization, url: https://github.com/Kotlin/kotlinx.serialization }
+ktlint: { name: ktlint, url: https://github.com/pinterest/ktlint }
+ktor: { name: Ktor, url: https://ktor.io/ }
+ky: { name: ky, url: https://github.com/sindresorhus/ky }
+kysely: { name: Kysely, url: https://kysely.dev/ }
+ladle: { name: Ladle, url: https://ladle.dev/ }
+lambda: { name: Lambda, url: https://aws.amazon.com/lambda/ }
+langfuse: { name: Langfuse, url: https://langfuse.com/ }
+lefthook: { name: lefthook, url: https://github.com/evilmartians/lefthook }
+lexical: { name: Lexical, url: https://lexical.dev/ }
+liquibase: { name: Liquibase, url: https://www.liquibase.com/ }
+liquid: { name: Liquid, url: https://shopify.github.io/liquid/ }
+liveblocks: { name: Liveblocks, url: https://liveblocks.io/ }
+localstack: { name: LocalStack, url: https://www.localstack.cloud/ }
+locust: { name: Locust, url: https://locust.io/ }
+log-slog: { name: log/slog, url: https://pkg.go.dev/log/slog }
+logback: { name: Logback, url: https://logback.qos.ch/ }
+lucide-react: { name: lucide-react, url: https://lucide.dev/ }
+magiconion: { name: MagicOnion, url: https://github.com/Cysharp/MagicOnion }
+mailpit: { name: Mailpit, url: https://mailpit.axllent.org/ }
+mantine: { name: Mantine, url: https://mantine.dev/ }
+marimo: { name: marimo, url: https://marimo.io/ }
 markdown: Markdown
-maturin: maturin
-maven: Maven
-medusa: Medusa
-meilisearch: Meilisearch
-mermaid: Mermaid
-microcms: microCMS
-microsoft-entra-id: Microsoft Entra ID
-minio: MinIO
-minitest: Minitest
-mise: mise
-mix: Mix
-mix-format: mix format
-mix-release: mix release
-mixpanel: Mixpanel
-mjml: MJML
-mockery: mockery
-mockk: MockK
-motion: Motion
-mox: Mox
-mozilla-observatory: Mozilla Observatory
-msw: MSW
-mui: MUI
-mux: Mux
-mysql: MySQL
-napi-rs: napi-rs
-nat-gateway: NAT Gateway
-nativewind: NativeWind
-neon: Neon
-nestjs: NestJS
-net: .NET
-net-http: net/http
-new-relic: New Relic
-next-image: next/image
-next-intl: next-intl
-next-js: Next.js
-ngrok: ngrok
-node-js: Node.js
-novu: Novu
-nsubstitute: NSubstitute
-nuget: NuGet
-nx: Nx
-oapi-codegen: oapi-codegen
-oban: Oban
-ogen: ogen
-oidc: OIDC
-openapi: OpenAPI
-openapi-fetch: openapi-fetch
-openapi-typescript: openapi-typescript
-openfeature: OpenFeature
-openfga: OpenFGA
-opennext: OpenNext
-opentelemetry: OpenTelemetry
-opentofu: OpenTofu
-orval: Orval
-owasp-zap: OWASP ZAP
-pagefind: Pagefind
-pagerduty: PagerDuty
-pagy: Pagy
-pandas: pandas
-pay-jp: PAY.JP
-payload: Payload
-pg-bigm: pg_bigm
-pg-boss: pg-boss
-pg-dump: pg_dump
-pgbackrest: pgBackRest
-pgbouncer: PgBouncer
-pgvector: pgvector
-pgx: pgx
-phlex: Phlex
-phoenix: Phoenix
-phoenix-channels: Phoenix Channels
-phoenix-liveview: Phoenix LiveView
-phoenix-presence: Phoenix Presence
-pino: pino
-plausible: Plausible
-playwright: Playwright
-plug: Plug
-pnpm: pnpm
-pnpm-audit: pnpm audit
-pnpm-workspaces: pnpm workspaces
-poetry: Poetry
-polars: Polars
-postgres: Postgres
-postgresql: PostgreSQL
-postgresql-anonymizer: PostgreSQL Anonymizer
-posthog: PostHog
-postman: Postman
-postmark: Postmark
-pothos: Pothos
-prettier: Prettier
-prisma: Prisma
-prisma-migrate: Prisma Migrate
-propshaft: Propshaft
-prosopite: Prosopite
-pulumi: Pulumi
-pundit: Pundit
-pydantic: Pydantic
-pyo3: PyO3
-pyright: Pyright
-pytest: pytest
-python:
-  name: Python
-  lang: 2-4
+maturin: { name: maturin, url: https://www.maturin.rs/ }
+maven: { name: Maven, url: https://maven.apache.org/ }
+medusa: { name: Medusa, url: https://medusajs.com/ }
+meilisearch: { name: Meilisearch, url: https://www.meilisearch.com/ }
+mermaid: { name: Mermaid, url: https://mermaid.js.org/ }
+microcms: { name: microCMS, url: https://microcms.io/ }
+microsoft-entra-id: { name: Microsoft Entra ID, url: https://www.microsoft.com/security/business/identity-access/microsoft-entra-id }
+minio: { name: MinIO, url: https://min.io/ }
+minitest: { name: Minitest, url: https://github.com/minitest/minitest }
+mise: { name: mise, url: https://mise.jdx.dev/ }
+mix: { name: Mix, url: https://hexdocs.pm/mix/Mix.html }
+mix-format: { name: mix format, url: https://hexdocs.pm/mix/Mix.Tasks.Format.html }
+mix-release: { name: mix release, url: https://hexdocs.pm/mix/Mix.Tasks.Release.html }
+mixpanel: { name: Mixpanel, url: https://mixpanel.com/ }
+mjml: { name: MJML, url: https://mjml.io/ }
+mockery: { name: mockery, url: https://github.com/vektra/mockery }
+mockk: { name: MockK, url: https://mockk.io/ }
+motion: { name: Motion, url: https://motion.dev/ }
+mox: { name: Mox, url: https://github.com/dashbitco/mox }
+mozilla-observatory: { name: Mozilla Observatory, url: https://developer.mozilla.org/en-US/observatory }
+msw: { name: MSW, url: https://mswjs.io/ }
+mui: { name: MUI, url: https://mui.com/ }
+mux: { name: Mux, url: https://www.mux.com/ }
+mysql: { name: MySQL, url: https://www.mysql.com/ }
+napi-rs: { name: napi-rs, url: https://napi.rs/ }
+nat-gateway: { name: NAT Gateway, url: https://docs.aws.amazon.com/vpc/latest/userguide/vpc-nat-gateway.html }
+nativewind: { name: NativeWind, url: https://www.nativewind.dev/ }
+neon: { name: Neon, url: https://neon.com/ }
+nestjs: { name: NestJS, url: https://nestjs.com/ }
+net: { name: .NET, url: https://dotnet.microsoft.com/ }
+net-http: { name: net/http, url: https://pkg.go.dev/net/http }
+new-relic: { name: New Relic, url: https://newrelic.com/ }
+next-image: { name: next/image, url: https://nextjs.org/docs/app/api-reference/components/image }
+next-intl: { name: next-intl, url: https://next-intl.dev/ }
+next-js: { name: Next.js, url: https://nextjs.org/ }
+ngrok: { name: ngrok, url: https://ngrok.com/ }
+node-js: { name: Node.js, url: https://nodejs.org/ }
+novu: { name: Novu, url: https://novu.co/ }
+nsubstitute: { name: NSubstitute, url: https://nsubstitute.github.io/ }
+nuget: { name: NuGet, url: https://www.nuget.org/ }
+nx: { name: Nx, url: https://nx.dev/ }
+oapi-codegen: { name: oapi-codegen, url: https://github.com/oapi-codegen/oapi-codegen }
+oban: { name: Oban, url: https://getoban.pro/ }
+ogen: { name: ogen, url: https://ogen.dev/ }
+oidc: { name: OIDC, url: https://openid.net/developers/how-connect-works/ }
+openapi: { name: OpenAPI, url: https://www.openapis.org/ }
+openapi-fetch: { name: openapi-fetch, url: https://openapi-ts.dev/openapi-fetch/ }
+openapi-typescript: { name: openapi-typescript, url: https://openapi-ts.dev/ }
+openfeature: { name: OpenFeature, url: https://openfeature.dev/ }
+openfga: { name: OpenFGA, url: https://openfga.dev/ }
+opennext: { name: OpenNext, url: https://opennext.js.org/ }
+opentelemetry: { name: OpenTelemetry, url: https://opentelemetry.io/ }
+opentofu: { name: OpenTofu, url: https://opentofu.org/ }
+orval: { name: Orval, url: https://orval.dev/ }
+owasp-zap: { name: OWASP ZAP, url: https://www.zaproxy.org/ }
+pagefind: { name: Pagefind, url: https://pagefind.app/ }
+pagerduty: { name: PagerDuty, url: https://www.pagerduty.com/ }
+pagy: { name: Pagy, url: https://github.com/ddnexus/pagy }
+pandas: { name: pandas, url: https://pandas.pydata.org/ }
+pay-jp: { name: PAY.JP, url: https://pay.jp/ }
+payload: { name: Payload, url: https://payloadcms.com/ }
+pg-bigm: { name: pg_bigm, url: https://github.com/pgbigm/pg_bigm }
+pg-boss: { name: pg-boss, url: https://github.com/timgit/pg-boss }
+pg-dump: { name: pg_dump, url: https://www.postgresql.org/docs/current/app-pgdump.html }
+pgbackrest: { name: pgBackRest, url: https://pgbackrest.org/ }
+pgbouncer: { name: PgBouncer, url: https://www.pgbouncer.org/ }
+pgvector: { name: pgvector, url: https://github.com/pgvector/pgvector }
+pgx: { name: pgx, url: https://github.com/jackc/pgx }
+phlex: { name: Phlex, url: https://www.phlex.fun/ }
+phoenix: { name: Phoenix, url: https://www.phoenixframework.org/ }
+phoenix-channels: { name: Phoenix Channels, url: https://hexdocs.pm/phoenix/channels.html }
+phoenix-liveview: { name: Phoenix LiveView, url: https://hexdocs.pm/phoenix_live_view/ }
+phoenix-presence: { name: Phoenix Presence, url: https://hexdocs.pm/phoenix/presence.html }
+pino: { name: pino, url: https://getpino.io/ }
+plausible: { name: Plausible, url: https://plausible.io/ }
+playwright: { name: Playwright, url: https://playwright.dev/ }
+plug: { name: Plug, url: https://hexdocs.pm/plug/ }
+pnpm: { name: pnpm, url: https://pnpm.io/ }
+pnpm-audit: { name: pnpm audit, url: https://pnpm.io/cli/audit }
+pnpm-workspaces: { name: pnpm workspaces, url: https://pnpm.io/workspaces }
+poetry: { name: Poetry, url: https://python-poetry.org/ }
+polars: { name: Polars, url: https://pola.rs/ }
+postgres: { name: Postgres, url: https://www.postgresql.org/ }
+postgresql: { name: PostgreSQL, url: https://www.postgresql.org/ }
+postgresql-anonymizer: { name: PostgreSQL Anonymizer, url: https://postgresql-anonymizer.readthedocs.io/ }
+posthog: { name: PostHog, url: https://posthog.com/ }
+postman: { name: Postman, url: https://www.postman.com/ }
+postmark: { name: Postmark, url: https://postmarkapp.com/ }
+pothos: { name: Pothos, url: https://pothos-graphql.dev/ }
+prettier: { name: Prettier, url: https://prettier.io/ }
+prisma: { name: Prisma, url: https://www.prisma.io/ }
+prisma-migrate: { name: Prisma Migrate, url: https://www.prisma.io/migrate }
+propshaft: { name: Propshaft, url: https://github.com/rails/propshaft }
+prosopite: { name: Prosopite, url: https://github.com/charkost/prosopite }
+pulumi: { name: Pulumi, url: https://www.pulumi.com/ }
+pundit: { name: Pundit, url: https://github.com/varvet/pundit }
+pydantic: { name: Pydantic, url: https://docs.pydantic.dev/ }
+pyo3: { name: PyO3, url: https://pyo3.rs/ }
+pyright: { name: Pyright, url: https://github.com/microsoft/pyright }
+pytest: { name: pytest, url: https://docs.pytest.org/ }
+python: { name: Python, lang: 2-4, url: https://www.python.org/ }
 qdrant: Qdrant
-quartz-net: Quartz.NET
-rails:
-  name: Rails
-  lang: 2-3
-railway: Railway
-rbenv: rbenv
-rds: RDS
-rds-proxy: RDS Proxy
-react: React
-react-day-picker: react-day-picker
-react-email: React Email
-react-hook-form: React Hook Form
-react-i18next: react-i18next
-react-native: React Native
-react-router: React Router
-recharts: Recharts
-redis: Redis
-redoc: Redoc
-redocly-cli: Redocly CLI
-redpanda: Redpanda
-release-please: release-please
-render: Render
-renovate: Renovate
-req: Req
-resend: Resend
+quartz-net: { name: Quartz.NET, url: https://www.quartz-scheduler.net/ }
+rails: { name: Rails, lang: 2-3, url: https://rubyonrails.org/ }
+railway: { name: Railway, url: https://railway.com/ }
+rbenv: { name: rbenv, url: https://github.com/rbenv/rbenv }
+rds: { name: RDS, url: https://aws.amazon.com/rds/ }
+rds-proxy: { name: RDS Proxy, url: https://aws.amazon.com/rds/proxy/ }
+react: { name: React, url: https://react.dev/ }
+react-day-picker: { name: react-day-picker, url: https://daypicker.dev/ }
+react-email: { name: React Email, url: https://react.email/ }
+react-hook-form: { name: React Hook Form, url: https://react-hook-form.com/ }
+react-i18next: { name: react-i18next, url: https://react.i18next.com/ }
+react-native: { name: React Native, url: https://reactnative.dev/ }
+react-router: { name: React Router, url: https://reactrouter.com/ }
+recharts: { name: Recharts, url: https://recharts.org/ }
+redis: { name: Redis, url: https://redis.io/ }
+redoc: { name: Redoc, url: https://github.com/Redocly/redoc }
+redocly-cli: { name: Redocly CLI, url: https://redocly.com/docs/cli/ }
+redpanda: { name: Redpanda, url: https://www.redpanda.com/ }
+release-please: { name: release-please, url: https://github.com/googleapis/release-please }
+render: { name: Render, url: https://render.com/ }
+renovate: { name: Renovate, url: https://docs.renovatebot.com/ }
+req: { name: Req, url: https://hexdocs.pm/req/ }
+resend: { name: Resend, url: https://resend.com/ }
 rest: REST
-river: River
-rodauth: Rodauth
+river: { name: River, url: https://riverqueue.com/ }
+rodauth: { name: Rodauth, url: https://rodauth.jeremyevans.net/ }
 route: Route
-rspec: RSpec
-rtic: RTIC
-rubocop: RuboCop
-ruby: Ruby
-ruff: Ruff
-rulesets: Rulesets
-rust:
-  name: Rust
-  lang: 2-5
-rustfmt: rustfmt
-s3: S3
+rspec: { name: RSpec, url: https://rspec.info/ }
+rtic: { name: RTIC, url: https://rtic.rs/ }
+rubocop: { name: RuboCop, url: https://rubocop.org/ }
+ruby: { name: Ruby, url: https://www.ruby-lang.org/ }
+ruff: { name: Ruff, url: https://docs.astral.sh/ruff/ }
+rulesets: { name: Rulesets, url: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets }
+rust: { name: Rust, lang: 2-5, url: https://www.rust-lang.org/ }
+rustfmt: { name: rustfmt, url: https://github.com/rust-lang/rustfmt }
+s3: { name: S3, url: https://aws.amazon.com/s3/ }
 saas: SaaS
-sanity: Sanity
-scalar: Scalar
-seaorm: SeaORM
-selenium: Selenium
-semgrep: Semgrep
-sentry: Sentry
-serde: serde
-serilog: Serilog
-server-sent-events: Server-Sent Events
-shadcn-ui: shadcn/ui
-shopify: Shopify
-shopify-functions: Shopify Functions
-shopify-payments: Shopify Payments
-sidekiq: Sidekiq
-signalr: SignalR
-slack-incoming-webhook: Slack Incoming Webhook
-slf4j: SLF4J
+sanity: { name: Sanity, url: https://www.sanity.io/ }
+scalar: { name: Scalar, url: https://scalar.com/ }
+seaorm: { name: SeaORM, url: https://www.sea-ql.org/SeaORM/ }
+selenium: { name: Selenium, url: https://www.selenium.dev/ }
+semgrep: { name: Semgrep, url: https://semgrep.dev/ }
+sentry: { name: Sentry, url: https://sentry.io/ }
+serde: { name: serde, url: https://serde.rs/ }
+serilog: { name: Serilog, url: https://serilog.net/ }
+server-sent-events: { name: Server-Sent Events, url: https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events }
+shadcn-ui: { name: shadcn/ui, url: https://ui.shadcn.com/ }
+shopify: { name: Shopify, url: https://www.shopify.com/ }
+shopify-functions: { name: Shopify Functions, url: https://shopify.dev/docs/apps/build/functions }
+shopify-payments: { name: Shopify Payments, url: https://www.shopify.com/payments }
+sidekiq: { name: Sidekiq, url: https://sidekiq.org/ }
+signalr: { name: SignalR, url: https://dotnet.microsoft.com/apps/aspnet/signalr }
+slack-incoming-webhook: { name: Slack Incoming Webhook, url: https://api.slack.com/messaging/webhooks }
+slf4j: { name: SLF4J, url: https://www.slf4j.org/ }
 slim: slim
-sns: SNS
-sobelow: Sobelow
-solid-cable: Solid Cable
-solid-cache: Solid Cache
-solid-queue: Solid Queue
-sonner: Sonner
-sops: SOPS
-spectral: Spectral
-spf: SPF
-spicedb: SpiceDB
-spring-batch: Spring Batch
-spring-boot: Spring Boot
-spring-data-jpa: Spring Data JPA
-spring-for-apache-kafka: Spring for Apache Kafka
-springdoc-openapi: springdoc-openapi
+sns: { name: SNS, url: https://aws.amazon.com/sns/ }
+sobelow: { name: Sobelow, url: https://github.com/nccgroup/sobelow }
+solid-cable: { name: Solid Cable, url: https://github.com/rails/solid_cable }
+solid-cache: { name: Solid Cache, url: https://github.com/rails/solid_cache }
+solid-queue: { name: Solid Queue, url: https://github.com/rails/solid_queue }
+sonner: { name: Sonner, url: https://sonner.emilkowal.ski/ }
+sops: { name: SOPS, url: https://github.com/getsops/sops }
+spectral: { name: Spectral, url: https://github.com/stoplightio/spectral }
+spf: { name: SPF, url: https://datatracker.ietf.org/doc/html/rfc7208 }
+spicedb: { name: SpiceDB, url: https://authzed.com/spicedb }
+spring-batch: { name: Spring Batch, url: https://spring.io/projects/spring-batch }
+spring-boot: { name: Spring Boot, url: https://spring.io/projects/spring-boot }
+spring-data-jpa: { name: Spring Data JPA, url: https://spring.io/projects/spring-data-jpa }
+spring-for-apache-kafka: { name: Spring for Apache Kafka, url: https://spring.io/projects/spring-kafka }
+springdoc-openapi: { name: springdoc-openapi, url: https://springdoc.org/ }
 sql: SQL
-sqlalchemy: SQLAlchemy
-sqlc: sqlc
-sqlite: SQLite
-sqlmodel: SQLModel
-sqlx: sqlx
-sqs: SQS
-squawk: Squawk
-standard: Standard
-stimulus: Stimulus
-storybook: Storybook
-strapi: Strapi
-stripe: Stripe
-stripe-cli: Stripe CLI
-stripe-invoicing: Stripe Invoicing
-structlog: structlog
-supabase: Supabase
-supabase-auth: Supabase Auth
-swift: Swift
-swr: SWR
-syft: Syft
-tableplus: TablePlus
-tailscale: Tailscale
-tailwind-css: Tailwind CSS
-tailwindcss-rails: tailwindcss-rails
-tanstack-form: TanStack Form
-tanstack-query: TanStack Query
-tanstack-router: TanStack Router
-tanstack-start: TanStack Start
-tanstack-table: TanStack Table
-tanstack-virtual: TanStack Virtual
-tauri: Tauri
-tbls: tbls
+sqlalchemy: { name: SQLAlchemy, url: https://www.sqlalchemy.org/ }
+sqlc: { name: sqlc, url: https://sqlc.dev/ }
+sqlite: { name: SQLite, url: https://www.sqlite.org/ }
+sqlmodel: { name: SQLModel, url: https://sqlmodel.tiangolo.com/ }
+sqlx: { name: sqlx, url: https://github.com/launchbadge/sqlx }
+sqs: { name: SQS, url: https://aws.amazon.com/sqs/ }
+squawk: { name: Squawk, url: https://squawkhq.com/ }
+standard: { name: Standard, url: https://github.com/standardrb/standard }
+stimulus: { name: Stimulus, url: https://stimulus.hotwired.dev/ }
+storybook: { name: Storybook, url: https://storybook.js.org/ }
+strapi: { name: Strapi, url: https://strapi.io/ }
+stripe: { name: Stripe, url: https://stripe.com/ }
+stripe-cli: { name: Stripe CLI, url: https://docs.stripe.com/stripe-cli }
+stripe-invoicing: { name: Stripe Invoicing, url: https://stripe.com/invoicing }
+structlog: { name: structlog, url: https://www.structlog.org/ }
+supabase: { name: Supabase, url: https://supabase.com/ }
+supabase-auth: { name: Supabase Auth, url: https://supabase.com/auth }
+swift: { name: Swift, url: https://www.swift.org/ }
+swr: { name: SWR, url: https://swr.vercel.app/ }
+syft: { name: Syft, url: https://github.com/anchore/syft }
+tableplus: { name: TablePlus, url: https://tableplus.com/ }
+tailscale: { name: Tailscale, url: https://tailscale.com/ }
+tailwind-css: { name: Tailwind CSS, url: https://tailwindcss.com/ }
+tailwindcss-rails: { name: tailwindcss-rails, url: https://github.com/rails/tailwindcss-rails }
+tanstack-form: { name: TanStack Form, url: https://tanstack.com/form }
+tanstack-query: { name: TanStack Query, url: https://tanstack.com/query }
+tanstack-router: { name: TanStack Router, url: https://tanstack.com/router }
+tanstack-start: { name: TanStack Start, url: https://tanstack.com/start }
+tanstack-table: { name: TanStack Table, url: https://tanstack.com/table }
+tanstack-virtual: { name: TanStack Virtual, url: https://tanstack.com/virtual }
+tauri: { name: Tauri, url: https://tauri.app/ }
+tbls: { name: tbls, url: https://github.com/k1LoW/tbls }
 telemetry: Telemetry
-temporal: Temporal
-temporal-api: Temporal API
-terraform: Terraform
-terraform-docs: terraform-docs
-terraform-fmt: terraform fmt
-testcontainers: Testcontainers
-testcontainers-go: testcontainers-go
-testify: testify
-testing: testing
-tflint: TFLint
-thiserror: thiserror
-tiptap: Tiptap
-tokio: Tokio
-tonic: tonic
-tracing: tracing
-trigger-dev: Trigger.dev
-trivy: Trivy
-trpc: tRPC
-tsc-noemit: tsc --noEmit
-tsdown: tsdown
-tsup: tsup
-tsx: tsx
-turbo: Turbo
-turborepo: Turborepo
-twilio: Twilio
-typescript:
-  name: TypeScript
-  lang: 2-1
-typescript-eslint: typescript-eslint
-typesense: Typesense
-typst: Typst
-unleash: Unleash
-uptimerobot: UptimeRobot
-urfave-cli: urfave/cli
-usestate: useState
-uv: uv
-valibot: Valibot
-valkey: Valkey
-vercel: Vercel
-vercel-speed-insights: Vercel Speed Insights
-viewcomponent: ViewComponent
-vite: Vite
-vitest: Vitest
-wasm-bindgen: wasm-bindgen
-wasm-pack: wasm-pack
-web-worker: Web Worker
-webassembly: WebAssembly
-workos: WorkOS
-xunit: xUnit
-yjs: Yjs
-zitadel: Zitadel
-zod: Zod
-zustand: Zustand
+temporal: { name: Temporal, url: https://temporal.io/ }
+temporal-api: { name: Temporal API, url: https://tc39.es/proposal-temporal/docs/ }
+terraform: { name: Terraform, url: https://developer.hashicorp.com/terraform }
+terraform-docs: { name: terraform-docs, url: https://terraform-docs.io/ }
+terraform-fmt: { name: terraform fmt, url: https://developer.hashicorp.com/terraform/cli/commands/fmt }
+testcontainers: { name: Testcontainers, url: https://testcontainers.com/ }
+testcontainers-go: { name: testcontainers-go, url: https://golang.testcontainers.org/ }
+testify: { name: testify, url: https://github.com/stretchr/testify }
+testing: { name: testing, url: https://pkg.go.dev/testing }
+tflint: { name: TFLint, url: https://github.com/terraform-linters/tflint }
+thiserror: { name: thiserror, url: https://github.com/dtolnay/thiserror }
+tiptap: { name: Tiptap, url: https://tiptap.dev/ }
+tokio: { name: Tokio, url: https://tokio.rs/ }
+tonic: { name: tonic, url: https://github.com/hyperium/tonic }
+tracing: { name: tracing, url: https://github.com/tokio-rs/tracing }
+trigger-dev: { name: Trigger.dev, url: https://trigger.dev/ }
+trivy: { name: Trivy, url: https://trivy.dev/ }
+trpc: { name: tRPC, url: https://trpc.io/ }
+tsc-noemit: { name: tsc --noEmit, url: https://www.typescriptlang.org/docs/handbook/compiler-options.html }
+tsdown: { name: tsdown, url: https://tsdown.dev/ }
+tsup: { name: tsup, url: https://github.com/egoist/tsup }
+tsx: { name: tsx, url: https://tsx.is/ }
+turbo: { name: Turbo, url: https://turbo.hotwired.dev/ }
+turborepo: { name: Turborepo, url: https://turborepo.com/ }
+twilio: { name: Twilio, url: https://www.twilio.com/ }
+typescript: { name: TypeScript, lang: 2-1, url: https://www.typescriptlang.org/ }
+typescript-eslint: { name: typescript-eslint, url: https://typescript-eslint.io/ }
+typesense: { name: Typesense, url: https://typesense.org/ }
+typst: { name: Typst, url: https://typst.app/ }
+unleash: { name: Unleash, url: https://www.getunleash.io/ }
+uptimerobot: { name: UptimeRobot, url: https://uptimerobot.com/ }
+urfave-cli: { name: urfave/cli, url: https://cli.urfave.org/ }
+usestate: { name: useState, url: https://react.dev/reference/react/useState }
+uv: { name: uv, url: https://docs.astral.sh/uv/ }
+valibot: { name: Valibot, url: https://valibot.dev/ }
+valkey: { name: Valkey, url: https://valkey.io/ }
+vercel: { name: Vercel, url: https://vercel.com/ }
+vercel-speed-insights: { name: Vercel Speed Insights, url: https://vercel.com/docs/speed-insights }
+viewcomponent: { name: ViewComponent, url: https://viewcomponent.org/ }
+vite: { name: Vite, url: https://vite.dev/ }
+vitest: { name: Vitest, url: https://vitest.dev/ }
+wasm-bindgen: { name: wasm-bindgen, url: https://github.com/wasm-bindgen/wasm-bindgen }
+wasm-pack: { name: wasm-pack, url: https://github.com/drager/wasm-pack }
+web-worker: { name: Web Worker, url: https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API }
+webassembly: { name: WebAssembly, url: https://webassembly.org/ }
+workos: { name: WorkOS, url: https://workos.com/ }
+xunit: { name: xUnit, url: https://xunit.net/ }
+yjs: { name: Yjs, url: https://yjs.dev/ }
+zitadel: { name: Zitadel, url: https://zitadel.com/ }
+zod: { name: Zod, url: https://zod.dev/ }
+zustand: { name: Zustand, url: https://github.com/pmndrs/zustand }

@@ -1,7 +1,7 @@
 // Serializable view models shared by static pages and the "make" island (no references to sections)
 import { plain, SECS, stripNo } from './guide';
 import { secHref } from './inline';
-import { type ChoiceRow, category, dictionary, type Tool } from './tools';
+import { type ChoiceRow, category, dictionary, hasPage, hrefOf, type Tool } from './tools';
 
 type Alt = ChoiceRow['alts'][number];
 export type Where = { href: string; label: string };
@@ -10,6 +10,9 @@ export type ToolView = {
   id: string;
   name: string;
   slug: string;
+  /** Own dictionary page, if any */
+  page?: string;
+  url?: string;
   category: string;
   lang?: { ref: string; lead: string };
   uses: { situation: string; reason?: string }[];
@@ -41,6 +44,8 @@ export const toolView = (t: Tool): ToolView => ({
   id: t.id,
   name: t.name,
   slug: t.slug,
+  page: hasPage(t) ? `/dict/${t.slug}/` : undefined,
+  url: t.url,
   category: category(t),
   lang: t.lang,
   uses: t.uses.map((u) => ({ situation: u.situation, reason: u.reason })),
@@ -60,4 +65,4 @@ export const toolView = (t: Tool): ToolView => ({
 });
 
 /** Every dictionary tool, for linking names in static pages */
-export const LINKS = Object.fromEntries(dictionary().map((t) => [t.id, { name: t.name, slug: t.slug }]));
+export const LINKS = Object.fromEntries(dictionary().map((t) => [t.id, { name: t.name, href: hrefOf(t) }]));

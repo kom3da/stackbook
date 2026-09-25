@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { GROUP_LABEL, GROUPS, SECS, groupOf, guide, plain, type Section, secLabel, stripNo } from '../../lib/guide';
+import { GROUP_LABEL, GROUPS, isStale, STALE_MONTHS, SECS, groupOf, guide, plain, type Section, secLabel, stripNo } from '../../lib/guide';
 import { Blocks } from '../../components/Blocks';
 import { LINKS } from '../../lib/view';
 
@@ -26,6 +26,7 @@ const hub = g === 'tools' ? '/dict/#fields' : `/${g}/`;
       {s.num && <p class="eyebrow">§{s.num}</p>}
       <h1 class="mt-1 text-3xl font-bold tracking-tight">{s.title}</h1>
       {s.checked && <p class="mt-2 text-xs text-faint">最終確認：{s.checked}</p>}
+      {isStale(s) && <p class="warn">{STALE_MONTHS}か月以上見直していない。内容が古くなっている可能性がある。</p>}
     </header>
     {
       h3.length >= 3 && (

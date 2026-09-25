@@ -378,6 +378,9 @@
   .tb > * + * {
     @apply mt-2;
   }
+  .tb-url {
+    @apply mb-3 text-sm;
+  }
   .tb-h {
     @apply flex items-baseline justify-between gap-4 font-semibold;
   }

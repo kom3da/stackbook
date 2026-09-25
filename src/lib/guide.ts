@@ -136,7 +136,9 @@ export const guide = parseGuide(md);
 export const REGISTRY = new Map(
   Object.entries(TOOLS_FILE.parse(YAML.parse(toolsYaml))).map(([id, v]) => [
     id,
-    typeof v === 'string' ? { name: v, lang: undefined as string | undefined } : v,
+    typeof v === 'string'
+      ? { name: v, lang: undefined as string | undefined, url: undefined as string | undefined }
+      : v,
   ]),
 );
 {
@@ -229,3 +231,15 @@ export const rawSub = (h3id: string) => {
   return k < 0 ? '' : slice(k, () => true);
 };
 export const rawGuide = md;
+
+// Review freshness: sections not reviewed for STALE_MONTHS are flagged at build time and on their pages
+export const STALE_MONTHS = 12;
+export function monthsSince(checked: string, now = new Date()) {
+  const m = checked.match(/^(\d{4})年(\d{1,2})月$/);
+  return m ? (now.getFullYear() - Number(m[1])) * 12 + (now.getMonth() + 1 - Number(m[2])) : Number.POSITIVE_INFINITY;
+}
+export const isStale = (s: Section) => !!s.num && monthsSince(s.checked) >= STALE_MONTHS;
+{
+  const stale = guide.sections.filter(isStale).map((s) => `§${s.num}（${s.checked || '確認なし'}）`);
+  if (stale.length) console.warn(`[stackbook] ${STALE_MONTHS}か月以上見直していないセクション: ${stale.join('、')}`);
+}

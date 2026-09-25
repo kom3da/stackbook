@@ -2,7 +2,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { Inline, LinksContext } from '../components/Inline';
-import { guide, parseGuide, rawSection, rawSub, SEC, SECS } from './guide';
+import { guide, monthsSince, parseGuide, rawSection, rawSub, SEC, SECS } from './guide';
 import { findName, segments } from './inline';
 import { CASE_ROWS, LOOKUP } from './lookup';
 import { llmsTxt, makeMd, toMarkdown } from './md';
@@ -20,6 +20,11 @@ describe('parseGuide', () => {
 
   it('records a review month for every numbered section', () => {
     for (const s of guide.sections) if (s.num) expect(s.checked, `§${s.num}`).toMatch(/^\d{4}年\d{1,2}月$/);
+  });
+
+  it('computes review age in months', () => {
+    expect(monthsSince('2026年9月', new Date(2027, 8, 1))).toBe(12);
+    expect(monthsSince('2026年9月', new Date(2026, 11, 1))).toBe(3);
   });
 
   it('has every section and subsection the code refers to (SECS)', () => {
@@ -115,7 +120,7 @@ describe('inline markdown', () => {
     const html = renderToStaticMarkup(
       createElement(
         LinksContext.Provider,
-        { value: { go: { name: 'Go', slug: 'go' } } },
+        { value: { go: { name: 'Go', href: '/dict/go/' } } },
         createElement(Inline, { text: '<b>GoReleaserとGo</b> §2', tools: ['go'] }),
       ),
     );

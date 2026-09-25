@@ -189,7 +189,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
                         {r.cards.map((t) => (
                           <section className="tcard" key={t.id}>
                             <h3>
-                              <a href={`/dict/${t.slug}/`}>{t.name}</a>
+                              <a href={t.page ?? t.url}>{t.name}</a>
                             </h3>
                             <ToolBody tool={t} links={p.links} />
                           </section>

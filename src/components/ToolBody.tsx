@@ -27,6 +27,13 @@ export function ToolBody({ tool: t, links }: { tool: ToolView; links: Links }) {
   const names = (ids: string[]) => ids.map((id) => links[id]?.name ?? id).join('＋');
   return (
     <LinksContext.Provider value={links}>
+      {t.url && (
+        <p className="tb-url">
+          <a className="ref" href={t.url} rel="noopener">
+            公式サイト ↗
+          </a>
+        </p>
+      )}
       {t.lang && (
         <div className="tb">
           <Head right={<Ref id="2" sub={t.lang.ref} />}>言語別の既定</Head>

@@ -58,6 +58,7 @@ export const TOOLS_FILE = z.record(
           .string()
           .regex(/^2-\d+$/)
           .optional(),
+        url: z.url().optional(),
       })
       .strict(),
   ]),

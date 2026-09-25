@@ -11,6 +11,8 @@ export type Tool = {
   id: string;
   name: string;
   slug: string;
+  /** Official site */
+  url?: string;
   lang?: { ref: string; lead: string };
   def: ChoiceRow[];
   alt: { row: ChoiceRow; alt: ChoiceRow['alts'][number] }[];
@@ -25,7 +27,20 @@ export type Tool = {
 export const TOOLS = new Map<string, Tool>(
   [...REGISTRY].map(([id, r]) => [
     id,
-    { id, name: r.name, slug: id, def: [], alt: [], uses: [], why: [], cost: [], growth: [], prof: [], stacks: [] },
+    {
+      id,
+      name: r.name,
+      slug: id,
+      url: r.url,
+      def: [],
+      alt: [],
+      uses: [],
+      why: [],
+      cost: [],
+      growth: [],
+      prof: [],
+      stacks: [],
+    },
   ]),
 );
 const get = (id: string) => TOOLS.get(id) as Tool; // ids are validated in guide.ts
@@ -106,6 +121,24 @@ export function category(t: Tool): string {
   if (t.stacks.length) return 'ケース別の構成';
   return 'その他';
 }
+
+/** Tools with enough to say to deserve their own dictionary page (others are listed in the index only) */
+export const hasPage = (t: Tool) =>
+  !!(
+    t.lang ||
+    t.why.length ||
+    t.cost.length ||
+    t.growth.length ||
+    t.uses.length ||
+    t.def.some((r) => r.alts.length) ||
+    t.def.length + t.alt.length >= 2
+  );
+
+/** Where a tool name links to: its dictionary page, else its official site, else where the guide mentions it */
+export const hrefOf = (t: Tool) =>
+  hasPage(t)
+    ? `/dict/${t.slug}/`
+    : (t.url ?? ((t.def[0] ?? t.alt[0]?.row) ? `/s/${(t.def[0] ?? t.alt[0].row).sec.id}/` : '/dict/'));
 
 /** Tools that the guide actually says something about, sorted by name */
 export const dictionary = () =>

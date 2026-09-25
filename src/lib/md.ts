@@ -63,7 +63,7 @@ export const toMarkdown = (raw: string) =>
   );
 
 export function toolMd(t: Tool) {
-  const out = [`# ${t.name}`, '', `分類：${category(t)}`];
+  const out = [`# ${t.name}`, '', `分類：${category(t)}`, ...(t.url ? [`公式：${t.url}`] : [])];
   if (t.lang) out.push('', `言語別の既定：§${t.lang.ref}（/s/2.md）`, t.lang.lead && plain(t.lang.lead));
   if (t.uses.length)
     out.push(
@@ -228,7 +228,9 @@ export function llmsTxt() {
   const sec = (id: string) => guide.sections.find((s) => s.id === id);
   const line = (id: string) => {
     const s = sec(id);
-    return s ? `- [${s.num ? `§${s.num} ` : ''}${s.title}](${abs(`/s/${s.id}.md`)})` : '';
+    return s
+      ? `- [${s.num ? `§${s.num} ` : ''}${s.title}](${abs(`/s/${s.id}.md`)})${s.checked ? `: 確認 ${s.checked}` : ''}`
+      : '';
   };
   return [
     `# ${guide.title}`,

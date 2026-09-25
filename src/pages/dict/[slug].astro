@@ -2,10 +2,12 @@
 import Base from '../../layouts/Base.astro';
 import { ToolBody } from '../../components/ToolBody';
 import { LINKS, toolView } from '../../lib/view';
-import { category, dictionary, type Tool } from '../../lib/tools';
+import { category, dictionary, hasPage, type Tool } from '../../lib/tools';
 
 export function getStaticPaths() {
-  return dictionary().map((t) => ({ params: { slug: t.slug }, props: { t } }));
+  return dictionary()
+    .filter(hasPage)
+    .map((t) => ({ params: { slug: t.slug }, props: { t } }));
 }
 const { t } = Astro.props as { t: Tool };
 ---
