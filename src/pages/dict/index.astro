@@ -51,17 +51,12 @@ const fields = GROUPS.tools.flatMap((id) => {
                     {s.title}
                   </a>
                 </h2>
-                <p>
-                  {/* A name and the dot after it never split across lines */}
-                  {items.map((it, i) => (
-                    <>
-                      <span class="whitespace-nowrap">
-                        <a href={it.href} class="tl">
-                          {it.label}
-                        </a>
-                        {i < items.length - 1 && <span class="text-faint"> ·</span>}
-                      </span>{' '}
-                    </>
+                {/* Spaced names rather than dots: a dot would dangle at the end of a wrapped line */}
+                <p class="dict-items">
+                  {items.map((it) => (
+                    <a href={it.href} class="tl">
+                      {it.label}
+                    </a>
                   ))}
                 </p>
               </section>

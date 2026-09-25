@@ -51,8 +51,14 @@
     line-height: 1.75;
     font-feature-settings: "palt" 1;
     -webkit-font-smoothing: antialiased;
-    /* Break Japanese at phrase boundaries where supported */
+    /* Break Japanese at phrase boundaries where supported; elsewhere avoid a lone character on the last line */
     word-break: auto-phrase;
+    text-wrap: pretty;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
   }
   a {
     color: inherit;
@@ -68,6 +74,9 @@
     background: var(--sunk);
     padding: 0.1em 0.35em;
     border-radius: 4px;
+  }
+  :not(pre) > code {
+    white-space: nowrap;
   }
   strong {
     font-weight: 600;
@@ -323,14 +332,33 @@
   .code pre code {
     @apply bg-transparent p-0 text-[inherit];
   }
-  /* Phones and the marginalia are narrow: wrap commands rather than hide their ends behind a sideways scroll */
+  .code .ln {
+    @apply block;
+  }
+  .code .ln:empty::before {
+    content: " ";
+  }
+  /* Phones and the marginalia are narrow: wrap commands rather than hide their ends behind a sideways scroll.
+     A wrapped line hangs under its start, so it doesn't read as the next command */
   @media (max-width: 639px) {
     .code pre {
-      @apply pt-11 pr-4 whitespace-pre-wrap wrap-anywhere;
+      @apply pr-4 leading-normal whitespace-pre-wrap wrap-break-word;
+    }
+    .code .ln {
+      @apply block pl-[2ch] -indent-[2ch];
+    }
+    .code .ln:first-child {
+      @apply pr-16;
     }
   }
   .marg .code pre {
-    @apply pt-11 pr-4 whitespace-pre-wrap wrap-anywhere;
+    @apply pr-4 leading-normal whitespace-pre-wrap wrap-break-word;
+  }
+  .marg .code .ln {
+    @apply block pl-[2ch] -indent-[2ch];
+  }
+  .marg .code .ln:first-child {
+    @apply pr-16;
   }
   .copy {
     @apply absolute top-2.5 right-2.5 min-h-7 cursor-pointer rounded-md border border-line bg-bg px-2.5 text-xs text-mute hover:text-ink;
@@ -377,9 +405,33 @@
     @apply mx-auto block;
   }
   @media (max-width: 767px) {
+    .diagram {
+      @apply pt-11;
+    }
     .diagram-svg {
       min-width: var(--dw);
     }
+  }
+  /* A diagram wider than the screen: shades on the sides where more of it lies */
+  .diagram-wrap {
+    @apply relative;
+  }
+  .diagram-wrap::before,
+  .diagram-wrap::after {
+    content: "";
+    @apply pointer-events-none absolute top-px bottom-px z-[1] w-8 opacity-0 transition-opacity;
+  }
+  .diagram-wrap::before {
+    @apply left-px rounded-l-xl;
+    background: linear-gradient(to right, rgb(27 35 43 / 0.12), transparent);
+  }
+  .diagram-wrap::after {
+    @apply right-px rounded-r-xl;
+    background: linear-gradient(to left, rgb(27 35 43 / 0.12), transparent);
+  }
+  .diagram-wrap[data-l]::before,
+  .diagram-wrap[data-r]::after {
+    @apply opacity-100;
   }
   @media (min-width: 1024px) {
     .diagram svg {
@@ -402,8 +454,10 @@
     @apply border-rule bg-sunk;
   }
   .om-managed {
-    border-style: dashed;
-    border-radius: 999px;
+    border: 0;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='5.1' fill='none' stroke='%231b232b' stroke-width='1.5' stroke-dasharray='2.4 1.6'/%3E%3C/svg%3E")
+      center / contain no-repeat;
   }
   /* Proficiency: three buttons, the chosen one filled */
   .seg {
@@ -437,10 +491,11 @@
   }
   @media (max-width: 639px) {
     .prof-f {
-      @apply gap-1;
+      @apply flex-nowrap gap-1 overflow-x-auto;
+      scrollbar-width: none;
     }
     .prof-f button {
-      @apply gap-1 px-2;
+      @apply shrink-0 gap-1 px-2;
     }
   }
   .pf-n {
@@ -481,10 +536,6 @@
   .pl[data-level="未経験"] {
     background: var(--warn-soft);
   }
-  .pl[data-level=""] .seg,
-  .pl[data-level=""] .seg button {
-    @apply border-dashed;
-  }
   .prof-grid[data-f="unset"] .pl:not([data-level=""]),
   .prof-grid[data-f="未経験"] .pl:not([data-level="未経験"]),
   .prof-grid[data-f="検証済み"] .pl:not([data-level="検証済み"]),
@@ -520,7 +571,7 @@
     @apply mb-3 text-sm;
   }
   .tb-h {
-    @apply flex items-baseline justify-between gap-4 font-semibold;
+    @apply flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 font-semibold;
   }
   .tb-w {
     @apply shrink-0 text-xs font-normal;
@@ -666,6 +717,10 @@
     .home-kinds {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+    /* A lone last item takes the whole row, so its rule doesn't stop a third of the way */
+    .home-kinds li:last-child:nth-child(3n + 1) {
+      grid-column: 1 / -1;
+    }
   }
   .home-kinds a {
     @apply block h-full border-b border-rule px-2 py-3 text-ink no-underline hover:bg-bg;
@@ -731,6 +786,14 @@
   }
   .dict-fields p {
     @apply mt-1.5 text-sm leading-relaxed;
+  }
+  .dict-items {
+    @apply flex flex-wrap gap-x-4 gap-y-1;
+  }
+  @media (max-width: 639px) {
+    .dict-items {
+      @apply gap-y-2;
+    }
   }
   .dict-f {
     @apply flex items-baseline gap-2 font-semibold text-ink no-underline hover:text-accent;
@@ -834,7 +897,7 @@
   }
   .kind-pick-v::after {
     content: "";
-    @apply size-2.5 rotate-45 border-r-2 border-b-2 border-ink;
+    @apply mr-1 size-2.5 shrink-0 rotate-45 border-r-2 border-b-2 border-ink;
     translate: 0 -4px;
   }
   /* Conditions: "label  value" rows */
@@ -962,7 +1025,7 @@
   @container memo (max-width: 600px) {
     .st tr {
       @apply grid;
-      grid-template-columns: 6rem minmax(0, 1fr) auto;
+      grid-template-columns: 7rem minmax(0, 1fr) auto;
       /* A tall layer cell leaves its extra height below the note, not between tool and note */
       grid-template-rows: auto 1fr;
     }
@@ -971,6 +1034,7 @@
     }
     .st th {
       @apply w-auto;
+      word-break: keep-all;
       grid-row: span 2;
     }
     .st .st-t,
@@ -1004,7 +1068,8 @@
   .ops3 {
     @apply grid gap-5;
   }
-  @container memo (min-width: 560px) {
+  /* Three columns only when a long name (Cloudflare Durable Objects) fits in one */
+  @container memo (min-width: 680px) {
     .ops3 {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -1150,6 +1215,11 @@
   @media (min-width: 1280px) {
     .marg {
       @apply sticky top-[5.5rem] self-start pt-10;
+    }
+  }
+  @media (min-width: 640px) and (max-width: 1279px) {
+    .marg {
+      @apply max-w-[880px] rounded-[2px] bg-surface px-16 pt-4 pb-12;
     }
   }
   .marg-h {

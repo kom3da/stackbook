@@ -1,13 +1,13 @@
 // Screenshots of the built site for visual review: each page at phone, tablet and desktop widths,
 // plus the phone interactions (index sheet, reference pane, compare, search). Phones use WebKit, as on an iPhone.
-// Images are viewport tiles (under 2000px a side) in .shots/<width>/. Run: pnpm build && pnpm shots [name filter]
+// Images are viewport tiles (under 2000px a side) in .shots/<width>/ (or $SHOTS_DIR). Run: pnpm build && pnpm shots [name filter]
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 import { chromium, webkit } from 'playwright';
 
 const root = new URL('..', import.meta.url).pathname;
-const out = join(root, '.shots');
+const out = process.env.SHOTS_DIR ?? join(root, '.shots');
 const port = 4329;
 const base = `http://localhost:${port}`;
 const filter = process.argv[2] ?? '';
@@ -86,7 +86,8 @@ async function tiles(page, dir, name) {
 }
 
 const browsers = { webkit: await webkit.launch(), chromium: await chromium.launch() };
-rmSync(out, { recursive: true, force: true });
+// A filtered run only replaces its own shots
+if (!filter) rmSync(out, { recursive: true, force: true });
 try {
   for (const v of WIDTHS) {
     const dir = join(out, String(v.w));

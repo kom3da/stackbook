@@ -29,7 +29,7 @@ const { t } = Astro.props as { t: Tool };
         <h1 class="sec-h">{t.name}</h1>
         <div class="mt-8"><ToolBody tool={toolView(t)} links={LINKS} /></div>
       </article>
-      <aside class="marg"><NamePanel /></aside>
+      <aside class="marg max-xl:hidden"><NamePanel /></aside>
     </div>
   </SideNav>
 </Base>

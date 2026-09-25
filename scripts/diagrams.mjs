@@ -57,7 +57,7 @@ const CONFIG = {
     '.node rect { rx: 8px; ry: 8px; }',
     '.flowchart-link { stroke: #6b655a !important; stroke-width: 1.5px !important; }',
     '.marker { fill: #6b655a !important; stroke: #6b655a !important; }',
-    '.edgeLabel rect { fill: #f7f5f0 !important; }',
+    '.edgeLabel rect { fill: #f7f5f0 !important; opacity: 1 !important; }',
     '.edgeLabel text, .edgeLabel tspan { fill: #4a453d !important; font-size: 12px; }',
     '.node .label text, .node .label tspan { font-weight: 500; }',
   ].join(' '),

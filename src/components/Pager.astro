@@ -1,0 +1,32 @@
+---
+// Previous / next chapter within a group
+import { type Section, secLabel } from '../lib/guide';
+
+interface Props {
+  prev?: Section;
+  next?: Section;
+  class?: string;
+}
+const { prev, next, class: cls } = Astro.props;
+---
+
+<nav class:list={['pager mt-16 grid grid-cols-2 gap-3 border-t border-rule pt-6 max-sm:mt-12 max-sm:text-sm', cls]}>
+  {
+    prev ? (
+      <a href={`/s/${prev.id}/`} class="rounded-xl border border-rule p-4 no-underline hover:border-accent max-sm:p-3">
+        <span class="block text-xs text-mute">前</span>
+        {secLabel(prev)}
+      </a>
+    ) : (
+      <span />
+    )
+  }
+  {
+    next && (
+      <a href={`/s/${next.id}/`} class="rounded-xl border border-rule p-4 text-right no-underline hover:border-accent max-sm:p-3">
+        <span class="block text-xs text-mute">次</span>
+        {secLabel(next)}
+      </a>
+    )
+  }
+</nav>

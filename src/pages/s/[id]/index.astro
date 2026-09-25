@@ -3,6 +3,7 @@ import Base from '../../../layouts/Base.astro';
 import CasePick from '../../../components/CasePick.astro';
 import KitMarg from '../../../components/KitMarg.astro';
 import NamePanel from '../../../components/NamePanel.astro';
+import Pager from '../../../components/Pager.astro';
 import SecNav from '../../../components/SecNav.astro';
 import SideNav from '../../../components/SideNav.astro';
 import { headText, GROUP_LABEL, GROUPS, isStale, STALE_MONTHS, SECS, groupOf, guide, type Section, secLabel } from '../../../lib/guide';
@@ -32,8 +33,8 @@ const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : GR
     <header class="sec-top">
       <p class="sec-meta">{meta}{s.checked && `　確認：${s.checked}`}</p>
       <span class="sec-acts pager">
-        {g === 'read' && prev && <a class="btn btn-s max-sm:hidden" href={`/s/${prev.id}/`}>‹ {secLabel(prev)}</a>}
-        {g === 'read' && next && <a class="btn btn-s max-sm:hidden" href={`/s/${next.id}/`}>{secLabel(next)} ›</a>}
+        {g === 'read' && prev && <a class="btn btn-s max-lg:hidden" href={`/s/${prev.id}/`}>‹ {secLabel(prev)}</a>}
+        {g === 'read' && next && <a class="btn btn-s max-lg:hidden" href={`/s/${next.id}/`}>{secLabel(next)} ›</a>}
         {s.id === SECS.checklist && <button type="button" class="btn" data-ck-clear={s.id}>チェックをすべて外す</button>}
         <button type="button" class="btn btn-primary" data-copy-md={`/s/${s.id}.md`}><span class="max-sm:sr-only">Markdownで</span>コピー</button>
         <button type="button" class="btn lg:hidden" aria-haspopup="dialog" data-sheet-open>目次</button>
@@ -64,29 +65,12 @@ const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : GR
         </div>
       )
     }
-    <nav class="pager mt-16 grid gap-3 border-t border-rule pt-6 sm:grid-cols-2">
-      {
-        prev ? (
-          <a href={`/s/${prev.id}/`} class="rounded-xl border border-rule p-4 no-underline hover:border-accent">
-            <span class="block text-xs text-mute">前</span>
-            {secLabel(prev)}
-          </a>
-        ) : (
-          <span />
-        )
-      }
-      {
-        next && (
-          <a href={`/s/${next.id}/`} class="rounded-xl border border-rule p-4 text-right no-underline hover:border-accent">
-            <span class="block text-xs text-mute">次</span>
-            {secLabel(next)}
-          </a>
-        )
-      }
-    </nav>
+    {/* On phones a kit chapter's sidenote runs on below the page, so there the pager comes after it */}
+    <Pager prev={prev} next={next} class={g === 'kit' ? 'max-sm:hidden' : undefined} />
     </article>
     {g === 'tools' && <aside class="marg"><NamePanel field={s.id} /></aside>}
     {g === 'kit' && <KitMarg sec={s.id} />}
+    {g === 'kit' && <Pager prev={prev} next={next} class="mt-0! sm:hidden" />}
     </div>
   </SideNav>
 </Base>

@@ -73,7 +73,8 @@ document.addEventListener('click', (e) => {
   const t = e.target as HTMLElement;
   const copy = t.closest<HTMLButtonElement>('button.copy');
   if (copy) {
-    const text = copy.parentElement?.querySelector('code')?.textContent ?? '';
+    const lines = copy.parentElement?.querySelectorAll('.ln') ?? [];
+    const text = [...lines].map((l) => l.textContent).join('\n');
     navigator.clipboard?.writeText(text).then(() => {
       copy.textContent = 'コピーしました';
       setTimeout(() => {
@@ -502,7 +503,7 @@ function zoomTo(s: number) {
 document.addEventListener('click', (e) => {
   const t = e.target as HTMLElement;
   if (!zoom || !zoomBody) return;
-  const fig = t.closest('.diagram');
+  const fig = t.closest('.diagram-wrap');
   if (fig && (t.closest('[data-zoom]') || t.closest('.diagram-svg'))) {
     const svg = fig.querySelector('svg');
     if (!svg) return;
@@ -561,6 +562,30 @@ if (pick) {
   });
 }
 
+// ---- wide diagrams on phones: start at the middle, shade the sides where more lies ----
+function edges(fig: HTMLElement) {
+  const wrap = fig.parentElement;
+  if (!wrap) return;
+  const more = fig.scrollWidth - fig.clientWidth;
+  wrap.toggleAttribute('data-l', fig.scrollLeft > 2);
+  wrap.toggleAttribute('data-r', fig.scrollLeft < more - 2);
+}
+function fitDiagrams() {
+  for (const fig of document.querySelectorAll<HTMLElement>('.diagram')) {
+    if (!fig.dataset.seen && fig.scrollWidth > fig.clientWidth) {
+      fig.dataset.seen = '1';
+      fig.scrollLeft = (fig.scrollWidth - fig.clientWidth) / 2;
+      fig.addEventListener('scroll', () => edges(fig), { passive: true });
+    }
+    edges(fig);
+  }
+}
+addEventListener('resize', fitDiagrams, { passive: true });
+
 // The make island re-renders on its own; sync its controls after each render
-window.addEventListener('stackbook:render', hydrate);
+window.addEventListener('stackbook:render', () => {
+  hydrate();
+  fitDiagrams();
+});
 hydrate();
+fitDiagrams();

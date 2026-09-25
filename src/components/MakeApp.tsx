@@ -256,7 +256,8 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
                 <table className="st">
                   <tbody>
                     {t.rows.map((r) => {
-                      const [main, note] = splitNote(r.text);
+                      // Plain throughout: the sources bold some names and not others
+                      const [main, note] = splitNote(r.text.replaceAll('**', ''));
                       const ids = r.cards.map((c) => c.id);
                       return (
                         <tr key={r.layer} className={r.edited ? 'st-ed' : undefined}>
@@ -553,7 +554,7 @@ function Compare({
       '',
     ].join('\n');
   const cell = (t: string, side: string) => (
-    <td data-k={side}>{t ? <Inline text={t} /> : <span className="text-faint">—</span>}</td>
+    <td data-k={side}>{t ? <Inline text={t.replaceAll('**', '')} /> : <span className="text-faint">—</span>}</td>
   );
   return (
     <section className="blk cmp-box" id="cmp" aria-labelledby="cmp-h">
