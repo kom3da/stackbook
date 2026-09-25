@@ -153,6 +153,7 @@ eas-update: { name: EAS Update, url: https://docs.expo.dev/eas-update/introducti
 echo: { name: Echo, url: https://echo.labstack.com/ }
 eclipse-temurin: { name: Eclipse Temurin, url: https://adoptium.net/ }
 ecr: { name: ECR, url: https://aws.amazon.com/ecr/ }
+ecs-express-mode: { name: ECS Express Mode, url: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/express-service-overview.html }
 ecs-on-fargate: { name: ECS on Fargate, url: https://aws.amazon.com/fargate/ }
 ecto: { name: Ecto, url: https://hexdocs.pm/ecto/ }
 ef-core: { name: EF Core, url: https://learn.microsoft.com/ef/core/ }
@@ -218,6 +219,7 @@ hex: { name: Hex, url: https://hex.pm/ }
 homebrew: { name: Homebrew, url: https://brew.sh/ }
 hono: { name: Hono, url: https://hono.dev/ }
 hono-rpc: { name: Hono RPC, url: https://hono.dev/docs/guides/rpc }
+hono-zod-openapi: { name: "@hono/zod-openapi", url: https://hono.dev/examples/zod-openapi }
 hotwire: { name: Hotwire, url: https://hotwired.dev/ }
 hotwire-native: { name: Hotwire Native, url: https://native.hotwired.dev/ }
 htmx: { name: htmx, url: https://htmx.org/ }
@@ -259,6 +261,7 @@ lefthook: { name: lefthook, url: https://github.com/evilmartians/lefthook }
 lexical: { name: Lexical, url: https://lexical.dev/ }
 liquibase: { name: Liquibase, url: https://www.liquibase.com/ }
 liquid: { name: Liquid, url: https://shopify.github.io/liquid/ }
+litestream: { name: Litestream, url: https://litestream.io/ }
 liveblocks: { name: Liveblocks, url: https://liveblocks.io/ }
 localstack: { name: LocalStack, url: https://www.localstack.cloud/ }
 locust: { name: Locust, url: https://locust.io/ }
@@ -288,6 +291,7 @@ mjml: { name: MJML, url: https://mjml.io/ }
 mockery: { name: mockery, url: https://github.com/vektra/mockery }
 mockk: { name: MockK, url: https://mockk.io/ }
 motion: { name: Motion, url: https://motion.dev/ }
+moto: { name: moto, url: https://docs.getmoto.org/ }
 mox: { name: Mox, url: https://github.com/dashbitco/mox }
 mozilla-observatory: { name: Mozilla Observatory, url: https://developer.mozilla.org/en-US/observatory }
 msw: { name: MSW, url: https://mswjs.io/ }
@@ -407,11 +411,13 @@ ruff: { name: Ruff, url: https://docs.astral.sh/ruff/ }
 rulesets: { name: Rulesets, url: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets }
 rust: { name: Rust, lang: 2-5, url: https://www.rust-lang.org/ }
 rustfmt: { name: rustfmt, url: https://github.com/rust-lang/rustfmt }
+rustfs: { name: RustFS, url: https://rustfs.com/ }
 s3: { name: S3, url: https://aws.amazon.com/s3/ }
 saas: SaaS
 sanity: { name: Sanity, url: https://www.sanity.io/ }
 scalar: { name: Scalar, url: https://scalar.com/ }
 seaorm: { name: SeaORM, url: https://www.sea-ql.org/SeaORM/ }
+seaweedfs: { name: SeaweedFS, url: https://github.com/seaweedfs/seaweedfs }
 selenium: { name: Selenium, url: https://www.selenium.dev/ }
 semgrep: { name: Semgrep, url: https://semgrep.dev/ }
 sentry: { name: Sentry, url: https://sentry.io/ }

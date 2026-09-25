@@ -171,7 +171,11 @@ describe('decide (§2-9, §2-10, §19)', () => {
     expect(run('ai', { load: 'cpu' }).title).toBe('Python');
   });
   it('picks by load in production', () => {
-    expect(run('rt', { stage: 'prod', team: 'small' }).title).toBe('Elixir');
+    expect(run('rt', { stage: 'prod', team: 'small', load: 'conn' }).title).toBe('Elixir');
+    expect(run('rt', { stage: 'prod', team: 'solo', load: 'conn' }).title).toBe('TypeScript');
+    expect(run('rt', { stage: 'prod', team: 'small' }).title).toBe('TypeScript');
+    expect(run('web', { stage: 'prod', team: 'solo', load: 'domain' }).title).toBe('TypeScript');
+    expect(run('web', { stage: 'prod', team: 'small', load: 'domain' }).title).toBe('Kotlin');
     expect(run('saas', { stage: 'prod', team: 'small', load: 'p99' }).title).toBe('Rust');
     expect(run('cli', { load: 'cpu' }).title).toBe('Rust');
   });

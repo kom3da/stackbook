@@ -46,7 +46,7 @@ export const QUESTIONS: { q: keyof Answers; label: string; multi?: true; opts: [
       ['io', '外部APIの待ち時間', '外部API待ち'],
       ['conn', '大量の常時接続', '常時接続'],
       ['cpu', 'CPU負荷の高い計算', 'CPU負荷'],
-      ['p99', '厳しいレイテンシ（p99）', '低レイテンシ'],
+      ['p99', '厳しいレイテンシ（p99で10ms未満）', '低レイテンシ'],
       ['domain', '複雑な業務ルール', '複雑な業務'],
       ['batch', '大規模バッチ・ストリーム', 'バッチ'],
     ],
@@ -103,11 +103,6 @@ export const DEFAULTS: Answers = { load: 'db', env: 'paas', team: 'solo', stage:
 type Opt = [string, string, string];
 /** Kinds where only some choices change the result; a string picks the shared option as is */
 const ONLY: Partial<Record<Kind, Partial<Record<keyof Answers, (Opt | string)[]>>>> = {
-  // Team size only changes the language for SaaS (§2-10 手順3)
-  web: { team: [['solo', '9人以下', '9人以下'], 'large'] },
-  toc: { team: [['solo', '9人以下', '9人以下'], 'large'] },
-  ai: { team: [['solo', '9人以下', '9人以下'], 'large'] },
-  rt: { team: [['solo', '9人以下', '9人以下'], 'large'] },
   cli: {
     load: [
       ['db', '一般的な処理', '一般'],
@@ -159,12 +154,13 @@ const R = (at: string, role: string): Src => ({ at, role });
 const C = (c: string, layer: string): Src => ({ case: c, layer });
 const T = (text: string, ...tools: string[]): Src => ({ text, tools });
 
-const L: Record<Lang, { n: string; tools: string[]; ref: string; fw: Src; db: Src; job: Src; test: Src }> = {
+const L: Record<Lang, { n: string; tools: string[]; ref: string; fw: Src; api?: Src; db: Src; job: Src; test: Src }> = {
   ts: {
     n: 'TypeScript',
     tools: ['typescript'],
     ref: '2-1',
     fw: R('2-1', 'HTTPフレームワーク'),
+    api: R('2-1', 'OpenAPI'),
     db: R('2-1', 'ORM／クエリ'),
     job: R('2-1', 'ジョブキュー'),
     test: R('2-1', 'テスト（ユニット）'),
@@ -210,6 +206,7 @@ const L: Record<Lang, { n: string; tools: string[]; ref: string; fw: Src; db: Sr
     tools: ['kotlin'],
     ref: '2-6',
     fw: R('2-6', 'Webフレームワーク'),
+    api: R('2-6', 'OpenAPI'),
     db: R('2-6', 'DBアクセス'),
     job: R('2-6', 'バッチ'),
     test: R('2-6', 'テスト'),
@@ -228,6 +225,7 @@ const L: Record<Lang, { n: string; tools: string[]; ref: string; fw: Src; db: Sr
     tools: ['csharp'],
     ref: '2-8',
     fw: R('2-8', 'Webフレームワーク'),
+    api: R('2-8', 'OpenAPI'),
     db: R('2-8', 'DBアクセス'),
     job: R('2-8', 'ジョブ・スケジュール'),
     test: R('2-8', 'テスト'),
@@ -244,9 +242,18 @@ const ENV: Record<string, Src> = {
 /** §19-9 row for each language */
 const RT: Partial<Record<Lang, string>> = {
   rails: 'Rails',
-  ts: 'TS・マネージド',
   ex: '同時接続が非常に多い・プレゼンスが必要',
 };
+/** Real-time row per language: TypeScript is managed on the edge/PaaS and self-run on AWS or on-prem */
+const rtRow = (lang: Lang, env: string): Src => {
+  if (lang === 'ts')
+    return C('19-9', env === 'aws' || env === 'onprem' ? 'TS・自前運用（AWS・オンプレ）' : 'TS・マネージド');
+  if (RT[lang]) return C('19-9', RT[lang] as string);
+  if (lang === 'cs') return R('2-8', 'リアルタイム');
+  if (lang === 'go') return C('19-9', '同時接続が多い（Elixirを採用しない場合）');
+  return T('WebSocket＋Valkey Pub/Sub（言語の標準的なWebSocketライブラリで実装）', 'valkey');
+};
+
 const HEAVY = T('Rustで切り出し（ワーカー、またはnapi-rs／PyO3でネイティブ拡張）', 'rust', 'napi-rs', 'pyo3');
 
 type Input = Omit<Answers, 'cons'> & { kind: Kind; cons: Set<string> };
@@ -313,7 +320,11 @@ const LOADS: Rule[] = [
     why: '中規模以上のAPIは、単一バイナリで運用が単純なGoが国内でも定番（§2-10 手順2）',
   },
   { when: (a) => a.kind === 'saas', lang: 'ts', why: '少人数なのでフロントと同じTypeScriptに揃える（§2-10 手順3）' },
-  { when: (a) => a.kind === 'rt', lang: 'ex', why: '常時接続とプレゼンスが中核なのでElixir（§2-10 手順2）' },
+  {
+    when: (a) => a.kind === 'rt',
+    lang: 'ts',
+    why: '数万接続に満たないチャットや通知はマネージドの基盤で足り、言語はフロントと揃えられる（§2-10 手順2、§19-9）',
+  },
   {
     when: () => true,
     lang: 'ts',
@@ -321,6 +332,8 @@ const LOADS: Rule[] = [
   },
 ];
 
+/** Languages a team of one or two should not add (手順3) */
+const SOLO_TO_TS: Lang[] = ['go', 'kt', 'ex'];
 /** Languages that are slower to prototype in (手順3) */
 const SLOW_TO_START: Lang[] = ['go', 'kt', 'rust', 'ex'];
 
@@ -341,9 +354,15 @@ function pickLanguage(a: Input): { lang: Lang; why: string[]; orig?: Lang } {
       `試作段階なので開発速度を優先して${name(lang)}で始め、本番化の段階で${name(orig)}への切り替え・切り出しを検討する（§2-10 手順3、§24）`,
     );
   }
-  if (a.team === 'solo' && lang === 'go') {
+  // 1〜2人: do not add a language nobody else can maintain (Rust is kept for strict latency needs)
+  if (a.team === 'solo' && SOLO_TO_TS.includes(lang)) {
+    const from = lang;
     lang = 'ts';
-    why.push('開発者が1〜2人なので、フロントと同じTypeScriptに揃える（§2-10 手順3）');
+    why.push(
+      from === 'ex'
+        ? '開発者が1〜2人なので、Elixirではなくマネージドのリアルタイム基盤とTypeScriptにする（§2-10 手順3）'
+        : `開発者が1〜2人なので、${name(from)}ではなくフロントと同じTypeScriptに揃える（§2-10 手順3）`,
+    );
   }
   return { lang, why, orig };
 }
@@ -362,7 +381,7 @@ type BackendSpec = {
   /** Used when composing: the front-end and auth rows, and rows to append */
   front?: (lang: Lang) => Src;
   auth?: Src;
-  extra?: (lang: Lang) => Edit[];
+  extra?: (lang: Lang, env: string) => Edit[];
   /** §19 cases whose diagrams and commands apply */
   cases: (lang: Lang) => string[];
 };
@@ -378,7 +397,7 @@ const BACKEND: Record<Backend, BackendSpec> = {
   saas: {
     base: () => '19-6',
     covers: ['go'],
-    swap: (l) => [edit('バックエンド', l.fw), edit('ジョブ', l.job)],
+    swap: (l) => [edit('バックエンド', l.fw), edit('API', l.api ?? R('5', '外部公開API')), edit('ジョブ', l.job)],
     env: { layer: 'インフラ', keep: ['paas', 'aws'] },
     cases: () => ['19-6'],
   },
@@ -401,8 +420,8 @@ const BACKEND: Record<Backend, BackendSpec> = {
     base: () => undefined,
     front: (lang) => (lang === 'ex' ? R('2-7', '画面') : R('3', 'アプリ（SSR・フルスタック）')),
     auth: R('6', 'マネージド（toC・スタートアップ）'),
-    extra: (lang) => [
-      edit('リアルタイム', C('19-9', RT[lang] ?? '同時接続が多い（Elixirを採用しない場合）')),
+    extra: (lang, env) => [
+      edit('リアルタイム', rtRow(lang, env)),
       edit('共同編集', C('19-9', '共同編集')),
       edit('片方向の配信', C('19-9', '片方向で足りる')),
     ],
@@ -434,7 +453,7 @@ function backend(kind: Backend, a: Input): Decision {
   if (!base)
     edits.push(
       ...composed(l, (spec.front as (x: Lang) => Src)(p.lang), spec.auth as Src, a.env),
-      ...(spec.extra?.(p.lang) ?? []),
+      ...(spec.extra?.(p.lang, a.env) ?? []),
     );
   else {
     if (spec.covers && !spec.covers.includes(p.lang)) edits.push(...(spec.swap?.(l) ?? []));
@@ -585,13 +604,10 @@ const OTHER: Record<Exclude<Kind, Backend>, (a: Input) => Other> = {
       title: kt ? 'Kotlin（Spring Batch）＋SQL' : 'SQL＋Python（Polars）',
       tables: [
         {
+          base: '19-13',
           edits: [
-            edit('集計', R('2-9', 'データ分析・集計')),
-            ...(kt
-              ? [edit('バッチ', R('2-6', 'バッチ')), edit('ストリーム', R('2-6', 'ストリーム処理'))]
-              : [edit('変換', R('2-4', 'データ処理')), edit('Python環境', R('2-4', 'バージョン・依存管理'))]),
-            edit('ワークフロー', R('4-4', 'ワークフロー')),
-            edit('実行', ENV[a.env]),
+            ...(kt ? [edit('変換', R('2-6', 'バッチ')), edit('ストリーム', R('2-6', 'ストリーム処理'))] : []),
+            ...(a.env !== 'paas' ? [edit('実行', ENV[a.env])] : []),
           ],
         },
       ],
@@ -600,7 +616,7 @@ const OTHER: Record<Exclude<Kind, Backend>, (a: Input) => Other> = {
         ...(kt ? ['再実行・中断再開が必要な大規模バッチやストリーム処理はKotlin（§2-10 手順2）'] : []),
       ],
       refs: ['2-9', '2-10'],
-      cases: [],
+      cases: ['19-13'],
     };
   },
 };
