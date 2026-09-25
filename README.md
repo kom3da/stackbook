@@ -24,6 +24,7 @@ pnpm build          # dist/ に出力
 pnpm preview        # dist/ を配信して確認
 pnpm test           # Vitest（パーサー・判定ロジック・索引）
 pnpm check          # Biome と astro check
+pnpm shots          # 主要ページを幅別（360・390・768・1280）と操作後に撮影して .shots/ に保存（先に pnpm build）
 ```
 
 各セクションの `確認：YYYY年M月` から12か月を過ぎると、ビルド時に警告し、そのページにも表示する。
