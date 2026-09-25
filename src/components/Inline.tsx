@@ -49,7 +49,7 @@ export function Inline({ text, tools = [], linkTools = true, mark }: Props) {
         return <strong key={i}>{linkify(s.v, `${i}`)}</strong>;
       case 'ref':
         return (
-          <a key={i} className="ref" href={secHref(s.sec, s.sub)}>
+          <a key={i} className="ref" href={secHref(s.sec, s.sub, s.step)}>
             {s.v}
           </a>
         );

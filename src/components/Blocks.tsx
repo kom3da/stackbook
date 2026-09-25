@@ -235,7 +235,7 @@ function BlockView({ b, secId, names }: { b: Block; secId: string; names: (ids: 
       );
     case 'h4':
       return (
-        <h4>
+        <h4 id={b.id}>
           <Inline text={b.text} />
         </h4>
       );

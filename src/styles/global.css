@@ -689,6 +689,9 @@
   .peek .kv > div {
     grid-template-columns: 1fr;
   }
+  .peek h4 {
+    scroll-margin-top: 1rem;
+  }
   .peek .doc h3 {
     @apply mt-10;
   }

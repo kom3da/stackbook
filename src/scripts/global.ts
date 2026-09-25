@@ -183,8 +183,9 @@ function fragmentOf(href: string): string | null {
   if (!m) return null;
   // A reference into the page being read just scrolls
   if (u.pathname === location.pathname && !peek?.open) return null;
-  const sub = u.hash.slice(1);
-  return /^\d+-\d+$/.test(sub) ? `/s/${m[1]}/${sub}/peek.html` : `/s/${m[1]}/peek.html`;
+  // #N-M opens that subsection; #N-M-sK (a step inside it) opens the subsection too
+  const sub = u.hash.slice(1).match(/^(\d+-\d+)(?:-s\d+)?$/)?.[1];
+  return sub ? `/s/${m[1]}/${sub}/peek.html` : `/s/${m[1]}/peek.html`;
 }
 
 // Compact form for the URL: /dict/hono/peek.html → d:hono, /s/2/2-10/peek.html → s:2/2-10
@@ -353,6 +354,9 @@ document.addEventListener('click', async (e) => {
   const entry = { urls: [frag], label: '' };
   const ok = await showTrail(inside ? [...trail, entry] : [entry], peek?.open ? 'replace' : 'push');
   if (!ok) location.href = a.href;
+  // A step reference (§N-M 手順K) scrolls the pane to that step
+  const step = new URL(a.href).hash.slice(1);
+  if (ok && /-s\d+$/.test(step)) peekBody?.querySelector(`#${CSS.escape(step)}`)?.scrollIntoView({ block: 'start' });
 });
 
 // The make island re-renders on its own; sync its controls after each render

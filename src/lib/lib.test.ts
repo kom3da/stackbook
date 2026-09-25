@@ -114,6 +114,23 @@ describe('inline markdown', () => {
       'text',
     ]);
   });
+  it('points step references at the step heading', () => {
+    const [ref] = segments('§2-10 手順3').filter((x) => x.t === 'ref');
+    expect(ref).toMatchObject({ v: '§2-10 手順3', sec: '2', sub: '2-10', step: '3' });
+    // Every "§N-M 手順K" in the guide and the wizard has a heading to land on
+    const texts = [
+      ...Object.values(
+        import.meta.glob<string>('../../content/guide/*.md', { query: '?raw', import: 'default', eager: true }),
+      ),
+      ...Object.values(import.meta.glob<string>('./wizard.ts', { query: '?raw', import: 'default', eager: true })),
+    ];
+    const refs = texts.flatMap((t) => [...t.matchAll(/§(\d+)-(\d+) ?手順(\d+)/g)]);
+    expect(refs.length).toBeGreaterThan(0);
+    for (const [v, n, m, k] of refs) {
+      const ids = SEC.get(n)?.blocks.flatMap((b) => (b.t === 'h4' && b.id ? [b.id] : []));
+      expect(ids, v).toContain(`${n}-${m}-s${k}`);
+    }
+  });
   it('matches tool names on whole words only', () => {
     expect(findName('GoReleaserとGo', 'Go')).toEqual(['GoReleaserと', '']);
     expect(findName('GoReleaser', 'Go')).toBeNull();

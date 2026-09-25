@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import YAML from 'yaml';
 import toolsYaml from '../../content/tools.yaml?raw';
+import { stepId } from './inline';
 import { type Data, isDataKind, type Ops, parseData, TOOLS_FILE, toolIds } from './schema';
 import { plain } from './text';
 
@@ -25,7 +26,7 @@ export { plain };
 
 export type Block =
   | { t: 'h3'; id: string; text: string }
-  | { t: 'h4'; text: string }
+  | { t: 'h4'; text: string; id?: string }
   | { t: 'p'; text: string }
   | { t: 'ul' | 'ol' | 'check'; items: string[] }
   | { t: 'code'; text: string }
@@ -101,7 +102,11 @@ export function parseGuide(src: string, svgOf: (code: string) => string = diagra
       i++;
     } else if (L.startsWith('#### ')) {
       flush();
-      push({ t: 'h4', text: L.slice(5).trim() });
+      // "#### 手順K" under "### N-M." gets an anchor, so "§N-M 手順K" can point at it
+      const text = L.slice(5).trim();
+      const step = text.match(/^手順(\d+)/)?.[1];
+      const h3 = cur?.blocks.findLast((b) => b.t === 'h3');
+      push({ t: 'h4', text, id: step && h3?.t === 'h3' && /^\d+-\d+$/.test(h3.id) ? stepId(h3.id, step) : undefined });
       i++;
     } else if (L.startsWith('### ')) {
       flush();
