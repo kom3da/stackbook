@@ -18,17 +18,12 @@ const prev = bySec(list[i - 1]);
 const next = bySec(list[i + 1]);
 const h3 = s.blocks.filter((b) => b.t === 'h3');
 const tab = g === 'tools' ? 'dict' : g;
-const hub = g === 'tools' ? '/dict/' : `/${g}/`;
-// Guide sections list their siblings beside the text; dictionary fields keep the dictionary's own navigation
-const side = g !== 'tools';
-const Wrap = side ? SideNav : Fragment;
 ---
 
 <Base title={secLabel(s)} tab={tab} md={`/s/${s.id}.md`} wide>
-  <Wrap label={GROUP_LABEL[g]}>
-    {side && <SecNav slot="nav" group={g} current={s.id} />}
-    <div class:list={[g === 'tools' && 'mx-auto max-w-4xl']}>
-    {!side && <p class="mb-4 text-sm"><a href={hub} class="text-mute no-underline hover:text-ink">← {GROUP_LABEL[g]}</a></p>}
+  <SideNav label={GROUP_LABEL[g]}>
+    <SecNav slot="nav" group={g} current={s.id} />
+    <div>
     <header class="flex items-start justify-between gap-4">
       <div>
         {s.num && <p class="eyebrow">§{s.num}</p>}
@@ -36,11 +31,11 @@ const Wrap = side ? SideNav : Fragment;
         {s.checked && <p class="mt-2 text-xs text-faint">最終確認：{s.checked}</p>}
         {isStale(s) && <p class="warn">{STALE_MONTHS}か月以上見直していない。内容が古くなっている可能性がある。</p>}
       </div>
-      {side && <button type="button" class="side-btn lg:hidden" aria-haspopup="dialog" data-sheet-open>目次</button>}
+      <button type="button" class="side-btn lg:hidden" aria-haspopup="dialog" data-sheet-open>目次</button>
     </header>
     {
       h3.length >= 3 && (
-        <nav aria-label="このページの見出し" class:list={['mt-6 flex flex-wrap gap-1.5', side && 'lg:hidden']}>
+        <nav aria-label="このページの見出し" class="mt-6 flex flex-wrap gap-1.5 lg:hidden">
           {h3.map((b) => (
             <a href={`#${b.t === 'h3' ? b.id : ''}`} class="nx">
               {b.t === 'h3' && stripNo(plain(b.text))}
@@ -81,5 +76,5 @@ const Wrap = side ? SideNav : Fragment;
       }
     </nav>
     </div>
-  </Wrap>
+  </SideNav>
 </Base>

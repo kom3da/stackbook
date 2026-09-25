@@ -1,4 +1,6 @@
-import { guide, plain, secLabel } from '../lib/guide';
+import { guide, plain, secLabel, stripNo } from '../lib/guide';
+import { secHref } from '../lib/inline';
+import { subsections } from '../lib/peek';
 import { category, dictionary, hrefOf } from '../lib/tools';
 import { KINDS } from '../lib/wizard';
 
@@ -15,6 +17,11 @@ export const GET = () => {
     }),
     ...KINDS.map(([k, n, d]) => ({ t: n, s: '作る', h: `/make/${k}/`, k: `${n} ${d}`.toLowerCase() })),
     ...guide.sections.map((s) => ({ t: secLabel(s), s: 'ページ', h: `/s/${s.id}/`, k: secLabel(s).toLowerCase() })),
+    // Subsections, so §2-10 or its heading finds the part that references point at
+    ...subsections().map(({ s, id, text }) => {
+      const t = `§${id} ${stripNo(plain(text))}`;
+      return { t, s: secLabel(s), h: secHref(s.id, id), k: `${t} ${id}`.toLowerCase() };
+    }),
   ];
   return new Response(JSON.stringify(hits), { headers: { 'Content-Type': 'application/json' } });
 };
