@@ -232,6 +232,17 @@ describe('decide (§2-9, §2-10, §19)', () => {
     expect(run('saas').commands).toEqual(['26-5']);
     expect(run('saas', { team: 'small', stage: 'prod' }).commands).toEqual(['26-6']);
   });
+  it('classifies who runs every non-language tool on make pages', () => {
+    for (const [k] of KINDS)
+      for (const ans of allAnswers(k))
+        for (const t of decide(k, ans).tables)
+          for (const r of resolve(t, LOOKUP))
+            for (const id of r.tools) {
+              const tool = TOOLS.get(id);
+              if (tool?.lang && id !== 'rails') continue;
+              expect(tool?.ops, `${id} needs ops in content/tools.yaml`).toBeDefined();
+            }
+  });
   it('points every case at an existing §19 subsection', () => {
     for (const [k] of KINDS)
       for (const c of run(k).cases) expect(SEC.get('19')?.blocks.some((b) => b.t === 'h3' && b.id === c)).toBe(true);

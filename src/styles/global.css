@@ -444,6 +444,32 @@
     content: "";
     @apply absolute top-[0.7em] left-0 h-px w-2 bg-faint;
   }
+  .bands {
+    @apply mt-5 flex flex-wrap gap-2;
+  }
+  .band {
+    @apply flex min-w-[12rem] flex-col gap-0.5 rounded-xl px-3.5 py-3;
+    flex-basis: 0;
+    transition: flex-grow 0.35s ease;
+  }
+  .band-code {
+    background: #1f4e79;
+    color: #ffffff;
+  }
+  .band-self {
+    background: #3d6b99;
+    color: #ffffff;
+  }
+  .band-managed {
+    background: #dce8f3;
+    color: #1b232b;
+  }
+  .band-k {
+    @apply text-[0.7rem] font-semibold opacity-80;
+  }
+  .band-v {
+    @apply text-sm leading-snug font-medium;
+  }
   .why.note {
     @apply mt-3 border-t border-rule pt-3;
   }

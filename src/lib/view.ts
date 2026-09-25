@@ -13,6 +13,7 @@ export type ToolView = {
   /** Own dictionary page, if any */
   page?: string;
   url?: string;
+  ops?: 'code' | 'self' | 'managed';
   category: string;
   lang?: { ref: string; lead: string };
   uses: { situation: string; reason?: string }[];
@@ -46,6 +47,7 @@ export const toolView = (t: Tool): ToolView => ({
   slug: t.slug,
   page: hrefOf(t),
   url: t.url,
+  ops: t.ops,
   category: category(t),
   lang: t.lang,
   uses: t.uses.map((u) => ({ situation: u.situation, reason: u.reason })),

@@ -1,6 +1,6 @@
 // Dictionary index built from the tool registry and the data blocks that reference tool ids
 import { type Block, guide, REGISTRY, type Section, stripNo, subBlocks } from './guide';
-import type { Data } from './schema';
+import type { Data, Ops } from './schema';
 
 type Rows<K extends Data['kind']> = Extract<Data, { kind: K }>['rows'][number];
 type Sub = { id: string; text: string } | null;
@@ -13,6 +13,7 @@ export type Tool = {
   slug: string;
   /** Official site */
   url?: string;
+  ops?: Ops;
   lang?: { ref: string; lead: string };
   def: ChoiceRow[];
   alt: { row: ChoiceRow; alt: ChoiceRow['alts'][number] }[];
@@ -32,6 +33,7 @@ export const TOOLS = new Map<string, Tool>(
       name: r.name,
       slug: id,
       url: r.url,
+      ops: r.ops,
       def: [],
       alt: [],
       uses: [],

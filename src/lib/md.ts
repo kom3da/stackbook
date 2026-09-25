@@ -3,7 +3,7 @@ import YAML from 'yaml';
 import { GROUPS, guide, h3Text, plain, rawSub, SECS, stripNo, subBlocks } from './guide';
 import { LOOKUP } from './lookup';
 import { type Data, HEADS, isDataKind, parseData } from './schema';
-import { type ChoiceRow, category, dictionary, namesOf, type Tool } from './tools';
+import { type ChoiceRow, category, dictionary, namesOf, TOOLS, type Tool } from './tools';
 import { DEFAULTS, type Decision, decide, KINDS, type Kind, questionsFor, resolve } from './wizard';
 
 const where = (r: ChoiceRow) => (r.sub ? `§${r.sub.id}` : `§${r.sec.id}`);
@@ -180,6 +180,16 @@ function diffMd(kind: Kind, base: Decision) {
   return out;
 }
 
+// Who runs each part of the stack (content/tools.yaml `ops`)
+const OPS_LABEL = { code: '自分で書く', self: '自分で運用する', managed: 'マネージドに任せる' } as const;
+function opsLines(d: Decision) {
+  const ids = [...new Set(d.tables.flatMap((t) => resolve(t, LOOKUP)).flatMap((r) => r.tools))];
+  return (Object.keys(OPS_LABEL) as (keyof typeof OPS_LABEL)[]).flatMap((o) => {
+    const names = ids.filter((id) => TOOLS.get(id)?.ops === o).map((id) => TOOLS.get(id)?.name);
+    return names.length ? [`- ${OPS_LABEL[o]}：${names.join('、')}`] : [];
+  });
+}
+
 export function makeMd(kind: Kind) {
   const k = KINDS.find((x) => x[0] === kind);
   const d = decide(kind, DEFAULTS);
@@ -201,6 +211,7 @@ export function makeMd(kind: Kind) {
     '## 構成',
     ...tablesMd(d),
   ];
+  out.push('', '## 運用の内訳', ...opsLines(d));
   if (diff.length) out.push('', '## 条件が違うとき（既定との差分）', ...diff);
   // §19 diagrams and notes (the stack table itself is already merged above)
   for (const c of d.cases) {

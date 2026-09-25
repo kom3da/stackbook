@@ -59,6 +59,8 @@ export const TOOLS_FILE = z.record(
           .regex(/^2-\d+$/)
           .optional(),
         url: z.url().optional(),
+        /** Who runs it: code you write, a service you operate, or a managed service */
+        ops: z.enum(['code', 'self', 'managed']).optional(),
       })
       .strict(),
   ]),
@@ -74,3 +76,5 @@ export function toolIds(d: Data): string[] {
   }
   return out.flat();
 }
+
+export type Ops = 'code' | 'self' | 'managed';

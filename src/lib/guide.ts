@@ -1,6 +1,6 @@
 import YAML from 'yaml';
 import toolsYaml from '../../content/tools.yaml?raw';
-import { type Data, isDataKind, parseData, TOOLS_FILE, toolIds } from './schema';
+import { type Data, isDataKind, type Ops, parseData, TOOLS_FILE, toolIds } from './schema';
 import { plain } from './text';
 
 // Sections live in content/guide/NN.md; files are read in name order and joined
@@ -137,7 +137,12 @@ export const REGISTRY = new Map(
   Object.entries(TOOLS_FILE.parse(YAML.parse(toolsYaml))).map(([id, v]) => [
     id,
     typeof v === 'string'
-      ? { name: v, lang: undefined as string | undefined, url: undefined as string | undefined }
+      ? {
+          name: v,
+          lang: undefined as string | undefined,
+          url: undefined as string | undefined,
+          ops: undefined as Ops | undefined,
+        }
       : v,
   ]),
 );

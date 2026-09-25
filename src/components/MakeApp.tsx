@@ -146,6 +146,8 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
       return { ...r, cards: tools, warn };
     }),
   }));
+  // Every tool in the answer, once, for the operations bands
+  const bandTools = [...new Map(tables.flatMap((t) => t.rows.flatMap((r) => r.cards)).map((c) => [c.id, c])).values()];
 
   return (
     <>
@@ -195,7 +197,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
         <section className="answer">
           <div className="flex items-start justify-between gap-3">
             <p className="eyebrow">推奨</p>
-            <CopyButton text={() => stackMarkdown(kind, d, tables, summary)} />
+            <CopyButton text={() => stackMarkdown(kind, d, tables, summary, bandTools)} />
           </div>
           <p className="ans">{d.title}</p>
           <ul className="why">
@@ -205,6 +207,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
               </li>
             ))}
           </ul>
+          <Bands tools={bandTools} />
           {d.notes.length > 0 && (
             <ul className="why note">
               {d.notes.map((n) => (
@@ -396,8 +399,13 @@ function stackMarkdown(
   d: Decision,
   tables: { title?: string; rows: { layer: string; text: string }[] }[],
   summary: string,
+  tools: ToolView[],
 ) {
   const name = KINDS.find((k) => k[0] === kind)?.[1] ?? kind;
+  const ops = BANDS.flatMap((b) => {
+    const names = tools.filter((t) => t.ops === b.ops).map((t) => t.name);
+    return names.length ? [`- ${b.label}：${names.join('、')}`] : [];
+  });
   return [
     `# ${name}：${d.title}`,
     '',
@@ -411,6 +419,7 @@ function stackMarkdown(
       '|---|---|',
       ...t.rows.map((r) => `| ${r.layer} | ${r.text} |`),
     ]),
+    ...(ops.length ? ['', '## 運用の内訳', '', ...ops] : []),
     '',
     `出典：${location.href}（バージョンは書いていないので、各ツールの最新安定版を確認する）`,
     '',
@@ -432,5 +441,31 @@ function CopyButton({ text }: { text: () => string }) {
     >
       {done ? 'コピーしました' : 'Markdownでコピー'}
     </button>
+  );
+}
+
+const BANDS = [
+  { ops: 'code', label: '自分で書く' },
+  { ops: 'self', label: '自分で運用する' },
+  { ops: 'managed', label: 'マネージドに任せる' },
+] as const;
+
+/** The stack split by who runs each part; widths follow the number of tools */
+function Bands({ tools }: { tools: ToolView[] }) {
+  const groups = BANDS.map((b) => ({ ...b, names: tools.filter((t) => t.ops === b.ops).map((t) => t.name) })).filter(
+    (g) => g.names.length,
+  );
+  if (!groups.length) return null;
+  return (
+    <div className="bands" role="group" aria-label="運用の内訳">
+      {groups.map((g) => (
+        <div key={g.ops} className={`band band-${g.ops}`} style={{ flexGrow: g.names.length }}>
+          <span className="band-k">
+            {g.label}（{g.names.length}）
+          </span>
+          <span className="band-v">{g.names.join(' · ')}</span>
+        </div>
+      ))}
+    </div>
   );
 }
