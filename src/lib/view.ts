@@ -14,8 +14,6 @@ export type ToolView = {
   page?: string;
   url?: string;
   ops?: 'code' | 'self' | 'managed';
-  /** Simple Icons mark (only filled in for the make page payload) */
-  icon?: { title: string; path: string };
   category: string;
   lang?: { ref: string; lead: string };
   uses: { situation: string; reason?: string }[];

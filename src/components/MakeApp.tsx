@@ -24,7 +24,7 @@ import {
   DrawerTitle,
 } from './ui/drawer';
 
-export type MakeTool = Pick<ToolView, 'id' | 'name' | 'page' | 'ops' | 'icon' | 'prof'>;
+export type MakeTool = Pick<ToolView, 'id' | 'name' | 'page' | 'ops' | 'prof'>;
 
 export type MakePayload = {
   /** Only what the page shows about each tool; details open in the peek panel */
@@ -234,16 +234,13 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
                     <>
                       <span className="s-layer">{r.layer}</span>
                       <span className="s-val">
-                        <RowIcons tools={r.cards} />
-                        <span>
-                          <Inline text={r.text} linkTools={false} />
-                          {r.edited && <span className="tag">差し替え</span>}
-                          {r.warn.map((n) => (
-                            <span key={n} className="badge">
-                              未経験：{n}
-                            </span>
-                          ))}
-                        </span>
+                        <Inline text={r.text} linkTools={false} />
+                        {r.edited && <span className="tag">差し替え</span>}
+                        {r.warn.map((n) => (
+                          <span key={n} className="badge">
+                            未経験：{n}
+                          </span>
+                        ))}
                       </span>
                     </>
                   );
@@ -472,22 +469,5 @@ function Bands({ tools }: { tools: MakeTool[] }) {
         </li>
       ))}
     </ul>
-  );
-}
-
-/** Monochrome marks of the tools in a row (Simple Icons); decorative, the names follow in text */
-function RowIcons({ tools }: { tools: MakeTool[] }) {
-  const icons = [...new Map(tools.flatMap((t) => (t.icon ? [[t.icon.title, t.icon] as const] : []))).values()].slice(
-    0,
-    3,
-  );
-  return (
-    <span className="s-icons" aria-hidden="true">
-      {icons.map((i) => (
-        <svg key={i.title} viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
-          <path d={i.path} fill="currentColor" />
-        </svg>
-      ))}
-    </span>
   );
 }

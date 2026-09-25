@@ -36,6 +36,12 @@ export const KINDS: [Kind, string, string][] = [
   ['desktop', 'デスクトップアプリ', 'Mac・Windowsのアプリ'],
   ['embedded', '組み込み・IoT', 'ファームウェア、マイコン'],
 ];
+/** Kinds grouped so a reader can skip straight to their kind of product */
+export const KIND_GROUPS: [string, Kind[]][] = [
+  ['Webサービス', ['web', 'saas', 'toc', 'ai', 'rt', 'ec', 'site']],
+  ['ソフトウェア・ツール', ['cli', 'devtool', 'desktop', 'embedded']],
+  ['データ', ['data']],
+];
 /** opts: [value, label, short label for the summary line] */
 export const QUESTIONS: { q: keyof Answers; label: string; multi?: true; opts: [string, string, string][] }[] = [
   {

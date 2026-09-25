@@ -2,14 +2,8 @@
 import Base from '../layouts/Base.astro';
 import { guide } from '../lib/guide';
 import { Inline } from '../components/Inline';
-import { DEFAULTS, decide, KINDS, type Kind } from '../lib/wizard';
+import { DEFAULTS, decide, KIND_GROUPS, KINDS } from '../lib/wizard';
 
-// Grouped so a reader can skip straight to their kind of product
-const GROUPS: [string, Kind[]][] = [
-  ['Webサービス', ['web', 'saas', 'toc', 'ai', 'rt', 'ec', 'site']],
-  ['ソフトウェア・ツール', ['cli', 'devtool', 'desktop', 'embedded']],
-  ['データ', ['data']],
-];
 const doors = [
   ['/dict/', '辞書', '言語・ライブラリを名前や分野から引く'],
   ['/read/', '考え方', '原則・根拠・目安の数値・費用'],
@@ -26,7 +20,7 @@ const doors = [
 
   <div class="mt-10 grid gap-x-12 gap-y-10 lg:grid-cols-2">
     {
-      GROUPS.map(([label, ids]) => (
+      KIND_GROUPS.map(([label, ids]) => (
         <section>
           <h2 class="text-xs font-semibold tracking-wider text-faint">{label}</h2>
           <ul class="mt-2 border-t border-rule">

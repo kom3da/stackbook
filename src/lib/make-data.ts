@@ -1,7 +1,6 @@
 // Build-time payload for a "make" page: everything any answer combination can show
 import type { MakePayload } from '../components/MakeApp';
 import { type Block, h3Text, plain, SEC, SECS, stripNo, subBlocks } from './guide';
-import { iconOf } from './icons';
 import { secHref } from './inline';
 import { CASE_ROWS, CHOICES, LOOKUP } from './lookup';
 import { dictionary, hrefOf } from './tools';
@@ -47,7 +46,7 @@ export function makePayload(kind: Kind): MakePayload {
         const t = listed.get(id);
         if (!t || id in p.tools) continue;
         const v = toolView(t);
-        p.tools[id] = { id, name: v.name, page: v.page, ops: v.ops, icon: iconOf(id), prof: v.prof };
+        p.tools[id] = { id, name: v.name, page: v.page, ops: v.ops, prof: v.prof };
         addLink(id);
       }
     for (const c of d.cases) {

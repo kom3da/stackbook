@@ -1,4 +1,5 @@
 ---
+import KindNav from '../../components/KindNav.astro';
 import MakeApp from '../../components/MakeApp';
 import Base from '../../layouts/Base.astro';
 import { makePayload } from '../../lib/make-data';
@@ -11,11 +12,38 @@ const kind = Astro.params.kind as Kind;
 const { name, desc } = Astro.props;
 ---
 
-<Base title={name} tab="make" md={`/make/${kind}.md`}>
-  <p class="text-sm"><a href="/" class="text-mute no-underline hover:text-ink">← 作るもの</a></p>
-  <header class="mt-4">
-    <h1 class="text-3xl font-bold tracking-tight">{name}</h1>
-    <p class="lead mt-1">{desc}</p>
-  </header>
-  <MakeApp client:load kind={kind} payload={makePayload(kind)} />
+<Base title={name} tab="make" md={`/make/${kind}.md`} wide>
+  <div class="lg:grid lg:grid-cols-[14rem_minmax(0,48rem)] lg:gap-12">
+    <aside class="hidden lg:block">
+      <div class="sticky top-20 max-h-[calc(100dvh-6rem)] overflow-y-auto pb-6">
+        <KindNav current={kind} />
+      </div>
+    </aside>
+    <div class="min-w-0">
+      <header class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight">{name}</h1>
+          <p class="lead mt-1">{desc}</p>
+        </div>
+        <button type="button" id="kinds-open" class="kinds-btn lg:hidden" aria-haspopup="dialog">
+          ほかを選ぶ
+        </button>
+      </header>
+      <MakeApp client:load kind={kind} payload={makePayload(kind)} />
+    </div>
+  </div>
+  <dialog id="kinds" class="peek" aria-label="作るもの">
+    <button type="button" class="peek-x" aria-label="閉じる" data-kinds-close>×</button>
+    <div class="overflow-y-auto px-6 pt-5 pb-8">
+      <KindNav current={kind} />
+    </div>
+  </dialog>
 </Base>
+
+<script>
+  const d = document.getElementById('kinds') as HTMLDialogElement;
+  document.getElementById('kinds-open')?.addEventListener('click', () => d.showModal());
+  d.addEventListener('click', (e) => {
+    if (e.target === d || (e.target as HTMLElement).closest('[data-kinds-close]')) d.close();
+  });
+</script>
