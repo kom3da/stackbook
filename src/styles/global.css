@@ -530,6 +530,12 @@
     @apply ml-1 inline-block rounded-full bg-warn-soft px-2 py-px align-middle text-xs font-medium whitespace-nowrap text-warn;
   }
 
+  .logo {
+    @apply flex shrink-0 items-center gap-2.5 text-ink no-underline;
+  }
+  .logo-word {
+    width: auto;
+  }
   /* ---- make page: memo on paper, marginalia beside it ---- */
   .btn {
     @apply inline-flex min-h-8 shrink-0 cursor-pointer items-center rounded-[5px] border border-line bg-surface px-3 text-[13px] text-ink hover:border-ink;

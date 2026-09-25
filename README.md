@@ -64,3 +64,7 @@ HTML を読ませずに済むよう、同じ内容を Markdown でも出力し�
 ## 習熟度とチェックリスト
 
 習熟度とチェックリストはブラウザの localStorage に保存され、サーバーには送られない。習熟度表のページから JSON で書き出し・読み込みできる。
+
+## ロゴ
+
+ロゴの文字は Schibsted Grotesk（Bold、SIL Open Font License 1.1）を輪郭に変換したもの（`src/components/Logo.astro`）。マークの3本の帯は、塗り＝自分で書く、線＝自分で運用する、破線＝マネージドに任せる を表す。

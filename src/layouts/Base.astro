@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import Logo from '../components/Logo.astro';
 import { guide } from '../lib/guide';
 
 interface Props {
@@ -41,15 +42,7 @@ const tabs = [
   <body class:list={['min-h-dvh pb-20 md:pb-0', app && 'app']}>
     <header class="sticky top-0 z-20 border-b border-rule bg-bg">
       <div class:list={['flex h-14 items-center gap-6 px-4 sm:px-8', !app && 'mx-auto max-w-6xl sm:px-6']}>
-        <a href="/" class="flex shrink-0 items-center gap-2 font-mono text-[0.95rem] font-semibold tracking-tight no-underline">
-          <svg width="22" height="22" viewBox="0 0 56 56" aria-hidden="true">
-            <rect x="6" y="8" width="44" height="11" rx="3" fill="#24477f"></rect>
-            <rect x="6" y="22.5" width="34" height="11" rx="3" fill="#5b7fbf"></rect>
-            <rect x="43" y="22.5" width="7" height="11" rx="2" fill="#bccbe6"></rect>
-            <rect x="6" y="37" width="44" height="11" rx="3" fill="#bccbe6"></rect>
-          </svg>
-          stackbook
-        </a>
+        <Logo />
         <nav aria-label="主要" class="hidden gap-5 md:flex">
           {
             tabs.map(([k, href, label]) => (
