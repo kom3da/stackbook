@@ -106,6 +106,7 @@ const tabs = [
       <slot />
     </main>
     <dialog id="peek" class="peek" aria-labelledby="peek-title">
+      <button type="button" id="peek-back" class="peek-back" hidden>← 戻る</button>
       <button type="button" class="peek-x" aria-label="閉じる" data-peek-close>×</button>
       <div id="peek-body"></div>
     </dialog>

@@ -522,6 +522,18 @@
     .s-head {
       grid-template-columns: 1fr auto;
     }
+    .s-btn {
+      @apply w-full cursor-pointer border-0 bg-transparent p-0 py-3.5 text-left font-[inherit] text-ink;
+    }
+    .s-btn > * {
+      text-align: left;
+    }
+    .s-btn:hover .s-val {
+      @apply text-accent;
+    }
+    .chev-r {
+      @apply size-2 rotate-[-45deg] border-r-[1.5px] border-b-[1.5px] border-faint;
+    }
     .s-layer {
       grid-column: 1 / -1;
     }
@@ -589,7 +601,7 @@
   @media (min-width: 768px) {
     .peek {
       inset: 0 0 0 auto;
-      width: 28rem;
+      width: 34rem;
       height: 100dvh;
       max-height: 100dvh;
       border-radius: 0;
@@ -610,6 +622,23 @@
   }
   .peek-h h2 {
     @apply mt-1 mb-5 pr-12 text-2xl font-bold tracking-tight;
+  }
+  .peek-back {
+    @apply absolute top-4 left-5 z-10 cursor-pointer rounded-md px-2 py-1 text-sm text-accent hover:bg-accent-soft;
+  }
+  .peek-back:not([hidden]) ~ #peek-body {
+    @apply pt-14;
+  }
+  .peek-sep {
+    @apply my-6 border-rule;
+  }
+  /* The panel is narrow: stack two-column layouts */
+  .peek .ch,
+  .peek .kv > div {
+    grid-template-columns: 1fr;
+  }
+  .peek .doc h3 {
+    @apply mt-10;
   }
   .peek-more {
     @apply mt-4 border-t border-rule pt-4 text-sm;

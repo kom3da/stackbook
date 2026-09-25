@@ -46,17 +46,9 @@ export function makePayload(kind: Kind): MakePayload {
       for (const id of row.tools) {
         const t = listed.get(id);
         if (!t || id in p.tools) continue;
-        const v = { ...toolView(t), icon: iconOf(id) };
-        p.tools[id] = v;
-        // Names mentioned inside the card (alternatives, defaults, growth targets) link too
-        for (const x of [
-          id,
-          ...v.def.flatMap((r) => [...r.tools, ...r.alts.flatMap((al) => al.tools)]),
-          ...v.alt.flatMap((r) => r.tools),
-          ...v.growth.flatMap((g) => g.to_tools),
-          ...v.stacks.flatMap((s) => s.tools),
-        ])
-          addLink(x);
+        const v = toolView(t);
+        p.tools[id] = { id, name: v.name, page: v.page, ops: v.ops, icon: iconOf(id), prof: v.prof };
+        addLink(id);
       }
     for (const c of d.cases) {
       if (c in p.cases) continue;

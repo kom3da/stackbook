@@ -14,7 +14,6 @@ import {
 } from '../lib/wizard';
 import { Blocks } from './Blocks';
 import { Inline, type Links } from './Inline';
-import { ToolBody } from './ToolBody';
 import {
   Drawer,
   DrawerClose,
@@ -25,8 +24,11 @@ import {
   DrawerTitle,
 } from './ui/drawer';
 
+export type MakeTool = Pick<ToolView, 'id' | 'name' | 'page' | 'ops' | 'icon' | 'prof'>;
+
 export type MakePayload = {
-  tools: Record<string, ToolView>;
+  /** Only what the page shows about each tool; details open in the peek panel */
+  tools: Record<string, MakeTool>;
   links: Links;
   cases: Record<string, { title: string; href: string; blocks: Block[] }>;
   /** Command blocks keyed by §26 subsection id */
@@ -221,7 +223,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
 
         <section className="blk">
           <h2 className="sh">
-            構成<span className="sh-d">行を開くと詳細（乗り換える条件・根拠・費用・習熟度）</span>
+            構成<span className="sh-d">行を押すと詳細（乗り換える条件・根拠・費用・習熟度）</span>
           </h2>
           {tables.map((t) => (
             <div key={t.title ?? t.base ?? 'composed'} className="mt-4 first:mt-0">
@@ -250,22 +252,22 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
                       </div>
                     );
                   return (
-                    <details className="srow" key={r.layer}>
-                      <summary className="s-head">
+                    <div className="srow" key={r.layer}>
+                      <button
+                        type="button"
+                        className="s-head s-btn"
+                        onClick={() =>
+                          window.dispatchEvent(
+                            new CustomEvent('stackbook:peek', {
+                              detail: { hrefs: r.cards.flatMap((c) => (c.page ? [c.page] : [])) },
+                            }),
+                          )
+                        }
+                      >
                         {head}
-                        <span className="chev" aria-hidden="true" />
-                      </summary>
-                      <div className="s-more">
-                        {r.cards.map((t) => (
-                          <section className="tcard" key={t.id}>
-                            <h3>
-                              <a href={t.page ?? t.url}>{t.name}</a>
-                            </h3>
-                            <ToolBody tool={t} links={p.links} />
-                          </section>
-                        ))}
-                      </div>
-                    </details>
+                        <span className="chev-r" aria-hidden="true" />
+                      </button>
+                    </div>
                   );
                 })}
               </div>
@@ -400,7 +402,7 @@ function stackMarkdown(
   d: Decision,
   tables: { title?: string; rows: { layer: string; text: string }[] }[],
   summary: string,
-  tools: ToolView[],
+  tools: MakeTool[],
 ) {
   const name = KINDS.find((k) => k[0] === kind)?.[1] ?? kind;
   const ops = BANDS.flatMap((b) => {
@@ -452,7 +454,7 @@ const BANDS = [
 ] as const;
 
 /** The stack split by who runs each part; widths follow the number of tools */
-function Bands({ tools }: { tools: ToolView[] }) {
+function Bands({ tools }: { tools: MakeTool[] }) {
   const groups = BANDS.map((b) => ({ ...b, names: tools.filter((t) => t.ops === b.ops).map((t) => t.name) })).filter(
     (g) => g.names.length,
   );
@@ -472,7 +474,7 @@ function Bands({ tools }: { tools: ToolView[] }) {
 }
 
 /** Monochrome marks of the tools in a row (Simple Icons); decorative, the names follow in text */
-function RowIcons({ tools }: { tools: ToolView[] }) {
+function RowIcons({ tools }: { tools: MakeTool[] }) {
   const icons = [...new Map(tools.flatMap((t) => (t.icon ? [[t.icon.title, t.icon] as const] : []))).values()].slice(
     0,
     3,

@@ -1,8 +1,8 @@
 ---
-import Base from '../../layouts/Base.astro';
-import { GROUP_LABEL, GROUPS, isStale, STALE_MONTHS, SECS, groupOf, guide, plain, type Section, secLabel, stripNo } from '../../lib/guide';
-import { Blocks } from '../../components/Blocks';
-import { LINKS } from '../../lib/view';
+import Base from '../../../layouts/Base.astro';
+import { GROUP_LABEL, GROUPS, isStale, STALE_MONTHS, SECS, groupOf, guide, plain, type Section, secLabel, stripNo } from '../../../lib/guide';
+import { Blocks } from '../../../components/Blocks';
+import { LINKS } from '../../../lib/view';
 
 export function getStaticPaths() {
   return guide.sections.map((s) => ({ params: { id: s.id }, props: { s } }));

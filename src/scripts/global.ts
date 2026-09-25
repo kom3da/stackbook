@@ -145,7 +145,7 @@ q?.addEventListener('keydown', (e) => {
     select(sel + (e.key === 'ArrowDown' ? 1 : -1));
   } else if (e.key === 'Enter') {
     const a = items[Math.max(sel, 0)];
-    if (a) location.href = a.href;
+    a?.click();
   } else if (e.key === 'Escape') {
     q.value = '';
     setOpen(false);
@@ -163,25 +163,60 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ---- tool peek: tool links open a summary in a dialog; the full page stays one click away ----
+// ---- peek: tool and section links open in one side panel instead of navigating ----
 const peek = document.getElementById('peek') as HTMLDialogElement | null;
 const peekBody = document.getElementById('peek-body');
-const TOOL_PAGE = /^\/dict\/[^/]+\/$/;
-async function openPeek(href: string) {
+const peekBack = document.getElementById('peek-back') as HTMLButtonElement | null;
+let trail: string[][] = [];
+
+/** Fragment URL for a link, or null when the link should navigate normally */
+function fragmentOf(href: string): string | null {
+  const u = new URL(href, location.href);
+  if (u.origin !== location.origin) return null;
+  if (/^\/dict\/[^/]+\/$/.test(u.pathname)) return `${u.pathname}peek.html`;
+  const m = u.pathname.match(/^\/s\/([^/]+)\/$/);
+  if (!m) return null;
+  // A reference into the page being read just scrolls
+  if (u.pathname === location.pathname && !peek?.open) return null;
+  const sub = u.hash.slice(1);
+  return /^\d+-\d+$/.test(sub) ? `/s/${m[1]}/${sub}/peek.html` : `/s/${m[1]}/peek.html`;
+}
+
+async function showPeek(urls: string[], push = true) {
   if (!peek || !peekBody) return false;
   try {
-    const res = await fetch(`${href}peek.html`);
-    if (!res.ok) return false;
-    peekBody.innerHTML = await res.text();
+    const parts = await Promise.all(
+      urls.map(async (u) => {
+        const r = await fetch(u);
+        if (!r.ok) throw new Error(u);
+        return r.text();
+      }),
+    );
+    peekBody.innerHTML = parts.join('<hr class="peek-sep">');
   } catch {
     return false;
   }
-  syncProf();
+  if (push) trail.push(urls);
+  if (peekBack) peekBack.hidden = trail.length < 2;
+  hydrate();
   if (!peek.open) peek.showModal();
   peekBody.scrollTop = 0;
-  (peek.querySelector('[data-peek-close]') as HTMLElement | null)?.focus();
   return true;
 }
+peek?.addEventListener('close', () => {
+  trail = [];
+});
+peekBack?.addEventListener('click', () => {
+  trail.pop();
+  const prev = trail.at(-1);
+  if (prev) showPeek(prev, false);
+});
+// The make island asks for several tools at once
+window.addEventListener('stackbook:peek', (e) => {
+  const hrefs = (e as CustomEvent<{ hrefs: string[] }>).detail.hrefs;
+  showPeek(hrefs.map((h) => fragmentOf(h)).filter((x): x is string => !!x));
+});
+
 document.addEventListener('click', async (e) => {
   const t = e.target as HTMLElement;
   if (t.closest('[data-peek-close]') || e.target === peek) {
@@ -190,10 +225,13 @@ document.addEventListener('click', async (e) => {
   }
   const a = t.closest<HTMLAnchorElement>('a[href]');
   if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-  const href = a.getAttribute('href') ?? '';
-  if (!TOOL_PAGE.test(href) || a.closest('.peek-more')) return;
+  // Moving between pages stays a page move
+  if (a.closest('.peek-more, .pager, header nav, nav[aria-label="主要"]')) return;
+  const frag = fragmentOf(a.getAttribute('href') ?? '');
+  if (!frag) return;
   e.preventDefault();
-  if (!(await openPeek(href))) location.href = href;
+  if (qres) qres.hidden = true;
+  if (!(await showPeek([frag]))) location.href = a.href;
 });
 
 // The make island re-renders on its own; sync its controls after each render
