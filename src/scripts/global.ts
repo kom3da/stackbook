@@ -169,9 +169,13 @@ document.addEventListener('keydown', (e) => {
 const peek = document.getElementById('peek') as HTMLDialogElement | null;
 const peekBody = document.getElementById('peek-body');
 const crumbs = document.getElementById('peek-crumbs');
+const strips = document.getElementById('peek-strips');
+const back = document.getElementById('peek-back');
 const WIDE = matchMedia('(min-width: 1280px)');
 type Entry = { urls: string[]; label: string };
 let trail: Entry[] = [];
+// The last closed trail, so the phone bar's 参照 button can reopen it
+let lastTrail: Entry[] = [];
 let opener: HTMLElement | null = null;
 
 /** Fragment URL for a link, or null when the link should navigate normally */
@@ -218,23 +222,45 @@ function writeUrl(push: boolean) {
   else history.replaceState(history.state, '', href);
 }
 
+const button = (label: string, i: number, cls = '') => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.dataset.crumb = String(i);
+  if (cls) b.className = cls;
+  b.textContent = label;
+  return b;
+};
+// Breadcrumb (本文 › earlier › current) and collapsed strips for the earlier references
 function drawCrumbs() {
-  if (!crumbs) return;
+  if (!crumbs || !strips) return;
+  const home = document.createElement('li');
+  const hb = document.createElement('button');
+  hb.type = 'button';
+  hb.dataset.peekClose = '';
+  hb.textContent = '本文';
+  home.append(hb);
   crumbs.replaceChildren(
+    home,
     ...trail.map((e, i) => {
       const li = document.createElement('li');
       if (i === trail.length - 1) {
         li.textContent = e.label;
         li.setAttribute('aria-current', 'step');
-      } else {
-        const b = document.createElement('button');
-        b.type = 'button';
-        b.textContent = e.label;
-        b.dataset.crumb = String(i);
-        li.append(b);
-      }
+      } else li.append(button(e.label, i));
       return li;
     }),
+  );
+  strips.replaceChildren(
+    ...trail.slice(0, -1).map((e, i) => {
+      const b = button('', i, 'peek-strip');
+      b.innerHTML = `<span class="ps-n">${i + 1}</span><span class="ps-l"></span><span class="ps-o">広げる</span>`;
+      (b.querySelector('.ps-l') as HTMLElement).textContent = e.label;
+      return b;
+    }),
+  );
+  if (back) back.hidden = trail.length < 2;
+  window.dispatchEvent(
+    new CustomEvent('stackbook:trail', { detail: { count: (trail.length ? trail : lastTrail).length } }),
   );
 }
 
@@ -288,16 +314,24 @@ function closePane() {
 peek?.addEventListener('close', () => {
   document.body.classList.remove('ref-open');
   if (!trail.length) return;
+  lastTrail = trail;
   trail = [];
+  drawCrumbs();
   // Leave the pane's history entry if we made one, so Back doesn't reopen it
   if (history.state?.ref) history.back();
   else writeUrl(false);
   opener?.focus({ preventScroll: true });
   opener = null;
 });
-crumbs?.addEventListener('click', (e) => {
-  const i = (e.target as HTMLElement).closest<HTMLElement>('[data-crumb]')?.dataset.crumb;
-  if (i !== undefined) showTrail(trail.slice(0, Number(i) + 1), 'replace');
+for (const el of [crumbs, strips])
+  el?.addEventListener('click', (e) => {
+    const i = (e.target as HTMLElement).closest<HTMLElement>('[data-crumb]')?.dataset.crumb;
+    if (i !== undefined) showTrail(trail.slice(0, Number(i) + 1), 'replace');
+  });
+back?.addEventListener('click', () => showTrail(trail.slice(0, -1), 'replace'));
+// The phone bar reopens the references closed last
+window.addEventListener('stackbook:reopen', () => {
+  if (lastTrail.length) showTrail(lastTrail, 'push');
 });
 // Esc closes the pane when focus isn't in a field (the modal sheet handles Esc itself)
 document.addEventListener('keydown', (e) => {
@@ -325,14 +359,6 @@ function fromUrl() {
 }
 window.addEventListener('popstate', fromUrl);
 if (new URL(location.href).searchParams.has('ref')) fromUrl();
-
-// The make island asks for several tools at once
-window.addEventListener('stackbook:peek', (e) => {
-  const hrefs = (e as CustomEvent<{ hrefs: string[] }>).detail.hrefs;
-  const urls = hrefs.map((h) => fragmentOf(h)).filter((x): x is string => !!x);
-  opener = document.activeElement as HTMLElement | null;
-  if (urls.length) showTrail([{ urls, label: '' }], peek?.open ? 'replace' : 'push');
-});
 
 document.addEventListener('click', async (e) => {
   const t = e.target as HTMLElement;

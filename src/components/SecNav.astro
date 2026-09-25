@@ -1,5 +1,5 @@
 ---
-import { GROUPS, type Group, guide, plain, secLabel, stripNo } from '../lib/guide';
+import { GROUP_LABEL, GROUPS, type Group, guide, plain, secLabel, stripNo } from '../lib/guide';
 
 interface Props {
   group: Group;
@@ -9,6 +9,7 @@ const { group, current } = Astro.props;
 const secs = GROUPS[group].flatMap((id) => guide.sections.filter((s) => s.id === id));
 ---
 
+<p class="side-g">{GROUP_LABEL[group]}</p>
 <ul>
   {
     secs.map((s) => (

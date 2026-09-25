@@ -1,30 +1,41 @@
 ---
-// A list beside the content on desktop and a bottom sheet on phones, so readers switch pages without going back.
+// The page's index: a full-height column on desktop (a thin rail while a reference is open), a sheet on phones.
 // Open the sheet with any button carrying data-sheet-open.
 interface Props {
   label: string;
+  /** Shown vertically on the rail */
+  rail: string;
 }
-const { label } = Astro.props;
+const { label, rail } = Astro.props;
 const nav = await Astro.slots.render('nav');
 ---
 
-<div class="side-grid lg:grid lg:grid-cols-[14rem_minmax(0,48rem)] lg:gap-12">
-  <aside class="hidden lg:block">
-    <nav aria-label={label} class="side-nav sticky top-20 max-h-[calc(100dvh-6rem)] overflow-y-auto pb-6" set:html={nav} />
+<div class="app-grid">
+  <aside class="app-side">
+    <nav aria-label={label} class="side-nav" set:html={nav} />
+    <div class="app-rail">
+      <button type="button" class="rail-btn" aria-label={`${label}を開く`} aria-haspopup="dialog" data-sheet-open>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+      <span class="rail-l">{rail}</span>
+    </div>
   </aside>
-  <div class="min-w-0"><slot /></div>
+  <div class="app-body"><slot /></div>
 </div>
 <dialog id="side-sheet" class="peek" aria-label={label}>
-  <button type="button" class="peek-x" aria-label="閉じる" data-sheet-close>×</button>
+  <div class="peek-top">
+    <span class="flex-1 text-sm font-semibold">{label}</span>
+    <button type="button" class="peek-btn" data-sheet-close>閉じる</button>
+  </div>
   <nav aria-label={label} class="side-nav overflow-y-auto px-6 pt-5 pb-8" set:html={nav} />
 </dialog>
 
 <script>
   const d = document.getElementById('side-sheet') as HTMLDialogElement;
-  for (const b of document.querySelectorAll('[data-sheet-open]')) b.addEventListener('click', () => d.showModal());
-  d.addEventListener('click', (e) => {
+  document.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
-    // Close on the backdrop, the × and in-page anchors
-    if (t === d || t.closest('[data-sheet-close]') || t.closest('a[href^="#"]')) d.close();
+    if (t.closest('[data-sheet-open]')) d.showModal();
+    // Close on the backdrop, the close button and in-page anchors
+    else if (d.open && (t === d || t.closest('[data-sheet-close]') || t.closest('#side-sheet a[href^="#"]'))) d.close();
   });
 </script>

@@ -14,6 +14,7 @@
   --warn: #a3361a;
   --warn-soft: #f8e9e3;
   --diff-soft: #fff1c2;
+  --edit-soft: #fbf6ec;
   color-scheme: light;
 }
 @theme inline {
@@ -387,48 +388,253 @@
     @apply ml-1 inline-block rounded-full bg-warn-soft px-2 py-px align-middle text-xs font-medium whitespace-nowrap text-warn;
   }
 
-  /* ---- make page ---- */
-  .cond-btn {
-    @apply shrink-0 cursor-pointer rounded-lg border border-rule bg-bg px-3 py-1.5 text-sm font-medium hover:border-accent hover:text-accent;
+  /* ---- make page: memo on paper, marginalia beside it ---- */
+  .btn {
+    @apply inline-flex min-h-8 shrink-0 cursor-pointer items-center rounded-[5px] border border-rule bg-surface px-3 text-[13px] text-ink hover:border-ink;
   }
-  /* Conditions: always in view, one "label: select" pair per question */
+  .btn-primary {
+    @apply border-ink bg-ink text-surface hover:bg-mute;
+  }
+  .btn-s {
+    @apply min-h-7 px-2.5 text-xs;
+  }
+  .btn-q {
+    @apply border-transparent bg-transparent text-accent underline underline-offset-2 hover:border-transparent;
+  }
+  .mk {
+    @apply grid gap-10;
+  }
+  @media (min-width: 1280px) {
+    .mk {
+      grid-template-columns: minmax(0, 792px) minmax(0, 1fr);
+    }
+  }
+  .memo,
+  .paper {
+    @apply min-w-0 rounded-[4px] border border-rule bg-surface px-5 py-8 sm:px-16 sm:pt-11 sm:pb-16;
+  }
+  .paper {
+    @apply max-w-[880px];
+  }
+  .memo-top {
+    @apply flex flex-wrap items-center justify-between gap-3;
+  }
+  .memo-k {
+    @apply text-xs tracking-[0.08em] text-mute;
+  }
+  .memo-h {
+    @apply mt-4 text-[34px] leading-snug font-bold;
+  }
+  /* Phones: the kind picker is the title, and copying lives in the bottom bar */
+  @media (max-width: 1023px) {
+    .memo-h {
+      @apply sr-only;
+    }
+  }
+  @media (max-width: 767px) {
+    .memo-top .btn-primary {
+      @apply hidden;
+    }
+  }
+  .kind-pick {
+    @apply mt-5 flex w-full cursor-pointer flex-col items-start border-0 border-b-2 border-ink bg-transparent px-0 pb-2 text-left;
+  }
+  .kind-pick-k {
+    @apply text-xs font-semibold tracking-[0.12em] text-mute;
+  }
+  .kind-pick-v {
+    @apply mt-1 flex w-full items-center justify-between text-2xl font-bold text-ink;
+  }
+  .kind-pick-v::after {
+    content: "";
+    @apply size-2.5 rotate-45 border-r-2 border-b-2 border-ink;
+    translate: 0 -4px;
+  }
+  /* Conditions: "label  value" rows */
   .conds {
-    @apply mt-6 grid gap-x-6 gap-y-3 rounded-xl border border-rule bg-surface p-4 sm:grid-cols-2;
+    @apply mt-5 grid gap-x-10 sm:grid-cols-2;
   }
   .cf {
-    @apply grid items-center gap-x-3 gap-y-1;
-    grid-template-columns: 7rem minmax(0, 1fr);
+    @apply grid items-center gap-x-3 border-b border-rule py-2;
+    grid-template-columns: 6.5rem minmax(0, 1fr);
   }
   .cf-k {
     @apply text-sm text-mute;
   }
   .cf select {
-    @apply min-h-9 w-full cursor-pointer rounded-lg border border-rule bg-bg px-2.5 text-sm text-ink hover:border-accent;
+    @apply min-h-9 w-full cursor-pointer appearance-none border-0 bg-transparent py-1 pr-6 pl-0 text-sm font-semibold text-accent;
+    background-image:
+      linear-gradient(45deg, transparent 50%, currentColor 50%),
+      linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position:
+      calc(100% - 9px) 55%,
+      calc(100% - 5px) 55%;
+    background-size: 4px 4px;
+    background-repeat: no-repeat;
+    color: var(--accent);
   }
   .cf-multi {
     @apply items-start sm:col-span-2;
-    grid-template-columns: 7rem minmax(0, 1fr);
   }
-  .cf-multi legend {
-    @apply float-left w-28 pt-1;
+  .cf-multi .cf-k {
+    @apply pt-1.5;
   }
   .cf-opts {
-    @apply flex flex-wrap gap-x-4 gap-y-1.5 text-sm;
+    @apply flex flex-wrap gap-x-5 gap-y-1 text-sm;
   }
   .cf-opts label {
-    @apply inline-flex min-h-8 cursor-pointer items-center gap-1.5;
+    @apply inline-flex min-h-9 cursor-pointer items-center gap-1.5;
   }
   .cf-opts input {
     @apply size-4 accent-[var(--accent)];
   }
   .conds-none {
-    @apply mt-6 text-sm text-mute;
+    @apply mt-4 text-sm text-mute;
   }
-  .sh-n {
-    @apply font-mono text-sm font-medium text-faint;
+  .memo-rule {
+    @apply mt-6 border-0 border-t border-ink;
   }
-  .pin-bar {
-    @apply mt-2 flex justify-end;
+  /* Numbered parts: number in the gutter */
+  .ms {
+    @apply mt-8 grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+  }
+  .ms-n {
+    @apply pt-0.5 font-mono text-[13px] text-mute;
+  }
+  .ms-h {
+    @apply mb-2.5 text-[13px] font-semibold tracking-[0.12em] text-mute;
+  }
+  .ans {
+    @apply text-3xl leading-tight font-bold;
+  }
+  .ans-why {
+    @apply mt-1.5 text-base leading-loose;
+  }
+  .ans-notes {
+    @apply mt-3 list-disc space-y-1 pl-5 text-sm text-mute;
+  }
+  /* The stack: badge | layer | tools | note | who runs it */
+  .st-wrap + .st-wrap {
+    @apply mt-6;
+  }
+  .st {
+    @apply w-full border-collapse text-sm leading-relaxed;
+  }
+  .st tr {
+    @apply border-t border-rule;
+  }
+  .st tr:last-child {
+    @apply border-b;
+  }
+  .st-ed {
+    background: var(--edit-soft);
+  }
+  .st td,
+  .st th {
+    @apply py-2.5 align-top;
+  }
+  .st-b {
+    @apply w-11 pl-1;
+  }
+  .st th {
+    @apply w-28 pr-3 text-left font-medium text-mute;
+  }
+  .st-t {
+    @apply w-60 pr-3;
+  }
+  .st-n {
+    @apply text-mute;
+  }
+  .st-m {
+    @apply w-9 pr-1 text-right whitespace-nowrap;
+  }
+  .st-m .om {
+    @apply mr-0 ml-1;
+  }
+  .st a.tl,
+  .ans-why a.tl,
+  .df-c a.tl {
+    @apply text-accent underline decoration-1 underline-offset-[3px];
+  }
+  @media (max-width: 639px) {
+    .st tr {
+      @apply grid;
+      grid-template-columns: 6rem minmax(0, 1fr) 1.5rem;
+    }
+    .st-b {
+      @apply hidden;
+    }
+    .st th {
+      @apply w-auto;
+      grid-row: span 2;
+    }
+    .st-t,
+    .st-n {
+      @apply w-auto p-0;
+    }
+    .st-t {
+      @apply pt-2.5;
+    }
+    .st-n {
+      @apply col-start-2 pb-2.5 text-xs;
+    }
+    .st-m {
+      @apply col-start-3 row-start-1 w-auto pt-2.5;
+    }
+    .st-ed th::after {
+      content: "差替";
+      @apply block text-[11px] font-semibold text-warn;
+    }
+  }
+  .ed-badge {
+    @apply mr-1 inline-block rounded-[3px] border border-warn px-1 text-[11px] leading-4 font-semibold text-warn;
+  }
+  .sheet-h {
+    @apply mb-2 text-sm font-semibold text-mute;
+  }
+  .sheet-src {
+    @apply mt-2 text-xs text-faint;
+  }
+  /* Operations: one column each */
+  .ops3 {
+    @apply grid gap-5 sm:grid-cols-3;
+  }
+  .ops3-h {
+    @apply flex items-baseline border-b border-ink pb-1.5 text-sm font-semibold;
+  }
+  .ops3-n {
+    @apply ml-2.5 font-mono;
+  }
+  .ops3-v {
+    @apply mt-2 text-sm leading-relaxed;
+  }
+  /* Conditions that would change the answer */
+  .diffs > li {
+    @apply grid gap-x-4 gap-y-1 border-t border-rule py-3 text-sm;
+  }
+  @media (min-width: 640px) {
+    .diffs > li {
+      grid-template-columns: 10rem minmax(0, 1fr) auto;
+    }
+  }
+  .diffs > li:last-child {
+    @apply border-b;
+  }
+  .df-k {
+    @apply font-medium;
+  }
+  .df-c {
+    @apply grid gap-0.5 text-mute;
+  }
+  .df-b {
+    @apply flex flex-wrap items-start gap-1 sm:flex-col sm:items-end;
+  }
+  .cmds h3 {
+    @apply mt-5 mb-2 text-sm font-semibold text-mute;
+  }
+  .cmds:first-child h3 {
+    @apply mt-0;
   }
   /* Comparison of two condition sets */
   .cmp-box {
@@ -475,131 +681,14 @@
       @apply font-mono text-xs text-faint;
     }
   }
-  /* Conditions that would change the answer */
-  .diffs > li {
-    @apply border-t border-rule py-3.5;
-  }
-  .diffs > li:last-child {
-    @apply border-b;
-  }
-  .df-h {
-    @apply flex items-center justify-between gap-3;
-  }
-  .df-k {
-    @apply font-medium;
-  }
-  .df-c {
-    @apply mt-1.5 grid gap-1 text-sm;
-  }
-  .df-c li {
-    @apply grid gap-x-4;
-    grid-template-columns: 7rem minmax(0, 1fr);
-  }
-  .df-l {
-    @apply text-mute;
-  }
-  .answer {
-    @apply rounded-2xl border border-rule bg-surface p-6 sm:p-8;
-  }
-  .ans {
-    @apply mt-1 text-3xl font-bold tracking-tight sm:text-4xl;
-  }
-  .why {
-    @apply mt-4 space-y-1.5 text-[0.94rem] text-mute;
-  }
-  .why li {
-    @apply relative pl-4;
-  }
-  .why li::before {
-    content: "";
-    @apply absolute top-[0.7em] left-0 h-px w-2 bg-faint;
-  }
-  .ops-list {
-    @apply mt-5 grid gap-1.5 text-sm;
-  }
-  .ops-list li {
-    @apply grid gap-x-4;
-    grid-template-columns: 11.5rem 1fr;
-  }
-  .ops-k {
-    @apply flex items-baseline text-mute;
-  }
-  .why.note {
-    @apply mt-3 border-t border-rule pt-3;
-  }
   .blk {
-    @apply mt-12;
+    @apply mt-8;
   }
   .sh {
-    @apply mb-4 flex flex-wrap items-baseline gap-x-3 text-lg font-semibold;
+    @apply mb-3 flex flex-wrap items-baseline gap-x-3 text-base font-semibold;
   }
   .sh-d {
     @apply text-xs font-normal text-faint;
-  }
-  .blk h3 {
-    @apply mt-6 mb-2 text-sm font-semibold text-mute;
-  }
-  .blk > p {
-    @apply mt-3 text-[0.94rem] text-mute;
-  }
-  .sheet-h {
-    @apply mb-2 text-sm font-semibold text-mute;
-  }
-  .sheet-src {
-    @apply mt-2 text-xs text-faint;
-  }
-  .sheet {
-    @apply border-t border-rule;
-  }
-  .srow {
-    @apply border-b border-rule;
-  }
-  .s-head {
-    @apply grid items-start gap-x-6 py-3.5;
-    grid-template-columns: 7rem 1fr auto;
-  }
-  .s-btn {
-    @apply w-full cursor-pointer border-0 bg-transparent px-0 text-left font-[inherit] text-ink;
-  }
-  .s-btn:hover .s-val {
-    @apply text-accent;
-  }
-  .chev-r {
-    @apply mt-2.5 size-2 rotate-[-45deg] border-r-[1.5px] border-b-[1.5px] border-faint;
-  }
-  @media (max-width: 639px) {
-    .s-head {
-      grid-template-columns: 1fr auto;
-    }
-    .s-layer {
-      grid-column: 1 / -1;
-    }
-  }
-  .s-layer {
-    @apply pt-0.5 text-sm text-mute;
-  }
-  .s-val {
-    @apply font-medium;
-  }
-  .chev {
-    @apply size-2 rotate-45 border-r-[1.5px] border-b-[1.5px] border-faint transition-transform;
-    translate: 0 -3px;
-  }
-  details[open] .chev {
-    @apply -rotate-135;
-    translate: 0 2px;
-  }
-  .s-more {
-    @apply mb-4 grid gap-3;
-  }
-  .tcard {
-    @apply rounded-xl border border-rule bg-surface p-5;
-  }
-  .tcard h3 {
-    @apply m-0 mb-3 text-base font-semibold text-ink;
-  }
-  .tcard h3 a {
-    @apply no-underline hover:text-accent;
   }
   .warn {
     @apply mt-4 rounded-lg bg-warn-soft px-4 py-3 text-sm text-warn;
@@ -609,6 +698,52 @@
   }
   .nx {
     @apply rounded-full border border-rule bg-surface px-3.5 py-1.5 text-sm no-underline hover:border-accent hover:text-accent;
+  }
+  /* Marginalia: grounds, the §19 diagram, the legend, warnings */
+  .marg {
+    @apply min-w-0 text-sm;
+  }
+  @media (min-width: 1280px) {
+    .marg {
+      @apply sticky top-[5.5rem] self-start pt-10;
+    }
+  }
+  .marg-h {
+    @apply hidden text-xs font-semibold tracking-[0.08em] text-mute xl:block;
+  }
+  .marg-b {
+    @apply mt-6 border-t border-rule pt-4 leading-relaxed;
+  }
+  .marg-k {
+    @apply mb-2 text-xs font-semibold text-mute;
+  }
+  .marg-card {
+    @apply mt-6 rounded-[4px] border border-rule bg-surface p-4;
+  }
+  .marg-card .diagram {
+    @apply m-0 border-0 bg-transparent p-0;
+  }
+  .marg-card p:not(.marg-k) {
+    @apply mt-2 text-xs text-mute;
+  }
+  .marg-note {
+    @apply text-xs text-mute;
+  }
+  .legend-list {
+    @apply grid gap-1.5;
+  }
+  .legend-list li {
+    @apply flex items-center;
+  }
+  /* Phone: the memo's bar replaces the site tabs */
+  .pbar {
+    @apply fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t border-rule bg-bg pb-[env(safe-area-inset-bottom)] md:hidden;
+  }
+  .pbar > * {
+    @apply flex min-h-14 cursor-pointer items-center justify-center gap-1 border-0 bg-transparent text-sm text-ink no-underline disabled:text-faint;
+  }
+  .pbar-n {
+    @apply rounded-full bg-ink px-1.5 font-mono text-[11px] text-surface;
   }
 }
 
@@ -646,6 +781,12 @@
       box-shadow: none;
     }
   }
+  @media (min-width: 1280px) {
+    body.app .peek:not(:modal) {
+      inset: 3.5rem 0 0 760px;
+      width: auto;
+    }
+  }
   .peek::backdrop {
     background: rgb(27 35 43 / 0.35);
   }
@@ -657,26 +798,80 @@
     @apply min-h-0 flex-1 overflow-y-auto px-6 pt-5 pb-8;
   }
   .peek-top {
-    @apply flex shrink-0 items-start gap-3 border-b border-rule px-5 py-3;
+    @apply flex shrink-0 items-center gap-2 border-b border-rule px-5 py-3;
   }
   .peek-top nav {
     @apply min-w-0 flex-1;
   }
   .crumbs {
-    @apply flex flex-wrap items-center gap-x-1.5 gap-y-1 pt-1.5 text-sm;
+    @apply flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px];
   }
   .crumbs li + li::before {
     content: "›";
     @apply mr-1.5 text-faint;
   }
   .crumbs li[aria-current] {
-    @apply font-medium text-ink;
+    @apply font-semibold text-ink;
   }
   .crumbs button {
-    @apply cursor-pointer rounded px-1 py-0.5 text-accent hover:bg-accent-soft;
+    @apply cursor-pointer text-mute underline underline-offset-2 hover:text-ink;
   }
-  .peek-x {
-    @apply size-10 shrink-0 cursor-pointer rounded-full border border-rule bg-bg text-xl leading-none text-mute hover:text-ink;
+  .peek-btn {
+    @apply inline-flex min-h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-[5px] border border-rule bg-surface px-2.5 text-xs text-ink hover:border-ink;
+  }
+  .peek-btn kbd {
+    @apply rounded-[3px] border border-rule px-1 font-mono text-[10px] text-mute;
+  }
+  /* Earlier references, folded to strips above the current one */
+  .peek-strips {
+    @apply shrink-0;
+  }
+  .peek-strip {
+    @apply grid w-full cursor-pointer items-center gap-3 border-0 border-b border-rule bg-bg px-5 py-2.5 text-left text-[13px] text-ink hover:bg-sunk;
+    grid-template-columns: 1.25rem minmax(0, 1fr) auto;
+  }
+  .peek-strips:not(:empty) {
+    @apply border-b-2 border-ink;
+  }
+  .ps-n {
+    @apply font-mono text-xs text-mute;
+  }
+  .ps-l {
+    @apply truncate font-medium;
+  }
+  .ps-o {
+    @apply text-xs text-mute;
+  }
+  .peek-acts {
+    @apply float-right ml-3 flex gap-1.5;
+  }
+  .peek-acts a {
+    @apply inline-flex min-h-8 items-center rounded-[5px] border border-rule px-2.5 text-xs text-ink no-underline hover:border-ink;
+  }
+  /* Phones: the trail as chips */
+  @media (max-width: 767px) {
+    .crumbs li + li::before {
+      content: none;
+    }
+    .crumbs li,
+    .crumbs button {
+      @apply rounded-full;
+    }
+    .crumbs li {
+      @apply flex min-h-9 items-center;
+    }
+    .crumbs button {
+      @apply min-h-9 border border-rule px-3 no-underline;
+    }
+    .crumbs li[aria-current] {
+      @apply bg-ink px-3 text-surface;
+    }
+    .peek-strips {
+      @apply hidden;
+    }
+    .peek-acts {
+      @apply float-none mb-3 ml-0;
+    }
   }
   .peek-h h2 {
     @apply mt-1 mb-5 text-2xl font-bold tracking-tight outline-none;
@@ -695,57 +890,112 @@
   .peek .doc h3 {
     @apply mt-10;
   }
-  .peek-more {
-    @apply mt-4 border-t border-rule pt-4 text-sm;
-  }
 }
 
-/* ---- side list (make kinds, guide sections): a sidebar on desktop, a sheet on phones ---- */
+/* ---- app frame: full-height index, content, reference pane ---- */
 @layer components {
-  .side-nav section + section {
-    @apply mt-6;
+  body.app {
+    background: var(--sunk);
+  }
+  .app-body {
+    @apply min-w-0 px-4 py-6 sm:px-10 sm:py-7;
+  }
+  .app-side {
+    @apply hidden;
+  }
+  @media (min-width: 1024px) {
+    .app-grid {
+      display: grid;
+      grid-template-columns: 272px minmax(0, 1fr);
+      min-height: calc(100dvh - 3.5rem);
+    }
+    .app-side {
+      @apply sticky top-14 block h-[calc(100dvh-3.5rem)] overflow-y-auto border-r border-rule bg-bg py-8 pr-5 pl-8;
+    }
+  }
+  .app-rail {
+    @apply hidden;
   }
   .side-g {
-    @apply mb-1.5 text-xs font-semibold tracking-wider text-faint;
+    @apply mb-3 text-xs font-semibold tracking-[0.12em] text-mute;
+  }
+  .side-nav ul {
+    @apply grid gap-0.5 text-sm;
   }
   .side-nav a {
-    @apply block rounded-lg px-3 py-2 no-underline hover:bg-sunk;
+    @apply block rounded-[5px] px-2.5 py-2 text-ink no-underline hover:bg-sunk;
+  }
+  .side-kind {
+    @apply grid! gap-2;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
   .side-nav a[aria-current] {
-    @apply bg-accent-soft;
-  }
-  .side-n {
-    @apply block text-sm font-medium text-ink;
-  }
-  .side-nav a[aria-current] .side-n {
-    @apply font-semibold text-accent;
+    @apply bg-ink font-semibold text-surface hover:bg-ink;
   }
   .side-d {
-    @apply block text-xs text-mute;
+    @apply text-xs text-mute;
+  }
+  .side-nav a[aria-current] .side-d {
+    @apply text-surface opacity-80;
+  }
+  .side-toc {
+    @apply grid text-[13px] leading-8;
+  }
+  .side-nav .side-toc a {
+    @apply py-0;
+  }
+  .side-toc-n {
+    @apply inline-block w-6 font-mono text-mute;
   }
   .side-sub {
     @apply mt-1 mb-2 ml-3 border-l border-rule;
   }
   .side-nav .side-sub a {
-    @apply rounded-none rounded-r-lg py-1 pl-3 text-[0.8rem] text-mute hover:text-ink;
+    @apply rounded-none rounded-r-lg py-1 pl-3 text-[0.8rem] font-normal text-mute hover:text-ink;
+  }
+  .rail-btn {
+    @apply flex size-10 cursor-pointer items-center justify-center rounded-md border border-rule bg-surface text-ink;
+  }
+  .rail-l {
+    @apply mt-4 text-xs tracking-[0.2em] text-mute;
+    writing-mode: vertical-rl;
   }
   .side-btn {
     @apply mt-1 shrink-0 cursor-pointer rounded-lg border border-rule bg-surface px-3 py-1.5 text-sm text-ink hover:border-accent hover:text-accent;
   }
 }
 
-/* Unlayered so it wins over the layout utilities: with the reference pane open, the page makes room for it */
+/* Unlayered so it wins over the layout utilities: with a reference open, the index folds to a rail,
+   the paper narrows and the pane takes the rest */
 @media (min-width: 1280px) {
-  body.ref-open main#main {
+  body.ref-open .app-grid {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+  body.ref-open .app-side {
+    padding: 1.25rem 0.5rem;
+  }
+  body.ref-open .app-side > .side-nav {
+    display: none;
+  }
+  body.ref-open .app-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  body.ref-open .mk {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  body.ref-open .memo,
+  body.ref-open .paper {
+    max-width: 640px;
+    padding-inline: 2.75rem;
+  }
+  body.ref-open .marg {
+    display: none;
+  }
+  body:not(.app).ref-open main#main {
     max-width: none;
     margin: 0 32rem 0 0;
     padding-inline: 2.5rem;
-  }
-  body.ref-open .side-grid {
-    grid-template-columns: minmax(0, 48rem);
-    justify-content: center;
-  }
-  body.ref-open .side-grid > aside {
-    display: none;
   }
 }

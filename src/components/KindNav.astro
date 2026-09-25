@@ -5,25 +5,47 @@ interface Props {
   current: Kind;
 }
 const { current } = Astro.props;
+// Short forms of the default picks, to fit beside the names
+const SHORT: Record<string, string> = {
+  'Ruby / Rails': 'Rails',
+  TypeScript: 'TS',
+  'Shopify または Medusa': 'Shopify',
+  'Astro＋ヘッドレスCMS': 'Astro',
+  'SQL＋Python（Polars）': 'SQL＋Py',
+};
+const ids = KIND_GROUPS.flatMap(([, k]) => k);
+const TOC = ['推奨言語', '構成', '運用の内訳', '条件が違うとき', '作り始める', '次に読む'];
 ---
 
-{
-  KIND_GROUPS.map(([label, ids]) => (
-    <section>
-      <h2 class="side-g">{label}</h2>
-      <ul>
-        {ids.map((k) => {
-          const [, name] = KINDS.find((x) => x[0] === k) as (typeof KINDS)[number];
-          return (
-            <li>
-              <a href={`/make/${k}/`} data-astro-prefetch aria-current={k === current ? 'page' : undefined}>
-                <span class="side-n">{name}</span>
-                <span class="side-d">{decide(k, DEFAULTS).title}</span>
-              </a>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  ))
-}
+<p class="side-g">作るもの</p>
+<ul>
+  {
+    ids.map((k) => {
+      const [, name] = KINDS.find((x) => x[0] === k) as (typeof KINDS)[number];
+      const def = decide(k, DEFAULTS).title;
+      return (
+        <li>
+          <a href={`/make/${k}/`} data-astro-prefetch aria-current={k === current ? 'page' : undefined} class="side-kind">
+            <span>{name}</span>
+            <span class="side-d" title={def}>
+              {SHORT[def] ?? def}
+            </span>
+          </a>
+        </li>
+      );
+    })
+  }
+</ul>
+<p class="side-g mt-9">このメモの目次</p>
+<ol class="side-toc">
+  {
+    TOC.map((t, i) => (
+      <li>
+        <a href={`#m${i + 1}`}>
+          <span class="side-toc-n">{i + 1}</span>
+          {t}
+        </a>
+      </li>
+    ))
+  }
+</ol>

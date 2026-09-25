@@ -8,8 +8,12 @@ interface Props {
   /** Markdown version of this page for AI agents */
   md?: string;
   wide?: boolean;
+  /** Full-width app layout: side index, paper, marginalia (make and guide pages) */
+  app?: boolean;
+  /** The page brings its own bottom bar on phones */
+  bar?: boolean;
 }
-const { title, tab, md, wide = false } = Astro.props;
+const { title, tab, md, wide = false, app = false, bar = false } = Astro.props;
 const tabs = [
   ['make', '/', '作る'],
   ['dict', '/dict/', '辞書'],
@@ -35,9 +39,9 @@ const tabs = [
       rel="stylesheet"
     />
   </head>
-  <body class="min-h-dvh pb-20 md:pb-0">
-    <header class="sticky top-0 z-20 border-b border-rule bg-bg/85 backdrop-blur-md">
-      <div class="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
+  <body class:list={['min-h-dvh pb-20 md:pb-0', app && 'app']}>
+    <header class="sticky top-0 z-20 border-b border-rule bg-bg">
+      <div class:list={['flex h-14 items-center gap-6 px-4 sm:px-8', !app && 'mx-auto max-w-6xl sm:px-6']}>
         <a href="/" class="flex shrink-0 items-center gap-2 font-mono text-[0.95rem] font-semibold tracking-tight no-underline">
           <svg width="22" height="22" viewBox="0 0 56 56" aria-hidden="true">
             <rect x="6" y="8" width="44" height="11" rx="3" fill="#24477f"></rect>
@@ -47,20 +51,21 @@ const tabs = [
           </svg>
           stackbook
         </a>
-        <nav aria-label="主要" class="hidden gap-1 md:flex">
+        <nav aria-label="主要" class="hidden gap-5 md:flex">
           {
             tabs.map(([k, href, label]) => (
               <a
                 href={href}
                 aria-current={tab === k ? 'page' : undefined}
-                class="rounded-md px-3 py-1.5 text-sm text-mute no-underline hover:text-ink aria-[current]:bg-accent-soft aria-[current]:font-semibold aria-[current]:text-accent"
+                class="border-b-2 border-transparent py-[15px] text-sm text-mute no-underline hover:text-ink aria-[current]:border-ink aria-[current]:font-semibold aria-[current]:text-ink"
               >
                 {label}
               </a>
             ))
           }
         </nav>
-        <div class="search relative ml-auto w-full max-w-64">
+        <div class="search relative ml-auto w-full max-w-96">
+          <svg class="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-mute" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
           <input
             id="q"
             type="search"
@@ -68,10 +73,10 @@ const tabs = [
             aria-autocomplete="list"
             aria-expanded="false"
             aria-controls="qres"
-            placeholder="ツール・言語を検索"
-            aria-label="ツール・言語を検索"
+            placeholder="ツール名・§番号を引く（例：pg-boss、§2-10）"
+            aria-label="ツール名・§番号を引く"
             autocomplete="off"
-            class="w-full rounded-lg border border-rule bg-surface px-3 py-1.5 text-sm placeholder:text-faint"
+            class="h-9 w-full rounded-md border border-rule bg-surface pr-9 pl-9 text-sm placeholder:text-faint"
           />
           <kbd class="pointer-events-none absolute top-1/2 right-2 hidden -translate-y-1/2 rounded border border-rule px-1.5 font-mono text-[0.7rem] text-faint sm:block">/</kbd>
           <div
@@ -88,7 +93,7 @@ const tabs = [
     </header>
     <nav
       aria-label="主要"
-      class="fixed inset-x-0 bottom-0 z-20 flex border-t border-rule bg-bg pb-[env(safe-area-inset-bottom)] md:hidden"
+      class:list={['fixed inset-x-0 bottom-0 z-20 flex border-t border-rule bg-bg pb-[env(safe-area-inset-bottom)] md:hidden', bar && 'hidden']}
     >
       {
         tabs.map(([k, href, label]) => (
@@ -102,14 +107,16 @@ const tabs = [
         ))
       }
     </nav>
-    <main id="main" class:list={['mx-auto px-4 py-8 sm:px-6 sm:py-12', wide ? 'max-w-6xl' : 'max-w-3xl']}>
+    <main id="main" class:list={app ? 'app-main' : ['mx-auto px-4 py-8 sm:px-6 sm:py-12', wide ? 'max-w-6xl' : 'max-w-3xl']}>
       <slot />
     </main>
     <dialog id="peek" class="peek" aria-labelledby="peek-title">
       <div class="peek-top">
         <nav aria-label="たどった参照"><ol id="peek-crumbs" class="crumbs" aria-live="polite"></ol></nav>
-        <button type="button" class="peek-x" aria-label="閉じる" data-peek-close>×</button>
+        <button type="button" id="peek-back" class="peek-btn" hidden>‹ 戻る</button>
+        <button type="button" class="peek-btn" data-peek-close>閉じる <kbd>Esc</kbd></button>
       </div>
+      <div id="peek-strips" class="peek-strips"></div>
       <div id="peek-body"></div>
     </dialog>
     <script>

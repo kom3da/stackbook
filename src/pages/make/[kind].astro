@@ -7,22 +7,15 @@ import { makePayload } from '../../lib/make-data';
 import { KINDS, type Kind } from '../../lib/wizard';
 
 export function getStaticPaths() {
-  return KINDS.map(([kind, name, desc]) => ({ params: { kind }, props: { name, desc } }));
+  return KINDS.map(([kind, name]) => ({ params: { kind }, props: { name } }));
 }
 const kind = Astro.params.kind as Kind;
-const { name, desc } = Astro.props;
+const { name } = Astro.props;
 ---
 
-<Base title={name} tab="make" md={`/make/${kind}.md`} wide>
-  <SideNav label="作るもの">
+<Base title={name} tab="make" md={`/make/${kind}.md`} app bar>
+  <SideNav label="作るもの" rail={name}>
     <KindNav slot="nav" current={kind} />
-    <header class="flex items-start justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-bold tracking-tight">{name}</h1>
-        <p class="lead mt-1">{desc}</p>
-      </div>
-      <button type="button" class="side-btn lg:hidden" aria-haspopup="dialog" data-sheet-open>ほかを選ぶ</button>
-    </header>
     <MakeApp client:load kind={kind} payload={makePayload(kind)} />
   </SideNav>
 </Base>
