@@ -1,6 +1,14 @@
 ---
 // The §19 case whose starter commands and tool levels the kit marginalia shows (kept in this browser)
+import { SECS } from '../lib/guide';
 import { kitCases } from '../lib/kit';
+
+interface Props {
+  /** The chapter being read: its own content is not repeated at the end on narrow screens */
+  sec?: string;
+}
+const { sec } = Astro.props;
+const shown = sec === SECS.commands ? '習熟度' : sec === SECS.prof ? '雛形' : '雛形と習熟度';
 ---
 
 <label class="case-row">
@@ -9,4 +17,4 @@ import { kitCases } from '../lib/kit';
     {kitCases().map((c) => <option value={c.id}>{c.title}</option>)}
   </select>
 </label>
-<p class="side-note mt-2 xl:hidden">選んだケースの雛形と習熟度は、このページの最後に出る。</p>
+<p class="side-note mt-2 xl:hidden">選んだケースの{shown}は、このページの最後に出る。</p>

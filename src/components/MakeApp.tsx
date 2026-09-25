@@ -556,7 +556,10 @@ function Compare({
       '',
     ].join('\n');
   const cell = (t: string, side: string) => (
-    <td data-k={side}>{t ? <Inline text={t.replaceAll('**', '')} /> : <span className="text-faint">—</span>}</td>
+    <td data-k={side}>
+      {/* One wrapper, so the value is a single grid item beside the A/B marker on phones */}
+      <span>{t ? <Inline text={t.replaceAll('**', '')} /> : <span className="text-faint">—</span>}</span>
+    </td>
   );
   return (
     <section className="blk cmp-box" id="cmp" aria-labelledby="cmp-h">

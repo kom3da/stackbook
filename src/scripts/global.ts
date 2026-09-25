@@ -503,7 +503,7 @@ function zoomTo(s: number) {
 document.addEventListener('click', (e) => {
   const t = e.target as HTMLElement;
   if (!zoom || !zoomBody) return;
-  const fig = t.closest('.diagram-wrap');
+  const fig = t.closest('.diagram');
   if (fig && (t.closest('[data-zoom]') || t.closest('.diagram-svg'))) {
     const svg = fig.querySelector('svg');
     if (!svg) return;
@@ -571,7 +571,7 @@ function edges(fig: HTMLElement) {
   wrap.toggleAttribute('data-r', fig.scrollLeft < more - 2);
 }
 function fitDiagrams() {
-  for (const fig of document.querySelectorAll<HTMLElement>('.diagram')) {
+  for (const fig of document.querySelectorAll<HTMLElement>('.diagram-scroll')) {
     if (!fig.dataset.seen && fig.scrollWidth > fig.clientWidth) {
       fig.dataset.seen = '1';
       fig.scrollLeft = (fig.scrollWidth - fig.clientWidth) / 2;

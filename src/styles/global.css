@@ -149,7 +149,7 @@
   }
   @media (min-width: 768px) {
     .ch {
-      grid-template-columns: 11rem 1fr;
+      grid-template-columns: minmax(6rem, min(11rem, 30%)) minmax(0, 1fr);
     }
   }
   .ch-role {
@@ -196,7 +196,8 @@
   }
   @media (min-width: 640px) {
     .kv > div {
-      grid-template-columns: minmax(8rem, 13rem) 1fr;
+      /* The label never takes more than a third of a narrow column */
+      grid-template-columns: minmax(6rem, min(13rem, 32%)) minmax(0, 1fr);
     }
   }
   .kv dt {
@@ -371,8 +372,12 @@
     @apply absolute top-2.5 right-2.5 min-h-7 cursor-pointer rounded-md border border-line bg-bg px-2.5 text-xs text-mute hover:text-ink;
   }
 
+  /* The top padding keeps the zoom button off the drawing */
   .diagram {
-    @apply m-0 overflow-x-auto rounded-xl border border-rule bg-surface p-4 text-center;
+    @apply m-0 rounded-xl border border-rule bg-surface p-4 pt-11 text-center;
+  }
+  .diagram-scroll {
+    @apply overflow-x-auto;
   }
   .diagram svg {
     @apply mx-auto h-auto max-w-full;
@@ -412,32 +417,29 @@
     @apply mx-auto block;
   }
   @media (max-width: 767px) {
-    .diagram {
-      @apply pt-11;
-    }
     .diagram-svg {
       min-width: var(--dw);
     }
   }
   /* A diagram wider than the screen: shades on the sides where more of it lies */
-  .diagram-wrap {
+  .diagram-view {
     @apply relative;
   }
-  .diagram-wrap::before,
-  .diagram-wrap::after {
+  .diagram-view::before,
+  .diagram-view::after {
     content: "";
-    @apply pointer-events-none absolute top-px bottom-px z-[1] w-8 opacity-0 transition-opacity;
+    @apply pointer-events-none absolute inset-y-0 z-[1] w-8 opacity-0 transition-opacity;
   }
-  .diagram-wrap::before {
-    @apply left-px rounded-l-xl;
-    background: linear-gradient(to right, rgb(27 35 43 / 0.12), transparent);
+  .diagram-view::before {
+    @apply left-0;
+    background: linear-gradient(to right, rgb(27 35 43 / 0.1), transparent);
   }
-  .diagram-wrap::after {
-    @apply right-px rounded-r-xl;
-    background: linear-gradient(to left, rgb(27 35 43 / 0.12), transparent);
+  .diagram-view::after {
+    @apply right-0;
+    background: linear-gradient(to left, rgb(27 35 43 / 0.1), transparent);
   }
-  .diagram-wrap[data-l]::before,
-  .diagram-wrap[data-r]::after {
+  .diagram-view[data-l]::before,
+  .diagram-view[data-r]::after {
     @apply opacity-100;
   }
   @media (min-width: 1024px) {
@@ -634,8 +636,9 @@
     @apply grid gap-10;
   }
   @media (min-width: 1280px) {
+    /* The memo gives way before the sidenote gets too narrow to read */
     .mk {
-      grid-template-columns: minmax(0, 792px) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 792px) minmax(260px, 1fr);
     }
   }
   .memo,
@@ -675,7 +678,7 @@
     @apply mt-4 font-display text-[26px] leading-snug font-bold tracking-[-0.01em] sm:text-[32px];
   }
   .sec-grid {
-    @apply grid gap-10;
+    @apply grid gap-10 max-sm:gap-6;
   }
   @media (min-width: 1280px) {
     .sec-grid.has-marg {
@@ -1195,8 +1198,12 @@
     .cmp tbody th {
       @apply w-auto;
     }
+    /* The A/B marker is its own column, so a wrapped value lines up under itself */
+    .cmp td {
+      @apply grid grid-cols-[1.25rem_minmax(0,1fr)] items-baseline;
+    }
     .cmp td::before {
-      content: attr(data-k) "\3000";
+      content: attr(data-k);
       @apply font-mono text-xs text-faint;
     }
   }

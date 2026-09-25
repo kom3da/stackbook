@@ -334,42 +334,44 @@ function BlockView({ b, secId, names }: { b: Block; secId: string; names: (ids: 
       );
     case 'mermaid':
       return (
-        // The wrapper stays put while a wide figure scrolls sideways: it holds the zoom button and the edge shades
-        <div className="diagram-wrap">
+        <figure className="diagram">
           <button type="button" className="diagram-zoom" data-zoom aria-label="構成図を拡大して開く">
             拡大
           </button>
-          <figure className="diagram">
-            {/* Pre-rendered at build time from our own guide content (scripts/diagrams.mjs) */}
-            <div
-              className="diagram-svg"
-              style={
-                {
-                  '--dw': `${Math.min(Number(b.svg.match(/max-width: ([\d.]+)px/)?.[1] ?? 0), 720)}px`,
-                } as CSSProperties
-              }
-              dangerouslySetInnerHTML={{ __html: b.svg }}
-            />
-            <figcaption className="legend">
-              <span>
-                <span className="om om-code" />
-                自分で書く
-              </span>
-              <span>
-                <span className="om om-self" />
-                自分で運用する
-              </span>
-              <span>
-                <span className="om om-managed" />
-                マネージドに任せる
-              </span>
-              <span>
-                <span className="om om-none" />
-                灰色の地：分類なし
-              </span>
-            </figcaption>
-          </figure>
-        </div>
+          {/* Only the drawing scrolls sideways; its frame holds the shades that say more lies beyond */}
+          <div className="diagram-view">
+            <div className="diagram-scroll">
+              {/* Pre-rendered at build time from our own guide content (scripts/diagrams.mjs) */}
+              <div
+                className="diagram-svg"
+                style={
+                  {
+                    '--dw': `${Math.min(Number(b.svg.match(/max-width: ([\d.]+)px/)?.[1] ?? 0), 720)}px`,
+                  } as CSSProperties
+                }
+                dangerouslySetInnerHTML={{ __html: b.svg }}
+              />
+            </div>
+          </div>
+          <figcaption className="legend">
+            <span>
+              <span className="om om-code" />
+              自分で書く
+            </span>
+            <span>
+              <span className="om om-self" />
+              自分で運用する
+            </span>
+            <span>
+              <span className="om om-managed" />
+              マネージドに任せる
+            </span>
+            <span>
+              <span className="om om-none" />
+              灰色の地：分類なし
+            </span>
+          </figcaption>
+        </figure>
       );
     case 'table':
       return <Table head={b.head} rows={b.rows} />;

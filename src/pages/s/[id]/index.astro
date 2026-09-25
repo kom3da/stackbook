@@ -41,7 +41,7 @@ const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : GR
       </span>
     </header>
     <h1 class="sec-h">{s.title}</h1>
-    {g === 'kit' && <CasePick />}
+    {g === 'kit' && <CasePick sec={s.id} />}
     {isStale(s) && <p class="warn">{STALE_MONTHS}か月以上見直していない。内容が古くなっている可能性がある。</p>}
     {
       h3.length >= 3 && (
