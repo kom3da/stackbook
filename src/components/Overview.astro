@@ -17,12 +17,18 @@ const kit = group === 'kit';
 const chapters = GROUPS[group].flatMap((id) => {
   const s = SEC.get(id);
   if (!s) return [];
-  const p = s.blocks.find((b) => b.t === 'p');
-  // Chapters that open with a table or a checklist say how much they hold instead
-  const first = s.blocks.find((b) => b.t === 'table' || b.t === 'check');
-  const size = first?.t === 'table' ? `${first.rows.length}件の表` : first?.t === 'check' ? `${first.items.length}項目のチェックリスト` : '';
+  // The opening paragraph, or for a chapter that opens with a table or a checklist, what it holds
+  const first = s.blocks.find((b) => b.t === 'p' || b.t === 'h3' || b.t === 'table' || b.t === 'check');
+  const lead =
+    first?.t === 'p'
+      ? screenText(plain(first.text))
+      : first?.t === 'table'
+        ? `${first.head.map(plain).join('・')}の表${first.rows.length ? `（${first.rows.length}件）` : '（記入用）'}`
+        : first?.t === 'check'
+          ? `${first.items.length}項目のチェックリスト`
+          : '';
   const subs = s.blocks.flatMap((b) => (b.t === 'h3' && /^\d+-\d+$/.test(b.id) ? [{ id: b.id, text: headText(b.text) }] : []));
-  return [{ s, lead: p?.t === 'p' ? screenText(plain(p.text)) : size, subs }];
+  return [{ s, lead, subs }];
 });
 // Progress saved in this browser, filled in by the page script
 const progress: Record<string, Record<string, string>> = kit

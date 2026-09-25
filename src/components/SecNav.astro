@@ -2,7 +2,6 @@
 import { backlinks } from '../lib/backlinks';
 import { secHref } from '../lib/inline';
 import { checkTotal, commandTotal, profNames, profTotal } from '../lib/kit';
-import CasePick from './CasePick.astro';
 import { headText, TITLES, GROUP_LABEL, GROUPS, SECS, type Group, guide, secLabel } from '../lib/guide';
 
 interface Props {
@@ -56,8 +55,6 @@ const counts: Record<string, { attrs: Record<string, string>; text: string }> = 
 {
   group === 'kit' && (
     <>
-      <div class="mt-9"><CasePick /></div>
-      <p class="side-note">選ぶと、このケースの雛形コマンドと、使うツールの習熟度が傍注に出る。</p>
       <p class="side-g mt-9">保存</p>
       <p class="side-note">チェックと習熟度はこのブラウザに保存する。習熟度表は JSON で書き出し・読み込みができる。</p>
     </>
@@ -78,7 +75,7 @@ const counts: Record<string, { attrs: Record<string, string>; text: string }> = 
           </li>
         ))}
       </ul>
-      <p class="side-note">押すと参照の欄に開く。この本文は動かない。</p>
+      <p class="side-note">押すと、この本文を開いたまま参照が開く。</p>
     </div>
   )
 }

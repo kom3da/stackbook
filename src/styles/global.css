@@ -35,7 +35,7 @@
   --font-sans: "IBM Plex Sans JP", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
   /* Headings: the logo's face for Latin, the body face for Japanese */
   --font-display: "Schibsted Grotesk", "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-mono: "IBM Plex Mono", "IBM Plex Sans JP", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 @layer base {
@@ -304,6 +304,12 @@
   .ck-refs {
     @apply flex shrink-0 gap-1;
   }
+  /* On phones the chips would squeeze the item; its inline link already goes there */
+  @media (max-width: 639px) {
+    .ck-refs {
+      @apply hidden;
+    }
+  }
   .ck-chip {
     @apply inline-flex min-h-7 items-center rounded-full border border-line px-2.5 text-xs no-underline hover:border-ink;
   }
@@ -317,10 +323,14 @@
   .code pre code {
     @apply bg-transparent p-0 text-[inherit];
   }
+  /* Phones and the marginalia are narrow: wrap commands rather than hide their ends behind a sideways scroll */
   @media (max-width: 639px) {
     .code pre {
-      @apply pt-11 pr-4;
+      @apply pt-11 pr-4 whitespace-pre-wrap wrap-anywhere;
     }
+  }
+  .marg .code pre {
+    @apply pt-11 pr-4 whitespace-pre-wrap wrap-anywhere;
   }
   .copy {
     @apply absolute top-2.5 right-2.5 min-h-7 cursor-pointer rounded-md border border-line bg-bg px-2.5 text-xs text-mute hover:text-ink;
@@ -397,7 +407,7 @@
   }
   /* Proficiency: three buttons, the chosen one filled */
   .seg {
-    @apply inline-flex shrink-0 overflow-hidden rounded-[5px] border border-line bg-surface;
+    @apply inline-grid shrink-0 grid-cols-3 overflow-hidden rounded-[5px] border border-line bg-surface;
   }
   .seg button {
     @apply min-h-8 cursor-pointer border-0 border-l border-line bg-transparent px-2.5 text-xs whitespace-nowrap text-mute hover:text-ink;
@@ -424,6 +434,14 @@
   }
   .prof-f button[aria-pressed="true"] {
     @apply border-ink bg-ink text-surface;
+  }
+  @media (max-width: 639px) {
+    .prof-f {
+      @apply gap-1;
+    }
+    .prof-f button {
+      @apply gap-1 px-2;
+    }
   }
   .pf-n {
     @apply font-mono opacity-70;
@@ -455,7 +473,7 @@
     content: none;
   }
   .pl {
-    @apply flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-rule py-1.5;
+    @apply flex items-center justify-between gap-x-3 gap-y-1 border-b border-rule py-1.5;
   }
   .pl-n {
     @apply min-w-0 text-sm font-medium;
@@ -463,7 +481,8 @@
   .pl[data-level="未経験"] {
     background: var(--warn-soft);
   }
-  .pl[data-level=""] .seg {
+  .pl[data-level=""] .seg,
+  .pl[data-level=""] .seg button {
     @apply border-dashed;
   }
   .prof-grid[data-f="unset"] .pl:not([data-level=""]),
@@ -472,14 +491,16 @@
   .prof-grid[data-f="実務"] .pl:not([data-level="実務"]) {
     display: none;
   }
-  .kit-prof .pl {
-    @apply px-1;
+  @media (min-width: 1280px) {
+    .kit-prof .pl {
+      @apply px-1;
+    }
   }
   .prof-io {
     @apply mt-8 flex flex-wrap gap-2;
   }
   .prof-io button {
-    @apply cursor-pointer rounded-lg border border-rule bg-surface px-3 py-1.5 text-sm hover:border-accent;
+    @apply inline-flex min-h-8 cursor-pointer items-center rounded-[5px] border border-line bg-surface px-3 text-[13px] text-ink hover:border-ink;
   }
   .prof-io textarea {
     @apply mt-1 min-h-32 w-full rounded-lg border border-rule bg-surface p-3 font-mono text-xs;
@@ -653,7 +674,7 @@
     @apply bg-accent-soft shadow-[inset_0_-2px_0_var(--accent)];
   }
   .hk-n {
-    @apply block font-semibold;
+    @apply block leading-snug font-semibold;
   }
   .hk-d {
     @apply block text-xs text-mute;
@@ -718,7 +739,7 @@
     @apply flex items-baseline justify-between;
   }
   .np-box {
-    @apply mt-2 bg-surface p-5;
+    @apply mt-2 bg-surface;
   }
   .np-q {
     @apply h-10 w-full rounded-[5px] border border-ink bg-surface px-3 text-sm;
@@ -738,7 +759,15 @@
     @apply mt-3 border-b border-ink pb-1.5 text-xs text-mute;
   }
   .np-list {
-    @apply m-0 max-h-[50vh] list-none overflow-y-auto p-0;
+    @apply m-0 list-none p-0;
+  }
+  @media (min-width: 1280px) {
+    .np-box {
+      @apply p-5;
+    }
+    .np-list {
+      @apply max-h-[50vh] overflow-y-auto;
+    }
   }
   .np-list li {
     @apply grid items-baseline gap-x-2 border-b border-rule py-2 text-sm;
@@ -1113,6 +1142,9 @@
   .case-fig + .case-fig {
     @apply mt-6;
   }
+  .case-fig > figure + * {
+    @apply mt-3;
+  }
   .legend-list {
     @apply grid gap-1.5;
   }
@@ -1240,6 +1272,13 @@
   }
   /* Phones: the trail as chips */
   @media (max-width: 767px) {
+    .crumbs {
+      @apply flex-nowrap overflow-x-auto py-0.5;
+      scrollbar-width: none;
+    }
+    .crumbs li {
+      @apply shrink-0 whitespace-nowrap;
+    }
     .crumbs li + li::before {
       content: none;
     }
@@ -1409,4 +1448,9 @@
   body.app {
     background: var(--surface);
   }
+}
+
+/* The sheet's title already names the list */
+#side-sheet .side-nav > .side-g:first-child {
+  display: none;
 }

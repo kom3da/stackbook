@@ -4,6 +4,14 @@ import { SECS, subBlocks } from '../lib/guide';
 import { kitCases } from '../lib/kit';
 import { LINKS } from '../lib/view';
 import { Blocks, ProfSeg } from './Blocks';
+
+interface Props {
+  /** The chapter being read: below the page (narrow screens) its own content is not repeated */
+  sec?: string;
+}
+const { sec } = Astro.props;
+const dupCmd = sec === SECS.commands ? 'max-xl:hidden' : '';
+const dupProf = sec === SECS.prof ? 'max-xl:hidden' : '';
 ---
 
 <aside class="marg" aria-label="このケースの雛形と習熟度">
@@ -11,7 +19,7 @@ import { Blocks, ProfSeg } from './Blocks';
     kitCases().map((c) => (
       <section class="kit-case" data-case={c.id} hidden>
         {[SECS.commandsCommon, ...c.commands].map((id) => (
-          <div class="marg-b">
+          <div class:list={['marg-b', dupCmd]}>
             <p class="marg-k">
               {id === SECS.commandsCommon ? '共通の準備' : 'このケースの雛形'}
             </p>
@@ -19,7 +27,7 @@ import { Blocks, ProfSeg } from './Blocks';
           </div>
         ))}
         {c.prof.length > 0 && (
-          <div class="marg-b">
+          <div class:list={['marg-b', dupProf]}>
             <p class="marg-k">このケースの習熟度</p>
             <ul class="kit-prof">
               {c.prof.map((n) => (

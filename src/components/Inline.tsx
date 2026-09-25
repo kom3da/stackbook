@@ -1,5 +1,5 @@
 import { createContext, Fragment, type ReactNode, useContext } from 'react';
-import { findName, refText, type Seg, secHref, segments } from '../lib/inline';
+import { findName, refText, type Seg, screenSegments, secHref } from '../lib/inline';
 
 /** Tool id → display name and link target (dictionary page or official site), for linking names inside text */
 export type Links = Record<string, { name: string; href: string }>;
@@ -53,5 +53,5 @@ export function Inline({ text, tools = [] }: Props) {
         return <Fragment key={i}>{linkify(s.v, `${i}`)}</Fragment>;
     }
   };
-  return <>{segments(text).map(render)}</>;
+  return <>{screenSegments(text).map(render)}</>;
 }

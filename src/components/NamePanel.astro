@@ -31,7 +31,7 @@ const letters = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '#'];
         </button>
       ))}
     </div>
-    <p class="side-note mt-4">名前を押すと、参照の欄にツールが開く。分野の表は動かない。</p>
+    <p class="side-note mt-4">名前を押すと、<span class="max-xl:hidden">参照の欄に</span><span class="xl:hidden">画面の下から</span>ツールが開く。いま読んでいるページは動かない。</p>
   </div>
 </section>
 
@@ -57,7 +57,8 @@ const letters = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '#'];
           (!letter || initial(r.n) === letter) &&
           (!kind || (kind === 'field' ? r.f.includes(field) : r.b === kind)),
       );
-      const shown = hit.slice(0, 60);
+      // Beside the page the list scrolls on its own; below it (narrow screens) it is part of the page, so keep it short
+      const shown = hit.slice(0, matchMedia('(min-width: 1280px)').matches ? 60 : 20);
       count.textContent = `${hit.length}件${hit.length > shown.length ? `（先頭${shown.length}件。名前の一部か頭文字で絞り込む）` : ''}`;
       list.innerHTML = shown
         .map(

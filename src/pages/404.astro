@@ -2,7 +2,12 @@
 import Base from '../layouts/Base.astro';
 ---
 
-<Base title="見つからない">
-  <h1 class="text-3xl font-bold tracking-tight">ページが見つからない</h1>
-  <p class="mt-4"><a class="ref" href="/">最初に戻る</a></p>
+<Base title="見つからない" app>
+  <div class="app-body sec-grid mx-auto max-w-[960px]">
+    <article class="paper">
+      <h1 class="sec-h">ページが見つからない</h1>
+      <p class="mt-4 text-mute">ページの場所が変わった可能性がある。上の検索でツール名や章の名前から引ける。</p>
+      <p class="mt-6 pager"><a class="btn btn-primary" href="/">最初に戻る</a></p>
+    </article>
+  </div>
 </Base>

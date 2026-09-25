@@ -32,10 +32,10 @@ const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : GR
     <header class="sec-top">
       <p class="sec-meta">{meta}{s.checked && `　確認：${s.checked}`}</p>
       <span class="sec-acts pager">
-        {g === 'read' && prev && <a class="btn btn-s" href={`/s/${prev.id}/`}>‹ {secLabel(prev)}</a>}
-        {g === 'read' && next && <a class="btn btn-s" href={`/s/${next.id}/`}>{secLabel(next)} ›</a>}
+        {g === 'read' && prev && <a class="btn btn-s max-sm:hidden" href={`/s/${prev.id}/`}>‹ {secLabel(prev)}</a>}
+        {g === 'read' && next && <a class="btn btn-s max-sm:hidden" href={`/s/${next.id}/`}>{secLabel(next)} ›</a>}
         {s.id === SECS.checklist && <button type="button" class="btn" data-ck-clear={s.id}>チェックをすべて外す</button>}
-        <button type="button" class="btn btn-primary" data-copy-md={`/s/${s.id}.md`}>Markdownでコピー</button>
+        <button type="button" class="btn btn-primary" data-copy-md={`/s/${s.id}.md`}><span class="max-sm:sr-only">Markdownで</span>コピー</button>
         <button type="button" class="btn lg:hidden" aria-haspopup="dialog" data-sheet-open>目次</button>
       </span>
     </header>
@@ -57,8 +57,8 @@ const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : GR
     {
       s.id === SECS.prof && (
         <div class="prof-io">
-          <button type="button" data-a="exp">JSONに書き出し</button>
-          <button type="button" data-a="imp">JSONを読み込み</button>
+          <button type="button" data-a="exp">書き出し</button>
+          <button type="button" data-a="imp">読み込み</button>
           <button type="button" data-a="clr">すべてクリア</button>
           <textarea aria-label="習熟度のJSON" placeholder="書き出したJSONがここに表示される。読み込むときはここに貼り付ける" />
         </div>
@@ -86,7 +86,7 @@ const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : GR
     </nav>
     </article>
     {g === 'tools' && <aside class="marg"><NamePanel field={s.id} /></aside>}
-    {g === 'kit' && <KitMarg />}
+    {g === 'kit' && <KitMarg sec={s.id} />}
     </div>
   </SideNav>
 </Base>

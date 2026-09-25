@@ -22,7 +22,7 @@ const { t } = Astro.props as { t: Tool };
         <header class="sec-top">
           <p class="sec-meta">ツール・{category(t)}</p>
           <span class="sec-acts pager">
-            <button type="button" class="btn btn-primary" data-copy-md={`/dict/${t.slug}.md`}>Markdownでコピー</button>
+            <button type="button" class="btn btn-primary" data-copy-md={`/dict/${t.slug}.md`}><span class="max-sm:sr-only">Markdownで</span>コピー</button>
             <button type="button" class="btn lg:hidden" aria-haspopup="dialog" data-sheet-open>分野</button>
           </span>
         </header>

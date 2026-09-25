@@ -94,7 +94,7 @@ const OPS = { code: '自分で書く', self: '自分で運用する', managed: '
         <p class="mt-10 text-xs text-mute">AIエージェント向け：<a class="ref" href="/llms.txt">/llms.txt</a></p>
       </article>
 
-      <aside class="marg" aria-label="下見">
+      <aside class="marg max-xl:hidden" aria-label="下見">
         <LinksContext.Provider value={LINKS}>
           {
             previews.map((p) => (

@@ -36,7 +36,7 @@ const fields = GROUPS.tools.flatMap((id) => {
         <header class="sec-top">
           <p class="sec-meta">辞書　{tools.length}件・{fields.length}分野</p>
           <span class="sec-acts pager">
-            <button type="button" class="btn btn-primary" data-copy-md="/dict.md">Markdownでコピー</button>
+            <button type="button" class="btn btn-primary" data-copy-md="/dict.md"><span class="max-sm:sr-only">Markdownで</span>コピー</button>
             <button type="button" class="btn lg:hidden" aria-haspopup="dialog" data-sheet-open>分野</button>
           </span>
         </header>
@@ -52,12 +52,15 @@ const fields = GROUPS.tools.flatMap((id) => {
                   </a>
                 </h2>
                 <p>
+                  {/* A name and the dot after it never split across lines */}
                   {items.map((it, i) => (
                     <>
-                      {i > 0 && <span class="text-faint"> · </span>}
-                      <a href={it.href} class="tl">
-                        {it.label}
-                      </a>
+                      <span class="whitespace-nowrap">
+                        <a href={it.href} class="tl">
+                          {it.label}
+                        </a>
+                        {i < items.length - 1 && <span class="text-faint"> ·</span>}
+                      </span>{' '}
                     </>
                   ))}
                 </p>

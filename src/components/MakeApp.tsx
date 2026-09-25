@@ -361,7 +361,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
 
       <aside className="marg" aria-label="傍注">
         {grounds.length > 0 && (
-          <div className="marg-b">
+          <div className="marg-b max-xl:hidden">
             <p className="marg-k">根拠</p>
             {grounds.map((r) => (
               <p key={r.v}>
@@ -646,7 +646,8 @@ function DiffList({
               !x.rebuilt &&
               x.rows.map((r) => (
                 <li key={r.layer}>
-                  {r.layer} → <Inline text={r.text} />
+                  {/* Plain throughout: the sources bold some names and not others */}
+                  {r.layer} → <Inline text={r.text.replaceAll('**', '')} />
                 </li>
               ))}
             {x.removed.map((l) => (

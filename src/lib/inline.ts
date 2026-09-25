@@ -25,6 +25,20 @@ export function segments(text: string): Seg[] {
   return out;
 }
 
+/** Segments for the screen, where references show names: drops the half-width space that sets off "§N" in the source
+ * when the neighbour is Japanese ("§24 の" → "…の") */
+export function screenSegments(text: string): Seg[] {
+  const segs = segments(text);
+  const wide = (c: string | undefined) => !!c && c.charCodeAt(0) > 0x2e7f;
+  return segs.map((x, i) => {
+    if (x.t !== 'text') return x;
+    let v = x.v;
+    if (segs[i - 1]?.t === 'ref' && v.startsWith(' ') && wide(v[1])) v = v.slice(1);
+    if (segs[i + 1]?.t === 'ref' && v.endsWith(' ') && wide(v.at(-2))) v = v.slice(0, -1);
+    return { ...x, v };
+  });
+}
+
 const isWord = (c: string | undefined) => !!c && /[A-Za-z0-9_.#+-]/.test(c);
 
 /** Splits plain text around the first whole-word occurrence of `name` */

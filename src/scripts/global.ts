@@ -115,10 +115,10 @@ document.addEventListener('click', (e) => {
       .then((r) => r.text())
       .then((text) => navigator.clipboard?.writeText(text))
       .then(() => {
-        const was = md.textContent;
+        md.dataset.was ??= md.innerHTML;
         md.textContent = 'コピーしました';
         setTimeout(() => {
-          md.textContent = was;
+          md.innerHTML = md.dataset.was ?? '';
         }, 1500);
       });
     return;
@@ -327,6 +327,8 @@ function drawCrumbs() {
       return b;
     }),
   );
+  // On phones the chips stay on one line; keep the current one in view
+  crumbs.scrollLeft = crumbs.scrollWidth;
   if (back) back.hidden = trail.length < 2;
   // Screen readers hear what opened, not the whole trail again
   const live = document.getElementById('peek-live');
@@ -454,7 +456,13 @@ document.addEventListener('click', async (e) => {
   if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   // A link to other conditions on the make page being read changes them in place, keeping the references open
   const to = new URL(a.href, location.href);
-  if (to.origin === location.origin && to.pathname === location.pathname && to.pathname.startsWith('/make/')) {
+  const inPage = to.hash !== '';
+  if (
+    !inPage &&
+    to.origin === location.origin &&
+    to.pathname === location.pathname &&
+    to.pathname.startsWith('/make/')
+  ) {
     e.preventDefault();
     const ref = new URL(location.href).searchParams.get('ref');
     if (ref) to.searchParams.set('ref', ref);

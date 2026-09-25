@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import YAML from 'yaml';
 import toolsYaml from '../../content/tools.yaml?raw';
-import { stepId } from './inline';
+import { refText, screenSegments, stepId } from './inline';
 import { type Data, isDataKind, type Ops, parseData, TOOLS_FILE, toolIds } from './schema';
 import { plain } from './text';
 
@@ -201,7 +201,11 @@ export const groupOf = (id: string): Group =>
 // Screen labels go without the section sign, which many readers don't know; the Markdown keeps it
 export const secLabel = (s: Section) => s.title;
 /** A heading as screen text: no "N-M." prefix, no markup, no § before numbers */
-export const screenText = (t: string) => t.replace(/（§\d+(?:-\d+)?）/g, '').replace(/§(?=\d)/g, '');
+/** Plain text for the screen: "（§N-M）" asides go, and other references show their target's name, as Inline shows them */
+export const screenText = (t: string) =>
+  screenSegments(t.replace(/（§\d+(?:-\d+)?）/g, ''))
+    .map((x) => (x.t === 'ref' ? refText(x) : x.v))
+    .join('');
 export const headText = (h: string) => screenText(stripNo(plain(h)));
 
 export const stripNo = (h: string) => h.replace(/^\d+-\d+\.\s*/, '');
