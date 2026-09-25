@@ -10,7 +10,7 @@ const esc = (s: string) =>
   s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string);
 
 export const fragment = (eyebrow: string, title: string, body: string, more: { href: string; label: string }) =>
-  `<header class="peek-h"><p class="eyebrow">${esc(eyebrow)}</p><h2 id="peek-title">${esc(title)}</h2></header>
+  `<header class="peek-h"><p class="eyebrow">${esc(eyebrow)}</p><h2 id="peek-title" tabindex="-1">${esc(title)}</h2></header>
 <div class="peek-b doc">${body}</div>
 <p class="peek-more"><a class="ref" href="${esc(more.href)}">${esc(more.label)}</a></p>`;
 

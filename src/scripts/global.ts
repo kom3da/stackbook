@@ -163,11 +163,16 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ---- peek: tool and section links open in one side panel instead of navigating ----
+// ---- peek: tool and section links open beside the page instead of navigating ----
+// Wide screens keep the page usable next to it (a non-modal pane); narrower ones get a modal sheet.
+// The chain of opened references is kept in ?ref= so the browser's back button walks it.
 const peek = document.getElementById('peek') as HTMLDialogElement | null;
 const peekBody = document.getElementById('peek-body');
-const peekBack = document.getElementById('peek-back') as HTMLButtonElement | null;
-let trail: string[][] = [];
+const crumbs = document.getElementById('peek-crumbs');
+const WIDE = matchMedia('(min-width: 1280px)');
+type Entry = { urls: string[]; label: string };
+let trail: Entry[] = [];
+let opener: HTMLElement | null = null;
 
 /** Fragment URL for a link, or null when the link should navigate normally */
 function fragmentOf(href: string): string | null {
@@ -182,8 +187,57 @@ function fragmentOf(href: string): string | null {
   return /^\d+-\d+$/.test(sub) ? `/s/${m[1]}/${sub}/peek.html` : `/s/${m[1]}/peek.html`;
 }
 
-async function showPeek(urls: string[], push = true) {
-  if (!peek || !peekBody) return false;
+// Compact form for the URL: /dict/hono/peek.html → d:hono, /s/2/2-10/peek.html → s:2/2-10
+const encode = (t: Entry[]) =>
+  t
+    .map((e) =>
+      e.urls
+        .map((u) => u.replace(/^\/dict\/(.+)\/peek\.html$/, 'd:$1').replace(/^\/s\/(.+)\/peek\.html$/, 's:$1'))
+        .join('+'),
+    )
+    .join(',');
+const decode = (v: string) =>
+  v
+    .split(',')
+    .filter(Boolean)
+    .map((e) =>
+      e
+        .split('+')
+        .map((x) => (x.startsWith('d:') ? `/dict/${x.slice(2)}/peek.html` : `/s/${x.slice(2)}/peek.html`))
+        .filter((x) => /^\/(dict|s)\/[\w./-]+\/peek\.html$/.test(x) && !x.includes('..')),
+    )
+    .filter((u) => u.length);
+
+function writeUrl(push: boolean) {
+  const u = new URL(location.href);
+  if (trail.length) u.searchParams.set('ref', encode(trail));
+  else u.searchParams.delete('ref');
+  const href = `${u.pathname}${u.search}${u.hash}`;
+  if (push) history.pushState({ ref: true }, '', href);
+  else history.replaceState(history.state, '', href);
+}
+
+function drawCrumbs() {
+  if (!crumbs) return;
+  crumbs.replaceChildren(
+    ...trail.map((e, i) => {
+      const li = document.createElement('li');
+      if (i === trail.length - 1) {
+        li.textContent = e.label;
+        li.setAttribute('aria-current', 'step');
+      } else {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = e.label;
+        b.dataset.crumb = String(i);
+        li.append(b);
+      }
+      return li;
+    }),
+  );
+}
+
+async function render(urls: string[]): Promise<string | null> {
   try {
     const parts = await Promise.all(
       urls.map(async (u) => {
@@ -192,35 +246,97 @@ async function showPeek(urls: string[], push = true) {
         return r.text();
       }),
     );
+    if (!peekBody) return null;
     peekBody.innerHTML = parts.join('<hr class="peek-sep">');
+    return [...peekBody.querySelectorAll('.peek-h h2')].map((h) => h.textContent ?? '').join('・');
   } catch {
-    return false;
+    return null;
   }
-  if (push) trail.push(urls);
-  if (peekBack) peekBack.hidden = trail.length < 2;
+}
+
+function openPane() {
+  if (!peek || peek.open) return;
+  if (WIDE.matches) {
+    peek.show();
+    document.body.classList.add('ref-open');
+  } else peek.showModal();
+}
+
+/** Show a trail; `mode` says how the URL follows (push a history entry, replace it, or leave it) */
+async function showTrail(t: Entry[], mode: 'push' | 'replace' | 'none') {
+  const last = t.at(-1);
+  if (!peek || !last) return false;
+  const label = await render(last.urls);
+  if (label === null) return false;
+  last.label = label;
+  trail = t;
+  drawCrumbs();
   hydrate();
-  if (!peek.open) peek.showModal();
-  peekBody.scrollTop = 0;
+  const wasOpen = peek.open;
+  openPane();
+  if (peekBody) peekBody.scrollTop = 0;
+  peekBody?.querySelector<HTMLElement>('.peek-h h2')?.focus({ preventScroll: true });
+  if (mode !== 'none') writeUrl(mode === 'push' && !wasOpen);
   return true;
 }
+
+function closePane() {
+  if (!peek?.open) return;
+  peek.close();
+}
 peek?.addEventListener('close', () => {
+  document.body.classList.remove('ref-open');
+  if (!trail.length) return;
   trail = [];
+  // Leave the pane's history entry if we made one, so Back doesn't reopen it
+  if (history.state?.ref) history.back();
+  else writeUrl(false);
+  opener?.focus({ preventScroll: true });
+  opener = null;
 });
-peekBack?.addEventListener('click', () => {
-  trail.pop();
-  const prev = trail.at(-1);
-  if (prev) showPeek(prev, false);
+crumbs?.addEventListener('click', (e) => {
+  const i = (e.target as HTMLElement).closest<HTMLElement>('[data-crumb]')?.dataset.crumb;
+  if (i !== undefined) showTrail(trail.slice(0, Number(i) + 1), 'replace');
 });
+// Esc closes the pane when focus isn't in a field (the modal sheet handles Esc itself)
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || !peek?.open || !document.body.classList.contains('ref-open')) return;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test((document.activeElement as HTMLElement | null)?.tagName ?? '')) return;
+  closePane();
+});
+// Browser back/forward: rebuild the pane from ?ref=
+function fromUrl() {
+  const t = decode(new URL(location.href).searchParams.get('ref') ?? '').map((urls) => ({ urls, label: '' }));
+  if (!t.length) {
+    trail = [];
+    if (peek?.open) peek.close();
+    return;
+  }
+  // Earlier crumbs need their labels: fetch their headings lazily from the fragments
+  Promise.all(
+    t.slice(0, -1).map(async (e) => {
+      const html = await Promise.all(e.urls.map((u) => fetch(u).then((r) => (r.ok ? r.text() : ''))));
+      const d = document.createElement('div');
+      d.innerHTML = html.join('');
+      e.label = [...d.querySelectorAll('.peek-h h2')].map((h) => h.textContent ?? '').join('・');
+    }),
+  ).then(() => showTrail(t, 'none'));
+}
+window.addEventListener('popstate', fromUrl);
+if (new URL(location.href).searchParams.has('ref')) fromUrl();
+
 // The make island asks for several tools at once
 window.addEventListener('stackbook:peek', (e) => {
   const hrefs = (e as CustomEvent<{ hrefs: string[] }>).detail.hrefs;
-  showPeek(hrefs.map((h) => fragmentOf(h)).filter((x): x is string => !!x));
+  const urls = hrefs.map((h) => fragmentOf(h)).filter((x): x is string => !!x);
+  opener = document.activeElement as HTMLElement | null;
+  if (urls.length) showTrail([{ urls, label: '' }], peek?.open ? 'replace' : 'push');
 });
 
 document.addEventListener('click', async (e) => {
   const t = e.target as HTMLElement;
-  if (t.closest('[data-peek-close]') || e.target === peek) {
-    peek?.close();
+  if (t.closest('[data-peek-close]') || (e.target === peek && peek?.matches(':modal'))) {
+    closePane();
     return;
   }
   const a = t.closest<HTMLAnchorElement>('a[href]');
@@ -231,7 +347,12 @@ document.addEventListener('click', async (e) => {
   if (!frag) return;
   e.preventDefault();
   if (qres) qres.hidden = true;
-  if (!(await showPeek([frag]))) location.href = a.href;
+  // Following a link inside the pane extends the chain; one from the page starts a new chain
+  const inside = !!peek?.contains(a);
+  if (!inside) opener = a;
+  const entry = { urls: [frag], label: '' };
+  const ok = await showTrail(inside ? [...trail, entry] : [entry], peek?.open ? 'replace' : 'push');
+  if (!ok) location.href = a.href;
 });
 
 // The make island re-renders on its own; sync its controls after each render

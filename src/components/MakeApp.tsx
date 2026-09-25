@@ -67,9 +67,10 @@ function fromQuery(kind: Kind, search: string): Answers | null {
   a.cons = (u.get('cons') ?? '').split(',').filter((v) => ok('cons', v));
   return a;
 }
-/** Only non-default answers go into the URL */
-function toQuery(a: Answers) {
-  const u = new URLSearchParams();
+/** Only non-default answers go into the URL; other parameters (the open references) are kept */
+function toQuery(a: Answers, keep = '') {
+  const u = new URLSearchParams(keep);
+  for (const k of [...SINGLE, 'cons']) u.delete(k);
   for (const k of SINGLE) if (a[k] !== DEFAULTS[k]) u.set(k, a[k]);
   if (a.cons.length) u.set('cons', a.cons.join(','));
   const s = u.toString();
@@ -92,10 +93,9 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
   }, [kind]);
   useEffect(() => {
     if (!ready.current) return;
-    const q = toQuery(answers);
-    history.replaceState(history.state, '', `${location.pathname}${q}${location.hash}`);
+    history.replaceState(history.state, '', `${location.pathname}${toQuery(answers, location.search)}${location.hash}`);
     try {
-      localStorage.setItem(lastKey(kind), q);
+      localStorage.setItem(lastKey(kind), toQuery(answers));
     } catch {}
   }, [answers, kind]);
   const [prof, setProf] = useState<Record<string, string>>({});
