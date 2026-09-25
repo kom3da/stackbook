@@ -487,6 +487,12 @@
   .blk > p {
     @apply mt-3 text-[0.94rem] text-mute;
   }
+  .sheet-h {
+    @apply mb-2 text-sm font-semibold text-mute;
+  }
+  .sheet-src {
+    @apply mt-2 text-xs text-faint;
+  }
   .sheet {
     @apply border-t border-rule;
   }

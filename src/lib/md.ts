@@ -1,9 +1,10 @@
 // Compact markdown views for AI agents: same facts as the HTML pages, no markup overhead
 import YAML from 'yaml';
-import { GROUPS, guide, plain, rawSub, SECS, stripNo } from './guide';
+import { GROUPS, guide, h3Text, plain, rawSub, SECS, stripNo, subBlocks } from './guide';
+import { LOOKUP } from './lookup';
 import { type Data, HEADS, isDataKind, parseData } from './schema';
 import { type ChoiceRow, category, dictionary, namesOf, type Tool } from './tools';
-import { DEFAULTS, decide, KINDS, type Kind, QUESTIONS, SHOW } from './wizard';
+import { DEFAULTS, type Decision, decide, KINDS, type Kind, questionsFor, resolve } from './wizard';
 
 const where = (r: ChoiceRow) => (r.sub ? `§${r.sub.id}` : `§${r.sec.id}`);
 const altText = (a: ChoiceRow['alts'][number]) =>
@@ -148,30 +149,66 @@ const PREAMBLE = () =>
     '> バージョン番号は書いていない。採用時は各ツールの最新安定版を確認して使う。料金も記載していないので、各サービスの最新の料金ページで確認する。',
   ].join('\n');
 
+const tablesMd = (d: Decision) =>
+  d.tables.flatMap((t) => [
+    '',
+    `### ${t.title ?? '構成'}${t.base ? `（§${t.base} をもとに${t.edits.length ? '条件に合わせて差し替え' : '作成'}）` : ''}`,
+    '| レイヤー | 採用 |',
+    '|---|---|',
+    ...resolve(t, LOOKUP).map((r) => `| ${r.layer} | ${r.text} |`),
+  ]);
+
+// For each single-condition change from the defaults, what changes (compactly)
+function diffMd(kind: Kind, base: Decision) {
+  const flat = (d: Decision) => new Map(d.tables.flatMap((t) => resolve(t, LOOKUP)).map((r) => [r.layer, r.text]));
+  const bases = (d: Decision) => d.tables.map((t) => t.base ?? '').join();
+  const before = flat(base);
+  const out: string[] = [];
+  for (const q of questionsFor(kind))
+    for (const [v, label] of q.opts) {
+      if (!q.multi && DEFAULTS[q.q] === v) continue;
+      const d = decide(kind, { ...DEFAULTS, ...(q.multi ? { cons: [v] } : { [q.q]: v }) });
+      const after = flat(d);
+      const changes = d.title !== base.title ? [`推奨が「${d.title}」になる`] : [];
+      const other = d.tables.find((t) => t.base && !base.tables.some((b) => b.base === t.base))?.base;
+      if (other) changes.push(`構成は §${other}（${stripNo(plain(h3Text(SECS.cases, other)))}）を使う`);
+      else if (bases(d) !== bases(base))
+        changes.push(`構成は言語別の既定から組み立てる：${[...after].map(([k, t]) => `${k}＝${plain(t)}`).join('、')}`);
+      else changes.push(...[...after].filter(([k, t]) => before.get(k) !== t).map(([k, t]) => `${k}＝${plain(t)}`));
+      if (changes.length) out.push(`- ${q.label}＝${label}：${changes.join('／')}`);
+    }
+  return out;
+}
+
 export function makeMd(kind: Kind) {
   const k = KINDS.find((x) => x[0] === kind);
   const d = decide(kind, DEFAULTS);
-  const qs = QUESTIONS.filter((q) => SHOW[q.q].includes(kind));
-  const def = (q: (typeof QUESTIONS)[number]) =>
-    q.multi ? 'なし' : (q.opts.find((o) => o[0] === DEFAULTS[q.q])?.[1] ?? '');
+  const qs = questionsFor(kind);
+  const def = (q: (typeof qs)[number]) => (q.multi ? 'なし' : (q.opts.find((o) => o[0] === DEFAULTS[q.q])?.[1] ?? ''));
+  const diff = diffMd(kind, d);
   const out = [
     `# ${k?.[1]}：推奨構成`,
     '',
     PREAMBLE(),
     '',
     qs.length ? `前提（既定の条件）：${qs.map((q) => `${q.label}＝${def(q)}`).join('、')}` : '',
-    qs.length ? '条件が違う場合は §2-10（/s/2.md）の手順で言語を決め直す。' : '',
+    qs.length ? '案件の条件が前提と違う場合は、下の「条件が違うとき」で該当する行を確認する。' : '',
     '',
     `## 推奨：${d.title}`,
     ...d.why.map((w) => `- ${w}`),
     ...d.notes.map((n) => `- ${n}`),
     '',
     '## 構成',
-    '| レイヤー | 採用 |',
-    '|---|---|',
-    ...d.rows.map((r) => `| ${r.layer} | ${r.text} |`),
+    ...tablesMd(d),
   ];
-  for (const c of d.cases) out.push('', toMarkdown(rawSub(c)).replace(/^### (\d+-\d+)\. /, '## §$1 '));
+  if (diff.length) out.push('', '## 条件が違うとき（既定との差分）', ...diff);
+  // §19 diagrams and notes (the stack table itself is already merged above)
+  for (const c of d.cases) {
+    const body = subBlocks(SECS.cases, c)
+      .flatMap((b) => (b.t === 'mermaid' ? ['```mermaid', b.text, '```'] : b.t === 'p' ? [b.text] : []))
+      .join('\n\n');
+    if (body) out.push('', `## §${c} ${stripNo(plain(h3Text(SECS.cases, c)))}`, '', body);
+  }
   const cmd = guide.sections
     .find((s) => s.id === SECS.commands)
     ?.blocks.find((b) => b.t === 'h3' && d.cases.some((c) => b.text.includes(`§${c}`)));

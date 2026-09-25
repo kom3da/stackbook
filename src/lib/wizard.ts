@@ -21,16 +21,6 @@ export type Answers = {
   stage: string;
   cons: string[];
 };
-export type Decision = {
-  title: string;
-  rows: { layer: string; text: string; tools: string[] }[];
-  why: string[];
-  notes: string[];
-  /** Section refs such as "2-10" or "24" */
-  refs: string[];
-  /** §19 subsections such as "19-4" */
-  cases: string[];
-};
 
 export const KINDS: [Kind, string, string][] = [
   ['web', '業務システム・管理画面', '社内ツール、予約、受発注'],
@@ -103,86 +93,161 @@ export const QUESTIONS: { q: keyof Answers; label: string; multi?: true; opts: [
 const BACK: Kind[] = ['web', 'saas', 'toc', 'ai', 'rt'];
 export const SHOW: Record<keyof Answers, Kind[]> = {
   load: [...BACK, 'cli', 'data'],
-  env: [...BACK, 'site', 'ec', 'data', 'cli'],
+  env: [...BACK, 'site', 'ec', 'data'],
   team: BACK,
   stage: BACK,
   cons: [...BACK, 'desktop', 'data'],
 };
 export const DEFAULTS: Answers = { load: 'db', env: 'paas', team: 'solo', stage: 'mvp', cons: [] };
 
+type Opt = [string, string, string];
+/** Kinds where only some choices change the result; a string picks the shared option as is */
+const ONLY: Partial<Record<Kind, Partial<Record<keyof Answers, (Opt | string)[]>>>> = {
+  // Team size only changes the language for SaaS (§2-10 手順3)
+  web: { team: [['solo', '9人以下', '9人以下'], 'large'] },
+  toc: { team: [['solo', '9人以下', '9人以下'], 'large'] },
+  ai: { team: [['solo', '9人以下', '9人以下'], 'large'] },
+  rt: { team: [['solo', '9人以下', '9人以下'], 'large'] },
+  cli: {
+    load: [
+      ['db', '一般的な処理', '一般'],
+      ['cpu', '速度・起動時間を詰めたい', '高速'],
+    ],
+  },
+  data: {
+    load: [
+      ['db', '集計・変換が中心', '集計'],
+      ['batch', '大規模バッチ・ストリーム', 'バッチ'],
+    ],
+    cons: ['java'],
+  },
+  desktop: { cons: ['ms'] },
+  site: { env: ['paas', 'aws'] },
+  ec: { env: ['paas', 'onprem'] },
+};
+/** The questions shown for a kind, each option guaranteed to matter (see lib.test.ts) */
+export function questionsFor(kind: Kind) {
+  return QUESTIONS.filter((q) => SHOW[q.q].includes(kind)).map((q) => {
+    const only = ONLY[kind]?.[q.q];
+    if (!only) return q;
+    return { ...q, opts: only.map((o) => (typeof o === 'string' ? (q.opts.find((x) => x[0] === o) as Opt) : o)) };
+  });
+}
+
 type Lang = 'ts' | 'go' | 'rails' | 'py' | 'rust' | 'kt' | 'ex' | 'cs';
-/** Display text followed by the ids (content/tools.yaml) of the tools it names */
-type Part = [text: string, ...tools: string[]];
-const L: Record<Lang, { n: Part; fw: Part; db: Part; job: Part; test: Part; ref: string }> = {
+
+/**
+ * Where a row's content comes from. The wizard never restates the guide:
+ * - a row of a §19 `stack` table, or the default of a `choices` row (at = §N-M or §N, role = its 役割)
+ * - a literal only for conclusions the guide has no single row for
+ */
+export type Src = { case: string; layer: string } | { at: string; role: string } | { text: string; tools: string[] };
+/** A table starts from a §19 case (base) and applies edits: replace or add a layer, or drop it (null) */
+export type Table = { title?: string; base?: string; edits: { layer: string; src: Src | null }[] };
+export type Decision = {
+  title: string;
+  tables: Table[];
+  why: string[];
+  notes: string[];
+  /** Section refs such as "2-10" or "24" */
+  refs: string[];
+  /** §19 subsections whose diagrams and commands apply */
+  cases: string[];
+};
+
+const R = (at: string, role: string): Src => ({ at, role });
+const C = (c: string, layer: string): Src => ({ case: c, layer });
+const T = (text: string, ...tools: string[]): Src => ({ text, tools });
+
+const L: Record<Lang, { n: string; tools: string[]; ref: string; fw: Src; db: Src; job: Src; test: Src }> = {
   ts: {
-    n: ['TypeScript', 'typescript'],
-    fw: ['Hono（大人数で構造を強制したいならNestJS）', 'hono', 'nestjs'],
-    db: ['PostgreSQL＋Drizzle', 'postgresql', 'drizzle'],
-    job: ['BullMQ＋Valkey（Redisを増やしたくなければpg-boss）', 'bullmq', 'valkey', 'pg-boss'],
-    test: ['Vitest＋Playwright', 'vitest', 'playwright'],
+    n: 'TypeScript',
+    tools: ['typescript'],
     ref: '2-1',
+    fw: R('2-1', 'HTTPフレームワーク'),
+    db: R('2-1', 'ORM／クエリ'),
+    job: R('2-1', 'ジョブキュー'),
+    test: R('2-1', 'テスト（ユニット）'),
   },
   go: {
-    n: ['Go', 'go'],
-    fw: ['標準net/http（必要ならchi）＋oapi-codegen', 'net-http', 'chi', 'oapi-codegen'],
-    db: ['PostgreSQL＋sqlc＋pgx', 'postgresql', 'sqlc', 'pgx'],
-    job: ['River', 'river'],
-    test: ['標準testing＋testcontainers-go', 'testing', 'testcontainers-go'],
+    n: 'Go',
+    tools: ['go'],
     ref: '2-2',
+    fw: R('2-2', 'HTTPルーティング'),
+    db: R('2-2', 'クエリ'),
+    job: R('2-2', 'ジョブキュー'),
+    test: R('2-2', 'テスト'),
   },
   rails: {
-    n: ['Ruby / Rails', 'ruby', 'rails'],
-    fw: ['Rails', 'rails'],
-    db: ['PostgreSQL（ActiveRecord）', 'postgresql', 'active-record'],
-    job: ['Solid Queue', 'solid-queue'],
-    test: ['Minitest＋システムテスト', 'minitest'],
+    n: 'Ruby / Rails',
+    tools: ['ruby', 'rails'],
     ref: '2-3',
+    fw: T('Rails', 'rails'),
+    db: R('4-1', 'RDB'),
+    job: R('2-3', 'ジョブ'),
+    test: R('2-3', 'テスト'),
   },
   py: {
-    n: ['Python', 'python'],
-    fw: ['FastAPI', 'fastapi'],
-    db: ['PostgreSQL＋SQLAlchemy＋Alembic', 'postgresql', 'sqlalchemy', 'alembic'],
-    job: ['Celery', 'celery'],
-    test: ['pytest', 'pytest'],
+    n: 'Python',
+    tools: ['python'],
     ref: '2-4',
+    fw: R('2-4', 'Webフレームワーク'),
+    db: R('2-4', 'ORM'),
+    job: R('2-4', 'ジョブ'),
+    test: R('2-4', 'テスト'),
   },
   rust: {
-    n: ['Rust', 'rust'],
-    fw: ['axum（Tokio）', 'axum', 'tokio'],
-    db: ['PostgreSQL＋sqlx', 'postgresql', 'sqlx'],
-    job: ['SQS＋ワーカー', 'sqs'],
-    test: ['cargo-nextest', 'cargo-nextest'],
+    n: 'Rust',
+    tools: ['rust'],
     ref: '2-5',
+    fw: R('2-5', 'Webフレームワーク'),
+    db: R('2-5', 'DB'),
+    job: R('4-4', 'マネージドキュー（AWS）'),
+    test: R('2-5', 'テスト実行'),
   },
   kt: {
-    n: ['Kotlin', 'kotlin'],
-    fw: ['Spring Boot', 'spring-boot'],
-    db: ['PostgreSQL＋jOOQ＋Flyway', 'postgresql', 'jooq', 'flyway'],
-    job: ['Spring Batch', 'spring-batch'],
-    test: ['JUnit 5＋Kotest＋MockK', 'junit', 'kotest', 'mockk'],
+    n: 'Kotlin',
+    tools: ['kotlin'],
     ref: '2-6',
+    fw: R('2-6', 'Webフレームワーク'),
+    db: R('2-6', 'DBアクセス'),
+    job: R('2-6', 'バッチ'),
+    test: R('2-6', 'テスト'),
   },
   ex: {
-    n: ['Elixir', 'elixir'],
-    fw: ['Phoenix', 'phoenix'],
-    db: ['PostgreSQL＋Ecto', 'postgresql', 'ecto'],
-    job: ['Oban', 'oban'],
-    test: ['ExUnit', 'exunit'],
+    n: 'Elixir',
+    tools: ['elixir'],
     ref: '2-7',
+    fw: R('2-7', 'Webフレームワーク'),
+    db: R('2-7', 'DB'),
+    job: R('2-7', 'ジョブ'),
+    test: R('2-7', 'テスト'),
   },
   cs: {
-    n: ['C#', 'csharp'],
-    fw: ['ASP.NET Core（Minimal API）', 'asp-net-core'],
-    db: ['PostgreSQL＋EF Core', 'postgresql', 'ef-core'],
-    job: ['Quartz.NET', 'quartz-net'],
-    test: ['xUnit＋NSubstitute', 'xunit', 'nsubstitute'],
+    n: 'C#',
+    tools: ['csharp'],
     ref: '2-8',
+    fw: R('2-8', 'Webフレームワーク'),
+    db: R('2-8', 'DBアクセス'),
+    job: R('2-8', 'ジョブ・スケジュール'),
+    test: R('2-8', 'テスト'),
   },
 };
-const CASE: Partial<Record<Kind, string>> = { saas: '19-6', toc: '19-7', ai: '19-8', rt: '19-9' };
-const name = (l: Lang) => L[l].n[0];
-// Joins parts into one; used where the text is composed from pieces
-const join = (...parts: Part[]): Part => [parts.map((p) => p[0]).join(''), ...parts.flatMap((p) => p.slice(1))];
+const name = (l: Lang) => L[l].n;
+/** §12-1 row for each execution environment */
+const ENV: Record<string, Src> = {
+  paas: R('12-1', '自由に選べる・Webアプリ'),
+  aws: R('12-1', 'AWSを使う'),
+  onprem: R('12-1', 'VPS・オンプレVM'),
+  edge: R('12-1', 'エッジ・軽量API'),
+};
+/** §19-9 row for each language */
+const RT: Partial<Record<Lang, string>> = {
+  rails: 'Rails',
+  ts: 'TS・マネージド',
+  ex: '同時接続が非常に多い・プレゼンスが必要',
+};
+const HEAVY = T('Rustで切り出し（ワーカー、またはnapi-rs／PyO3でネイティブ拡張）', 'rust', 'napi-rs', 'pyo3');
 
 type Input = Omit<Answers, 'cons'> & { kind: Kind; cons: Set<string> };
 
@@ -258,130 +323,76 @@ function pick(a: Input) {
   }
   return { lang, why, orig };
 }
-function infra(a: Input, next: boolean): Part {
-  if (a.env === 'aws')
-    return next
-      ? [
-          'フロントはVercel（AWSに集約するならOpenNext）、API：ECS on Fargate＋RDS for PostgreSQL＋Terraform',
-          'vercel',
-          'opennext',
-          'ecs-on-fargate',
-          'rds',
-          'terraform',
-        ]
-      : ['API：ECS on Fargate＋RDS for PostgreSQL＋Terraform', 'ecs-on-fargate', 'rds', 'terraform'];
-  if (a.env === 'onprem')
-    return [
-      'Docker＋Kamal（オンプレVM／VPS）、PostgreSQLは自前運用（PgBouncer・pgBackRest）',
-      'docker',
-      'kamal',
-      'postgresql',
-      'pgbouncer',
-      'pgbackrest',
-    ];
-  if (a.env === 'edge')
-    return [
-      'Cloudflare Workers＋D1、またはNeon（Hyperdrive経由）',
-      'cloudflare-workers',
-      'cloudflare-d1',
-      'neon',
-      'cloudflare-hyperdrive',
-    ];
-  return next
-    ? ['Vercel（フロント）＋Render または Fly.io＋Neon', 'vercel', 'render', 'fly-io', 'neon']
-    : ['Render または Fly.io＋Neon', 'render', 'fly-io', 'neon'];
-}
+
+type Edit = Table['edits'][number];
+const edit = (layer: string, src: Src | null): Edit => ({ layer, src });
 
 export function decide(kind: Kind, answers: Answers): Decision {
   const a: Input = { ...answers, kind, cons: new Set(answers.cons) };
-  const parts: [string, Part][] = [];
   const why: string[] = [];
   const refs: string[] = [];
   const notes: string[] = [];
   const cases: string[] = [];
+  const tables: Table[] = [];
+  const env = a.env;
   let title = '';
+
   if (BACK.includes(a.kind)) {
     const p = pick(a);
     const l = L[p.lang];
     why.push(...p.why);
-    title = l.n[0];
-    let fe: Part;
-    if (a.kind === 'web')
-      fe =
-        p.lang === 'rails'
-          ? [
-              'Hotwire（Turbo＋Stimulus）＋tailwindcss-rails＋ViewComponent',
-              'hotwire',
-              'turbo',
-              'stimulus',
-              'tailwindcss-rails',
-              'viewcomponent',
-            ]
-          : p.lang === 'ex'
-            ? ['Phoenix LiveView', 'phoenix-liveview']
-            : [
-                'React＋Vite＋TanStack Router／Query＋shadcn/ui',
-                'react',
-                'vite',
-                'tanstack-router',
-                'tanstack-query',
-                'shadcn-ui',
-              ];
-    else if (a.kind === 'toc') fe = ['Next.js（Web）＋React Native／Expo（アプリ）', 'next-js', 'react-native', 'expo'];
-    else if (a.kind === 'rt' && p.lang === 'ex')
-      fe = ['Phoenix LiveView、またはNext.js＋Phoenix Channels', 'phoenix-liveview', 'next-js', 'phoenix-channels'];
-    else
-      fe =
-        a.kind === 'ai'
-          ? ['Next.js（ストリーミング表示）', 'next-js']
-          : ['Next.js＋shadcn/ui＋TanStack Query', 'next-js', 'shadcn-ui', 'tanstack-query'];
-    const next = fe.includes('next-js');
-    parts.push(['言語', l.n], ['フロント', fe]);
-    if (!(p.lang === 'rails' && a.kind === 'web')) parts.push(['バックエンド', l.fw]);
-    else parts.push(['フレームワーク', ['Rails（管理画面はAvo、認可はPundit）', 'rails', 'avo', 'pundit']]);
-    parts.push(['DB', l.db], ['ジョブ', l.job]);
-    const auth: Part = {
-      web: join(
-        ['社内ならGoogle Workspace／Entra IDのSSO、社外向けは', 'google-workspace', 'microsoft-entra-id'],
-        p.lang === 'rails' ? ['Railsの認証ジェネレータ', 'rails'] : ['Better Auth', 'better-auth'],
-      ),
-      saas: ['Clerk（SSO・SCIMが必要になったらWorkOS）', 'clerk', 'workos'] as Part,
-      toc: ['Supabase Auth または Clerk', 'supabase-auth', 'clerk'] as Part,
-      ai: ['Clerk または Better Auth', 'clerk', 'better-auth'] as Part,
-      rt: ['Clerk または Better Auth', 'clerk', 'better-auth'] as Part,
-    }[a.kind as 'web' | 'saas' | 'toc' | 'ai' | 'rt'];
-    parts.push(['認証', a.env === 'aws' ? join(auth, ['（AWSに集約するならCognito）', 'amazon-cognito']) : auth]);
-    if (a.kind === 'saas')
-      parts.push(['課金・テナント', ['Stripe Billing、テナントIDカラム＋Row Level Security', 'stripe', 'postgresql']]);
-    if (a.kind === 'toc')
-      parts.push(
-        ['プッシュ通知', ['FCM（Expo Notifications）', 'fcm', 'expo-notifications']],
-        ['配信', ['EAS Build／Submit／Update', 'eas-build', 'eas-submit', 'eas-update']],
+    title = l.n;
+    const edits: Edit[] = [];
+    // Tables built from the language set when no §19 case matches the chosen language
+    const composed = (front: Src, auth: Src) => [
+      edit('言語', T(l.n, ...l.tools)),
+      edit('フロント', front),
+      edit('バックエンド', l.fw),
+      edit('DB', R('4-1', 'RDB')),
+      edit('データアクセス', l.db),
+      edit('ジョブ', l.job),
+      edit('認証', auth),
+      edit('テスト', l.test),
+      edit('インフラ', ENV[env]),
+      edit('監視', R('14', 'エラー監視')),
+      edit('CI', R('13', 'CI/CD')),
+    ];
+    let base: string | undefined;
+    if (a.kind === 'web') {
+      base = p.lang === 'rails' ? '19-4' : p.lang === 'ts' ? '19-5' : undefined;
+      if (base) {
+        if (env !== 'paas') edits.push(edit('デプロイ', ENV[env]));
+      } else edits.push(...composed(p.lang === 'ex' ? R('2-7', '画面') : C('19-5', 'フロント'), R('6', '社内ツール')));
+      cases.push(p.lang === 'rails' ? '19-4' : '19-5');
+    } else if (a.kind === 'saas') {
+      base = '19-6';
+      if (p.lang !== 'go') edits.push(edit('バックエンド', l.fw), edit('ジョブ', l.job));
+      if (env !== 'paas' && env !== 'aws') edits.push(edit('インフラ', ENV[env]));
+    } else if (a.kind === 'toc') {
+      base = '19-7';
+      if (p.lang !== 'ts' && p.lang !== 'go') edits.push(edit('バックエンド', l.fw));
+      if (env !== 'paas') edits.push(edit('インフラ', ENV[env]));
+    } else if (a.kind === 'ai') {
+      base = '19-8';
+      if (p.lang !== 'ts' && p.lang !== 'py') edits.push(edit('AIバックエンド', l.fw));
+      if (env !== 'paas') edits.push(edit('インフラ', ENV[env]));
+    } else {
+      // Real-time: §19-9 is a menu, so pick its row for the language
+      edits.push(
+        ...composed(
+          p.lang === 'ex' ? R('2-7', '画面') : R('3', 'アプリ（SSR・フルスタック）'),
+          R('6', 'マネージド（toC・スタートアップ）'),
+        ),
+        edit('リアルタイム', C('19-9', RT[p.lang] ?? '同時接続が多い（Elixirを採用しない場合）')),
+        edit('共同編集', C('19-9', '共同編集')),
+        edit('片方向の配信', C('19-9', '片方向で足りる')),
       );
-    if (a.kind === 'ai')
-      parts.push(
-        ['LLM・ベクトル', ['LLM API＋pgvector、評価・トレースはLangfuse', 'pgvector', 'langfuse']],
-        ['長時間処理', ['Temporal または Inngest', 'temporal', 'inngest']],
-      );
-    if (a.kind === 'rt') {
-      const rt: Partial<Record<Lang, Part>> = {
-        ex: ['Phoenix Channels＋Presence', 'phoenix-channels', 'phoenix-presence'],
-        ts: ['Cloudflare Durable Objects（マネージド）', 'cloudflare-durable-objects'],
-      };
-      parts.push(['リアルタイム', rt[p.lang] ?? ['WebSocket＋Valkey Pub/Sub', 'valkey']]);
     }
-    if (a.load === 'cpu' && p.lang !== 'rust')
-      parts.push([
-        '重い処理',
-        ['Rustで切り出し（ワーカー、またはnapi-rs／PyO3でネイティブ拡張）', 'rust', 'napi-rs', 'pyo3'],
-      ]);
-    parts.push(
-      ['テスト', l.test],
-      ['インフラ', infra(a, next)],
-      ['監視', ['Sentry＋OpenTelemetry（Grafana Cloud）', 'sentry', 'opentelemetry', 'grafana-cloud']],
-      ['CI', ['GitHub Actions＋Renovate', 'github-actions', 'renovate']],
-    );
-    cases.push(a.kind === 'web' ? (p.lang === 'rails' ? '19-4' : '19-5') : (CASE[a.kind] as string));
+    if (base && !cases.includes(base)) cases.push(base);
+    if (a.kind === 'rt') cases.push('19-9');
+    if (env === 'aws') edits.push(edit('認証（AWSに集約する場合）', R('6', 'マネージド（AWS中心）')));
+    if (a.load === 'cpu' && p.lang !== 'rust') edits.push(edit('重い処理', HEAVY));
+    tables.push({ base, edits });
     refs.push('2-10', l.ref);
     if (p.orig)
       notes.push(
@@ -394,21 +405,10 @@ export function decide(kind: Kind, answers: Answers): Decision {
   } else if (a.kind === 'site') {
     title = 'Astro＋ヘッドレスCMS';
     why.push('静的出力でサーバー保守がほぼ不要、非エンジニアの更新はCMSで賄える（§19-1）');
-    parts.push(
-      ['フロント', ['Astro＋Tailwind CSS', 'astro', 'tailwind-css']],
-      ['CMS', ['microCMS（セルフホストならPayload）', 'microcms', 'payload']],
-      [
-        'ホスティング',
-        a.env === 'aws' ? ['S3＋CloudFront', 's3', 'cloudfront'] : ['Cloudflare Pages', 'cloudflare-pages'],
-      ],
-      [
-        'フォーム',
-        ['Cloudflare Workers＋Resend、スパム対策にTurnstile', 'cloudflare-workers', 'resend', 'cloudflare-turnstile'],
-      ],
-      ['検索', ['Pagefind', 'pagefind']],
-      ['分析', ['GA4', 'ga4']],
-      ['監視', ['Better Stack（外形監視）', 'better-stack']],
-    );
+    tables.push({
+      base: '19-1',
+      edits: env === 'aws' ? [edit('ホスティング', T('S3＋CloudFront', 's3', 'cloudfront'))] : [],
+    });
     cases.push('19-1');
     refs.push('11');
   } else if (a.kind === 'ec') {
@@ -416,21 +416,12 @@ export function decide(kind: Kind, answers: Answers): Decision {
     why.push(
       '独自要件が少なければSaaSに任せるのが最も安全で安い。定期購入・BtoB価格など独自要件が多いならMedusa（§19-2、§19-3）',
     );
-    parts.push(
-      [
-        '独自要件が少ない',
-        ['Shopify（テーマはLiquid、決済はShopify Payments）', 'shopify', 'liquid', 'shopify-payments'],
-      ],
-      [
-        '独自要件が多い',
-        ['Medusa＋Next.js＋Stripe／KOMOJU＋Meilisearch', 'medusa', 'next-js', 'stripe', 'komoju', 'meilisearch'],
-      ],
-      ['インフラ（Medusa）', infra(a, true)],
-      ['アクセス集中対策', ['Cloudflare Waiting Room＋静的化（§19-12）', 'cloudflare-waiting-room']],
-      ['監視', ['Sentry＋Grafana Cloud', 'sentry', 'grafana-cloud']],
+    tables.push(
+      { title: '独自要件が少ない', base: '19-2', edits: [] },
+      { title: '独自要件が多い', base: '19-3', edits: env === 'onprem' ? [edit('インフラ', ENV.onprem)] : [] },
     );
     cases.push('19-2', '19-3');
-    refs.push('7');
+    refs.push('7', '19-12');
   } else if (a.kind === 'cli') {
     const r = a.load === 'cpu' || a.load === 'p99';
     title = r ? 'Rust' : 'Go';
@@ -439,39 +430,43 @@ export function decide(kind: Kind, answers: Answers): Decision {
         ? '起動時間・処理速度を詰める必要があるのでRust（§2-9）'
         : '単一バイナリで配布しやすく、クロスコンパイルも簡単なGo（§2-9）',
     );
-    parts.push(
-      ['言語', r ? ['Rust', 'rust'] : ['Go', 'go']],
-      ['CLI', r ? ['clap', 'clap'] : ['Cobra', 'cobra']],
-      [
-        '配布',
-        r
-          ? ['cargo-dist（クロスコンパイルはcargo-zigbuild）', 'cargo-dist', 'cargo-zigbuild']
-          : ['GoReleaser（GitHub Releases・Homebrew tap）', 'goreleaser', 'github-releases', 'homebrew'],
-      ],
-      ['テスト', r ? ['cargo-nextest', 'cargo-nextest'] : ['標準testing', 'testing']],
-      ['脆弱性チェック', r ? ['cargo-audit／cargo-deny', 'cargo-audit', 'cargo-deny'] : ['govulncheck', 'govulncheck']],
+    tables.push(
+      r
+        ? {
+            edits: [
+              edit('言語', T('Rust', 'rust')),
+              edit('CLI', R('2-5', 'CLI')),
+              edit('配布', R('2-5', 'バイナリ配布')),
+              edit('クロスコンパイル', R('2-5', 'クロスコンパイル')),
+              edit('テスト', R('2-5', 'テスト実行')),
+              edit('脆弱性チェック', R('2-5', '脆弱性チェック')),
+            ],
+          }
+        : {
+            base: '19-10',
+            edits: [
+              edit('CLI', R('2-2', 'CLI')),
+              edit('テスト', R('2-2', 'テスト')),
+              edit('脆弱性チェック', R('2-2', '脆弱性チェック')),
+            ],
+          },
     );
     cases.push('19-10');
     refs.push('2-9', r ? '2-5' : '2-2');
   } else if (a.kind === 'devtool') {
     title = 'Rust';
     why.push('近年の高速な開発ツールの主流で、WebAssemblyやネイティブ拡張として他言語に組み込める（§2-9）');
-    parts.push(
-      ['言語', ['Rust', 'rust']],
-      [
-        '組み込み先',
-        [
-          'WebAssembly：wasm-bindgen＋wasm-pack／Node.js：napi-rs／Python：PyO3＋maturin',
-          'wasm-bindgen',
-          'wasm-pack',
-          'napi-rs',
-          'pyo3',
-          'maturin',
-        ],
+    tables.push({
+      edits: [
+        edit('言語', R('2-9', '開発者向けツール（Linter、フォーマッタ、ビルドツール、パーサ）')),
+        edit('WebAssembly', R('2-5', 'WebAssembly')),
+        edit('Node.jsから呼ぶ', R('2-5', 'Node.jsから呼ぶネイティブ拡張')),
+        edit('Pythonから呼ぶ', R('2-5', 'Pythonから呼ぶネイティブ拡張')),
+        edit('テスト', R('2-5', 'テスト実行')),
+        edit('ベンチマーク', R('2-5', 'ベンチマーク')),
+        edit('配布', R('2-5', 'バイナリ配布')),
       ],
-      ['テスト', ['cargo-nextest＋criterion（ベンチマーク）', 'cargo-nextest', 'criterion']],
-      ['配布', ['cargo-dist', 'cargo-dist']],
-    );
+    });
     refs.push('2-9', '2-5');
   } else if (a.kind === 'desktop') {
     const ms = a.cons.has('ms');
@@ -481,51 +476,93 @@ export function decide(kind: Kind, answers: Answers): Decision {
         ? 'Windows専用の業務アプリでMicrosoft環境が中心なら.NET（§2-9）'
         : 'UIはWeb技術、裏側はRustで軽量なバイナリになるTauri（§2-9）',
     );
-    parts.push(
-      ['構成', ms ? ['C#（.NET）', 'csharp', 'net'] : ['Tauri（Rust＋React／Vite）', 'tauri', 'rust', 'react', 'vite']],
-      ['代替', ['Electron：Node.jsのAPIに強く依存するとき', 'electron']],
-    );
+    tables.push({
+      edits: ms
+        ? [
+            edit('構成', T('C#（.NET）', 'csharp', 'net')),
+            edit('SDK', R('2-8', 'SDK')),
+            edit('テスト', R('2-8', 'テスト')),
+          ]
+        : [edit('構成', R('2-5', 'デスクトップアプリ')), edit('フロント', R('3', 'SPA（ログイン後の管理画面など）'))],
+    });
     refs.push('2-9', ms ? '2-8' : '2-5');
   } else if (a.kind === 'embedded') {
     title = 'Rust';
     why.push('メモリ安全性とC並みの性能を両立できる（§2-9）');
-    parts.push(
-      ['言語', ['Rust', 'rust']],
-      ['非同期フレームワーク', ['Embassy（厳密な割り込み駆動ならRTIC）', 'embassy', 'rtic']],
-      ['代替', ['C：ベンダーSDKがCしかないとき']],
-    );
+    tables.push({
+      edits: [
+        edit('言語', R('2-9', '組み込み・IoT・ファームウェア')),
+        edit('非同期フレームワーク', R('2-5', '組み込み（非同期）')),
+        edit('テスト', R('2-5', 'テスト実行')),
+      ],
+    });
     refs.push('2-9', '2-5');
   } else if (a.kind === 'data') {
     const kt = a.load === 'batch' || a.cons.has('java');
     title = kt ? 'Kotlin（Spring Batch）＋SQL' : 'SQL＋Python（Polars）';
     why.push('集計はまずSQLで書くのが最短で、SQLで表現しにくい変換だけPythonにする（§2-9）');
     if (kt) why.push('再実行・中断再開が必要な大規模バッチやストリーム処理はKotlin（§2-10 手順2）');
-    parts.push(
-      ['集計', ['SQL（DuckDB／BigQuery／PostgreSQL）', 'sql', 'duckdb', 'bigquery', 'postgresql']],
-      [
-        '変換',
-        kt
-          ? ['Kotlin（Spring Batch／Kafka Streams）', 'kotlin', 'spring-batch', 'kafka-streams']
-          : ['Python＋Polars（uv、Ruff）', 'python', 'polars', 'uv', 'ruff'],
+    tables.push({
+      edits: [
+        edit('集計', R('2-9', 'データ分析・集計')),
+        ...(kt
+          ? [edit('バッチ', R('2-6', 'バッチ')), edit('ストリーム', R('2-6', 'ストリーム処理'))]
+          : [edit('変換', R('2-4', 'データ処理')), edit('Python環境', R('2-4', 'バージョン・依存管理'))]),
+        edit('ワークフロー', R('4-4', 'ワークフロー')),
+        edit('実行', ENV[env]),
       ],
-      ['ワークフロー', ['Temporal または AWS Step Functions', 'temporal', 'aws-step-functions']],
-      ['実行', infra(a, false)],
-    );
+    });
     refs.push('2-9', '2-10');
   }
   refs.push('23', '24', '25');
-  const rows = parts.map(([layer, [text, ...tools]]) => ({ layer, text, tools }));
-  return { title, rows, why, notes, refs, cases };
+  return { title, tables, why, notes, refs, cases };
 }
+
+/** A resolved row, ready to render */
+export type Row = { layer: string; text: string; tools: string[]; ref?: string };
+export type Lookup = {
+  caseRows: (c: string) => { layer: string; text: string; tools: string[] }[] | undefined;
+  choice: (at: string, role: string) => { text: string; tools: string[] } | undefined;
+};
+export const srcKey = (s: Src) => ('case' in s ? `${s.case}|${s.layer}` : 'at' in s ? `${s.at}|${s.role}` : '');
+
+function value(s: Src, look: Lookup): Row & { layer?: string } {
+  if ('text' in s) return { layer: '', text: s.text, tools: s.tools };
+  if ('case' in s) {
+    const r = look.caseRows(s.case)?.find((x) => x.layer === s.layer);
+    if (!r) throw new Error(`No row "${s.layer}" in §${s.case}`);
+    return { ...r, ref: s.case };
+  }
+  const r = look.choice(s.at, s.role);
+  if (!r) throw new Error(`No choice "${s.role}" in §${s.at}`);
+  return { layer: '', ...r, ref: s.at };
+}
+
+/** Applies a table's edits to its §19 base rows */
+export function resolve(t: Table, look: Lookup): Row[] {
+  const rows: Row[] = t.base ? (look.caseRows(t.base) ?? []).map((r) => ({ ...r, ref: t.base })) : [];
+  for (const e of t.edits) {
+    const i = rows.findIndex((r) => r.layer === e.layer);
+    if (e.src === null) {
+      if (i >= 0) rows.splice(i, 1);
+      continue;
+    }
+    const row = { ...value(e.src, look), layer: e.layer };
+    if (i >= 0) rows[i] = row;
+    else rows.push(row);
+  }
+  return rows;
+}
+
+/** Every Src a decision can reference, for building lookups */
+export const sources = (d: Decision): Src[] => d.tables.flatMap((t) => t.edits.flatMap((e) => (e.src ? [e.src] : [])));
 
 // Every answer combination the UI can produce for a kind
 export function* allAnswers(kind: Kind): Generator<Answers> {
-  const opts = (q: keyof Answers) =>
-    SHOW[q].includes(kind) ? (QUESTIONS.find((x) => x.q === q)?.opts.map((o) => o[0]) ?? []) : [DEFAULTS[q] as string];
-  const consOpts = QUESTIONS.find((x) => x.q === 'cons')?.opts.map((o) => o[0]) ?? [];
-  const consSets = SHOW.cons.includes(kind)
-    ? Array.from({ length: 1 << consOpts.length }, (_, m) => consOpts.filter((_, i) => m & (1 << i)))
-    : [[]];
+  const qs = questionsFor(kind);
+  const opts = (q: keyof Answers) => qs.find((x) => x.q === q)?.opts.map((o) => o[0]) ?? [DEFAULTS[q] as string];
+  const consOpts = qs.find((x) => x.q === 'cons')?.opts.map((o) => o[0]) ?? [];
+  const consSets = Array.from({ length: 1 << consOpts.length }, (_, m) => consOpts.filter((_, i) => m & (1 << i)));
   for (const load of opts('load'))
     for (const env of opts('env'))
       for (const team of opts('team'))

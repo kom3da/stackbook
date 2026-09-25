@@ -2,9 +2,10 @@
 import type { MakePayload } from '../components/MakeApp';
 import { type Block, h3Text, plain, SEC, SECS, stripNo, subBlocks } from './guide';
 import { secHref } from './inline';
+import { CASE_ROWS, CHOICES, LOOKUP } from './lookup';
 import { dictionary } from './tools';
 import { toolView } from './view';
-import { allAnswers, decide, type Kind } from './wizard';
+import { allAnswers, decide, type Kind, resolve, sources, srcKey } from './wizard';
 
 const listed = new Map(dictionary().map((t) => [t.id, t]));
 
@@ -15,6 +16,8 @@ export function makePayload(kind: Kind): MakePayload {
     cases: {},
     cmds: {},
     refs: {},
+    caseRows: {},
+    choices: {},
     sec: { prof: SECS.prof, cases: SECS.cases, commands: SECS.commands },
   };
   const addLink = (id: string) => {
@@ -26,7 +29,19 @@ export function makePayload(kind: Kind): MakePayload {
   };
   for (const a of allAnswers(kind)) {
     const d = decide(kind, a);
-    for (const row of d.rows)
+    // Only the data this kind can reach is shipped to the browser
+    for (const t of d.tables) if (t.base) p.caseRows[t.base] ??= CASE_ROWS.get(t.base) ?? [];
+    for (const src of sources(d)) {
+      if ('case' in src) p.caseRows[src.case] ??= CASE_ROWS.get(src.case) ?? [];
+      else if ('at' in src) {
+        const k = srcKey(src);
+        const v = CHOICES.get(k);
+        if (!v) throw new Error(`Wizard refers to a missing row: ${k}`);
+        p.choices[k] = v;
+      }
+    }
+    const rows = d.tables.flatMap((t) => resolve(t, LOOKUP));
+    for (const row of rows)
       for (const id of row.tools) {
         const t = listed.get(id);
         if (!t || id in p.tools) continue;

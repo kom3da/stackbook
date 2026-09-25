@@ -4,10 +4,11 @@ import { describe, expect, it } from 'vitest';
 import { Inline, LinksContext } from '../components/Inline';
 import { guide, parseGuide, rawSection, rawSub, SEC, SECS } from './guide';
 import { findName, segments } from './inline';
+import { CASE_ROWS, LOOKUP } from './lookup';
 import { llmsTxt, makeMd, toMarkdown } from './md';
 import { parseData } from './schema';
 import { dictionary, ROWS, TOOLS } from './tools';
-import { allAnswers, DEFAULTS, decide, KINDS } from './wizard';
+import { type Answers, allAnswers, DEFAULTS, decide, KINDS, type Kind, questionsFor, resolve } from './wizard';
 
 describe('parseGuide', () => {
   it('reads every numbered section plus intro and memo', () => {
@@ -169,10 +170,50 @@ describe('decide (§2-9, §2-10, §19)', () => {
     expect(run('saas', { stage: 'prod', team: 'small', load: 'p99' }).title).toBe('Rust');
     expect(run('cli', { load: 'cpu' }).title).toBe('Rust');
   });
-  it('refers only to registered tools', () => {
+  it('resolves every row against the guide for every answer combination', () => {
     for (const [k] of KINDS)
       for (const ans of allAnswers(k))
-        for (const r of decide(k, ans).rows) for (const id of r.tools) expect(TOOLS.has(id), `${k}: ${id}`).toBe(true);
+        for (const t of decide(k, ans).tables)
+          for (const r of resolve(t, LOOKUP)) for (const id of r.tools) expect(TOOLS.has(id), `${k}: ${id}`).toBe(true);
+  });
+  it('matches the §19 table exactly under default conditions', () => {
+    // saas: §19-6 assumes a Go team, so compare under conditions that pick Go
+    const cond: Partial<Record<Kind, Partial<Answers>>> = { saas: { team: 'small', stage: 'prod' } };
+    for (const k of ['web', 'saas', 'toc', 'ai', 'site'] as const) {
+      const [t] = run(k, cond[k]).tables;
+      expect(t.base, k).toBeDefined();
+      expect(
+        resolve(t, LOOKUP).map((r) => r.text),
+        k,
+      ).toEqual(CASE_ROWS.get(t.base as string)?.map((r) => r.text));
+    }
+  });
+  it('shows only options that change the result', () => {
+    const key = (k: Kind, a: Answers) => JSON.stringify(decide(k, a));
+    for (const [k] of KINDS) {
+      const all = [...allAnswers(k)];
+      for (const q of questionsFor(k)) {
+        if (q.multi) {
+          for (const [v, label] of q.opts)
+            expect(
+              all.some(
+                (a) => a.cons.includes(v) && key(k, a) !== key(k, { ...a, cons: a.cons.filter((x) => x !== v) }),
+              ),
+              `${k} / ${q.label} / ${label}`,
+            ).toBe(true);
+          continue;
+        }
+        // Every pair of options must lead to different results under some other conditions
+        for (const [v, lv] of q.opts)
+          for (const [o, lo] of q.opts) {
+            if (v >= o) continue;
+            expect(
+              all.some((a) => a[q.q] === v && key(k, a) !== key(k, { ...a, [q.q]: o })),
+              `${k} / ${q.label}: ${lv} と ${lo} が同じ結果`,
+            ).toBe(true);
+          }
+      }
+    }
   });
   it('points every case at an existing §19 subsection', () => {
     for (const [k] of KINDS)
@@ -190,6 +231,7 @@ describe('markdown for agents', () => {
     expect(m).toContain('最新安定版');
     expect(m).toContain('## 推奨：Ruby / Rails');
     expect(m).toContain('## §19-4');
+    expect(m).toContain('## 条件が違うとき');
     expect(m).toContain('## §26-4');
   });
 });

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Block } from '../lib/guide';
 import type { ToolView } from '../lib/view';
-import { type Answers, DEFAULTS, decide, type Kind, QUESTIONS, SHOW } from '../lib/wizard';
+import { type Answers, DEFAULTS, decide, type Kind, type Lookup, questionsFor, resolve } from '../lib/wizard';
 import { Blocks } from './Blocks';
 import { Inline, type Links } from './Inline';
 import { ToolBody } from './ToolBody';
@@ -22,6 +22,9 @@ export type MakePayload = {
   /** Command blocks keyed by §19 case id; "" holds the common setup */
   cmds: Record<string, { title: string; blocks: Block[] }>;
   refs: Record<string, { href: string; label: string }>;
+  /** §19 stack rows and choice defaults the wizard can reference, keyed like srcKey() */
+  caseRows: Record<string, { layer: string; text: string; tools: string[] }[]>;
+  choices: Record<string, { layer: string; text: string; tools: string[] }>;
   /** Section ids used in messages */
   sec: { prof: string; cases: string; commands: string };
 };
@@ -39,7 +42,8 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
   const [answers, setAnswers] = useState<Answers>(DEFAULTS);
   const [prof, setProf] = useState<Record<string, string>>({});
   const d = useMemo(() => decide(kind, answers), [kind, answers]);
-  const qs = QUESTIONS.filter((q) => SHOW[q.q].includes(kind));
+  const qs = questionsFor(kind);
+  const look: Lookup = { caseRows: (c) => p.caseRows[c], choice: (at, role) => p.choices[`${at}|${role}`] };
 
   useEffect(() => {
     const load = () => setProf(readProf());
@@ -71,12 +75,15 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
     .join(' · ');
 
   const unknown = new Set<string>();
-  const rows = d.rows.map((r) => {
-    const tools = r.tools.map((id) => p.tools[id]).filter(Boolean);
-    const warn = [...new Set(tools.flatMap((t) => t.prof).filter((n) => prof[n] === '未経験'))];
-    for (const w of warn) unknown.add(w);
-    return { ...r, cards: tools, warn };
-  });
+  const tables = d.tables.map((t) => ({
+    ...t,
+    rows: resolve(t, look).map((r) => {
+      const tools = r.tools.map((id) => p.tools[id]).filter(Boolean);
+      const warn = [...new Set(tools.flatMap((x) => x.prof).filter((n) => prof[n] === '未経験'))];
+      for (const w of warn) unknown.add(w);
+      return { ...r, cards: tools, warn };
+    }),
+  }));
 
   return (
     <>
@@ -148,47 +155,60 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
           <h2 className="sh">
             構成<span className="sh-d">行を開くと詳細（乗り換える条件・根拠・費用・習熟度）</span>
           </h2>
-          <div className="sheet">
-            {rows.map((r) => {
-              const head = (
-                <>
-                  <span className="s-layer">{r.layer}</span>
-                  <span className="s-val">
-                    <Inline text={r.text} linkTools={false} />
-                    {r.warn.map((n) => (
-                      <span key={n} className="badge">
-                        未経験：{n}
+          {tables.map((t) => (
+            <div key={t.title ?? t.base ?? 'composed'} className="mt-4 first:mt-0">
+              {t.title && <h3 className="sheet-h">{t.title}</h3>}
+              <div className="sheet">
+                {t.rows.map((r) => {
+                  const head = (
+                    <>
+                      <span className="s-layer">{r.layer}</span>
+                      <span className="s-val">
+                        <Inline text={r.text} linkTools={false} />
+                        {r.warn.map((n) => (
+                          <span key={n} className="badge">
+                            未経験：{n}
+                          </span>
+                        ))}
                       </span>
-                    ))}
-                  </span>
-                </>
-              );
-              if (!r.cards.length)
-                return (
-                  <div className="srow" key={r.layer}>
-                    <div className="s-head">{head}</div>
-                  </div>
-                );
-              return (
-                <details className="srow" key={r.layer}>
-                  <summary className="s-head">
-                    {head}
-                    <span className="chev" aria-hidden="true" />
-                  </summary>
-                  <div className="s-more">
-                    {r.cards.map((t) => (
-                      <section className="tcard" key={t.id}>
-                        <h3>
-                          <a href={`/dict/${t.slug}/`}>{t.name}</a>
-                        </h3>
-                        <ToolBody tool={t} links={p.links} />
-                      </section>
-                    ))}
-                  </div>
-                </details>
-              );
-            })}
-          </div>
+                    </>
+                  );
+                  if (!r.cards.length)
+                    return (
+                      <div className="srow" key={r.layer}>
+                        <div className="s-head">{head}</div>
+                      </div>
+                    );
+                  return (
+                    <details className="srow" key={r.layer}>
+                      <summary className="s-head">
+                        {head}
+                        <span className="chev" aria-hidden="true" />
+                      </summary>
+                      <div className="s-more">
+                        {r.cards.map((t) => (
+                          <section className="tcard" key={t.id}>
+                            <h3>
+                              <a href={`/dict/${t.slug}/`}>{t.name}</a>
+                            </h3>
+                            <ToolBody tool={t} links={p.links} />
+                          </section>
+                        ))}
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+              {t.base && (
+                <p className="sheet-src">
+                  <a className="ref" href={`/s/${p.sec.cases}/#${t.base}`}>
+                    §{t.base}
+                  </a>
+                  {t.edits.length ? 'の構成を、選んだ条件に合わせて一部差し替えている' : 'の構成'}
+                </p>
+              )}
+            </div>
+          ))}
           {unknown.size > 0 && (
             <p className="warn">
               未経験のツールが含まれる。検証期間を見積もりに入れる（
@@ -255,7 +275,7 @@ function CommandList({ keys, p }: { keys: string[]; p: MakePayload }) {
   );
 }
 
-type Q = (typeof QUESTIONS)[number];
+type Q = ReturnType<typeof questionsFor>[number];
 function Conditions({
   qs,
   answers,
