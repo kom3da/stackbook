@@ -215,12 +215,6 @@ export const h3Text = (secId: string, h3id: string) => {
   return b?.t === 'h3' ? b.text : '';
 };
 
-// First paragraph of a section as plain text, for previews
-export const firstText = (id: string) => {
-  const b = SEC.get(id)?.blocks.find((x) => x.t === 'p');
-  return b?.t === 'p' ? plain(b.text) : '';
-};
-
 // Raw markdown of one section ("## …" up to the next "## "), without the trailing rule
 // Line-level outline of the raw markdown, ignoring anything inside ``` fences
 const LINES = md.split('\n');

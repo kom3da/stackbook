@@ -1,9 +1,16 @@
 ---
-import Hub from '../components/Hub.astro';
-import Base from '../layouts/Base.astro';
-import { firstText } from '../lib/guide';
+// Old hub page: the chapters now list each other, so this forwards to the first one
 ---
 
-<Base title="考え方" tab="read" wide>
-  <Hub group="read" title="考え方" lead="選び方の原則、根拠、目安の数値、成長したときの移行と費用。" preview={firstText} />
-</Base>
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="refresh" content="0; url=/s/intro/" />
+    <link rel="canonical" href="/s/intro/" />
+    <title>移動しました</title>
+  </head>
+  <body>
+    <p><a href="/s/intro/">/s/intro/</a> に移動しました。</p>
+  </body>
+</html>
