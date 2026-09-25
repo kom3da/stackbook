@@ -260,7 +260,7 @@ describe('decide (§2-9, §2-10, §19)', () => {
     }
     // Removing a constraint that is set is listed too, and leads back to the defaults
     const on = diffs('saas', { ...DEFAULTS, cons: ['java'] }, LOOKUP).find((x) => x.q === 'cons' && x.v === 'java');
-    expect(on?.label).toBe('既存のJava資産と連携を外す');
+    expect(on?.label).toBe('「既存のJava資産と連携」を外す');
     expect(on?.answers.cons).toEqual([]);
   });
 

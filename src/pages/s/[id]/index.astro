@@ -45,13 +45,16 @@ const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : GR
     {isStale(s) && <p class="warn">{STALE_MONTHS}か月以上見直していない。内容が古くなっている可能性がある。</p>}
     {
       h3.length >= 3 && (
-        <nav aria-label="このページの見出し" class="mt-6 flex flex-wrap gap-1.5 lg:hidden">
-          {h3.map((b) => (
-            <a href={`#${b.t === 'h3' ? b.id : ''}`} class="nx">
-              {b.t === 'h3' && headText(b.text)}
-            </a>
-          ))}
-        </nav>
+        <details class="heads mt-6 lg:hidden" open={h3.length <= 8}>
+          <summary>この章の見出し（{h3.length}）</summary>
+          <nav aria-label="このページの見出し" class="mt-3 flex flex-wrap gap-x-3 gap-y-1.5">
+            {h3.map((b) => (
+              <a href={`#${b.t === 'h3' ? b.id : ''}`} class="nx">
+                {b.t === 'h3' && headText(b.text)}
+              </a>
+            ))}
+          </nav>
+        </details>
       )
     }
     <div class="doc mt-10"><Blocks blocks={s.blocks} secId={s.id} links={LINKS} /></div>

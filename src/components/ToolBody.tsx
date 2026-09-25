@@ -141,7 +141,7 @@ export function ToolBody({ tool: t, links }: { tool: ToolView; links: Links }) {
       ))}
       {t.stacks.length > 0 && (
         <div className="tb">
-          <Head right={<Ref id="19" />}>ケース別の構成</Head>
+          <Head right={<Ref id="19" />}>ケースでの使われ方</Head>
           <ul className="uses">
             {t.stacks.map((s) => (
               <li key={s.label + s.layer}>

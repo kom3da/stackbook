@@ -537,8 +537,10 @@ function Compare({
   const ra = rows(da);
   const rb = rows(db);
   const layers = [...new Set([...ra.keys(), ...rb.keys()])];
+  // The recommendation row only repeats the language row when both name the same language
+  const sameAsLang = (d: Decision, r: typeof ra) => r.get('言語')?.text.replaceAll('**', '') === d.title;
   const lines = [
-    { k: '推奨', a: da.title, b: db.title },
+    ...(sameAsLang(da, ra) && sameAsLang(db, rb) ? [] : [{ k: '推奨', a: da.title, b: db.title }]),
     ...layers.map((l) => ({ k: l, a: ra.get(l)?.text ?? '', b: rb.get(l)?.text ?? '' })),
   ];
   const md = () =>
@@ -586,6 +588,9 @@ function Compare({
           {summaryOf(b)}
         </p>
       </div>
+      {lines.every((x) => x.a === x.b) && (
+        <p className="cmp-hint">いまは A と B が同じ条件。上の条件を変えると B だけが変わり、違う行に ≠ が付く。</p>
+      )}
       <LinksContext.Provider value={p.links}>
         <table className="cmp">
           <thead>
@@ -659,12 +664,15 @@ function DiffList({
             {x.rebuilt && <li>構成 → 言語別の既定から組み立て直す</li>}
             {!x.base &&
               !x.rebuilt &&
-              x.rows.map((r) => (
-                <li key={r.layer}>
-                  {/* Plain throughout: the sources bold some names and not others */}
-                  {r.layer} → <Inline text={r.text.replaceAll('**', '')} />
-                </li>
-              ))}
+              x.rows
+                // 推奨 above already names the language
+                .filter((r) => !(x.title && r.layer === '言語' && r.text.replaceAll('**', '') === x.title))
+                .map((r) => (
+                  <li key={r.layer}>
+                    {/* Plain throughout: the sources bold some names and not others */}
+                    {r.layer} → <Inline text={r.text.replaceAll('**', '')} />
+                  </li>
+                ))}
             {x.removed.map((l) => (
               <li key={l}>{l} → なくなる</li>
             ))}

@@ -94,7 +94,8 @@ try {
     mkdirSync(dir, { recursive: true });
     const ctx = await browsers[v.phone ? 'webkit' : 'chromium'].newContext({
       viewport: { width: v.w, height: v.h },
-      deviceScaleFactor: 2,
+      // Sharp, but every side under 2000px so the images can be read back by review tools
+      deviceScaleFactor: Math.min(2, 1990 / Math.max(v.w, v.h)),
       isMobile: v.phone,
       hasTouch: v.phone,
     });

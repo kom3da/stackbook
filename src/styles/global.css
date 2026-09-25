@@ -348,7 +348,14 @@
       @apply block pl-[2ch] -indent-[2ch];
     }
     .code .ln:first-child {
-      @apply pr-16;
+      @apply pr-20;
+    }
+    .copy,
+    .diagram-zoom {
+      @apply min-h-9 px-3;
+    }
+    .diffs .btn {
+      @apply min-h-10;
     }
   }
   .marg .code pre {
@@ -1130,6 +1137,9 @@
   .cmp-acts {
     @apply flex flex-wrap gap-1.5;
   }
+  .cmp-hint {
+    @apply mb-3 rounded-md bg-bg px-3 py-2 text-sm text-mute;
+  }
   .cmp-leg {
     @apply mt-2 mb-3 grid gap-1 text-xs text-mute sm:hidden;
   }
@@ -1204,6 +1214,22 @@
   }
   .nxs {
     @apply flex flex-col items-start gap-1.5;
+  }
+  /* A long chapter's headings fold away on narrow screens */
+  .heads summary {
+    @apply inline-flex min-h-9 cursor-pointer list-none items-center gap-2 rounded-[5px] border border-line px-3 text-[13px];
+  }
+  .heads summary::-webkit-details-marker {
+    display: none;
+  }
+  .heads summary::after {
+    content: "";
+    @apply size-1.5 rotate-45 border-r-[1.5px] border-b-[1.5px] border-ink;
+    translate: 0 -2px;
+  }
+  .heads[open] summary::after {
+    rotate: 180deg;
+    translate: 0 1px;
   }
   .nx {
     @apply text-sm text-accent underline decoration-1 underline-offset-[3px] hover:decoration-2;

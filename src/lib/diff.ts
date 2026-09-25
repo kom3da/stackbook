@@ -5,7 +5,7 @@ export type Diff = {
   q: keyof Answers;
   /** The option this change selects (for cons: the one toggled) */
   v: string;
-  /** e.g. 実行環境＝AWS, or 機械学習ライブラリが必須を加える */
+  /** e.g. 実行環境＝AWS, or 「機械学習ライブラリが必須」を加える */
   label: string;
   /** The question and option labels, e.g. 実行環境 / AWS */
   qLabel: string;
@@ -53,7 +53,7 @@ export function diffs(kind: Kind, from: Answers, look: Lookup): Diff[] {
       const d2: Diff = {
         q: q.q,
         v,
-        label: q.multi ? `${label}を${on ? '外す' : '加える'}` : `${q.label}＝${label}`,
+        label: q.multi ? `「${label}」を${on ? '外す' : '加える'}` : `${q.label}＝${label}`,
         qLabel: q.label,
         opt: label,
         answers,
