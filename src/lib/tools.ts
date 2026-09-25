@@ -122,23 +122,8 @@ export function category(t: Tool): string {
   return 'その他';
 }
 
-/** Tools with enough to say to deserve their own dictionary page (others are listed in the index only) */
-export const hasPage = (t: Tool) =>
-  !!(
-    t.lang ||
-    t.why.length ||
-    t.cost.length ||
-    t.growth.length ||
-    t.uses.length ||
-    t.def.some((r) => r.alts.length) ||
-    t.def.length + t.alt.length >= 2
-  );
-
-/** Where a tool name links to: its dictionary page, else its official site, else where the guide mentions it */
-export const hrefOf = (t: Tool) =>
-  hasPage(t)
-    ? `/dict/${t.slug}/`
-    : (t.url ?? ((t.def[0] ?? t.alt[0]?.row) ? `/s/${(t.def[0] ?? t.alt[0].row).sec.id}/` : '/dict/'));
+/** Every dictionary tool has its own (possibly short) page */
+export const hrefOf = (t: Tool) => `/dict/${t.slug}/`;
 
 /** Tools that the guide actually says something about, sorted by name */
 export const dictionary = () =>

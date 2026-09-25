@@ -16,7 +16,7 @@ const prev = bySec(list[i - 1]);
 const next = bySec(list[i + 1]);
 const h3 = s.blocks.filter((b) => b.t === 'h3');
 const tab = g === 'tools' ? 'dict' : g;
-const hub = g === 'tools' ? '/dict/#fields' : `/${g}/`;
+const hub = g === 'tools' ? '/dict/' : `/${g}/`;
 ---
 
 <Base title={secLabel(s)} tab={tab} md={`/s/${s.id}.md`} wide={g === 'tools'}>

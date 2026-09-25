@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import { guide } from '../lib/guide';
 import { Inline } from '../components/Inline';
-import { KINDS, type Kind } from '../lib/wizard';
+import { DEFAULTS, decide, KINDS, type Kind } from '../lib/wizard';
 
 // Grouped so a reader can skip straight to their kind of product
 const GROUPS: [string, Kind[]][] = [
@@ -38,6 +38,9 @@ const doors = [
                     <span class="min-w-0 flex-1">
                       <span class="block font-semibold group-hover:text-accent">{name}</span>
                       <span class="block text-sm text-mute">{desc}</span>
+                      <span class="mt-1.5 inline-block rounded-md bg-accent-soft px-2 py-0.5 text-xs font-medium text-accent">
+                        {decide(k, DEFAULTS).title}
+                      </span>
                     </span>
                     <span aria-hidden="true" class="text-faint group-hover:text-accent">
                       ›
