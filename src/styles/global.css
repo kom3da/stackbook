@@ -297,6 +297,45 @@
   .diagram svg {
     @apply mx-auto h-auto max-w-full;
   }
+  /* Keep the text at its drawn size: a wide diagram scrolls sideways instead of shrinking */
+  .diagram {
+    @apply relative;
+  }
+  .diagram-svg {
+    @apply mx-auto cursor-zoom-in;
+  }
+  /* Tall diagrams stay within a screen; the zoom view shows them at any size */
+  .diagram-svg svg {
+    max-height: min(560px, 70vh);
+    width: auto;
+  }
+  .diagram-zoom {
+    @apply absolute top-2.5 right-2.5 z-[1] cursor-pointer rounded-md border border-rule bg-bg px-2 py-0.5 text-xs text-mute hover:text-ink;
+  }
+  .zoom {
+    @apply m-0 border-0 bg-surface p-0 text-ink;
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100dvh;
+  }
+  .zoom[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  .zoom-body {
+    @apply min-h-0 flex-1 overflow-auto p-4;
+  }
+  .zoom-body svg {
+    @apply mx-auto block;
+  }
+  @media (max-width: 767px) {
+    .diagram-svg {
+      min-width: var(--dw);
+    }
+  }
   @media (min-width: 1024px) {
     .diagram svg {
       max-width: 640px;
@@ -313,6 +352,9 @@
   }
   .om-code {
     background: var(--ink);
+  }
+  .om-none {
+    @apply border-rule bg-sunk;
   }
   .om-managed {
     border-style: dashed;
@@ -781,20 +823,8 @@
   .marg-k {
     @apply mb-2 text-xs font-semibold text-mute;
   }
-  .marg-card {
-    @apply mt-6 rounded-[4px] border border-rule bg-surface p-4;
-  }
-  .marg-fig {
-    @apply block cursor-zoom-in no-underline;
-  }
-  .marg-card .diagram {
-    @apply m-0 border-0 bg-transparent p-0;
-  }
-  .marg-card p:not(.marg-k) {
-    @apply mt-2 text-xs text-mute;
-  }
-  .marg-note {
-    @apply text-xs text-mute;
+  .case-fig + .case-fig {
+    @apply mt-6;
   }
   .legend-list {
     @apply grid gap-1.5;

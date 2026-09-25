@@ -110,6 +110,16 @@ const tabs = [
     <main id="main" class:list={app ? 'app-main' : ['mx-auto px-4 py-8 sm:px-6 sm:py-12', wide ? 'max-w-6xl' : 'max-w-3xl']}>
       <slot />
     </main>
+    <dialog id="zoom" class="zoom" aria-label="構成図の拡大">
+      <div class="peek-top">
+        <span class="flex-1 text-sm font-semibold">構成図</span>
+        <button type="button" class="peek-btn" data-z="out" aria-label="縮小">−</button>
+        <button type="button" class="peek-btn" data-z="in" aria-label="拡大">＋</button>
+        <button type="button" class="peek-btn" data-z="fit">全体</button>
+        <button type="button" class="peek-btn" data-zoom-close>閉じる <kbd>Esc</kbd></button>
+      </div>
+      <div id="zoom-body" class="zoom-body"></div>
+    </dialog>
     <dialog id="peek" class="peek" aria-labelledby="peek-title">
       <div class="peek-top">
         <nav aria-label="たどった参照"><ol id="peek-crumbs" class="crumbs" aria-live="polite"></ol></nav>

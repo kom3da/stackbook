@@ -385,6 +385,42 @@ document.addEventListener('click', async (e) => {
   if (ok && /-s\d+$/.test(step)) peekBody?.querySelector(`#${CSS.escape(step)}`)?.scrollIntoView({ block: 'start' });
 });
 
+// ---- diagram zoom: a full-screen view with its own scale ----
+const zoom = document.getElementById('zoom') as HTMLDialogElement | null;
+const zoomBody = document.getElementById('zoom-body');
+let zoomScale = 1;
+let zoomW = 0;
+function zoomTo(s: number) {
+  const svg = zoomBody?.querySelector('svg');
+  if (!svg || !zoomBody) return;
+  zoomScale = Math.min(4, Math.max(0.25, s));
+  svg.style.width = `${Math.round(zoomW * zoomScale)}px`;
+}
+document.addEventListener('click', (e) => {
+  const t = e.target as HTMLElement;
+  if (!zoom || !zoomBody) return;
+  const fig = t.closest('.diagram');
+  if (fig && (t.closest('[data-zoom]') || t.closest('.diagram-svg'))) {
+    const svg = fig.querySelector('svg');
+    if (!svg) return;
+    const copy = svg.cloneNode(true) as SVGSVGElement;
+    // Drawn width, from the SVG's own max-width
+    zoomW = Number(svg.style.maxWidth.replace('px', '')) || svg.getBoundingClientRect().width;
+    copy.removeAttribute('width');
+    copy.style.maxWidth = 'none';
+    copy.style.maxHeight = 'none';
+    copy.style.height = 'auto';
+    zoomBody.replaceChildren(copy);
+    zoom.showModal();
+    // Start by fitting the screen, but never smaller than the drawn size's half
+    zoomTo(Math.max(0.5, Math.min((zoomBody.clientWidth - 32) / zoomW, 1.5)));
+    return;
+  }
+  const z = t.closest<HTMLElement>('[data-z]')?.dataset.z;
+  if (z) zoomTo(z === 'in' ? zoomScale * 1.25 : z === 'out' ? zoomScale / 1.25 : (zoomBody.clientWidth - 32) / zoomW);
+  if (t.closest('[data-zoom-close]') || t === zoom) zoom.close();
+});
+
 // The make island re-renders on its own; sync its controls after each render
 window.addEventListener('stackbook:render', hydrate);
 hydrate();

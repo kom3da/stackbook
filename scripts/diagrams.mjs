@@ -76,7 +76,8 @@ const CLASSES = [
   'classDef code fill:#1d1b18,stroke:#1d1b18,color:#ffffff',
   'classDef self fill:#ffffff,stroke:#1d1b18,stroke-width:2px,color:#1d1b18',
   'classDef managed fill:#ffffff,stroke:#1d1b18,stroke-width:1.5px,stroke-dasharray:5 4,color:#1d1b18',
-  'classDef actor fill:#efece5,stroke:#efece5,color:#1d1b18',
+  // People and traffic are plain labels, so they don't read as a component
+  'classDef actor fill:transparent,stroke:transparent,color:#1d1b18,font-weight:600',
 ];
 function styled(code) {
   const assigned = new Map();

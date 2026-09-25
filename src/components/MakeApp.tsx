@@ -265,13 +265,32 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
           </LinksContext.Provider>
         </Sec>
 
+        <Sec n={3} id="m3" title="構成図">
+          {d.cases.map((c) => {
+            const x = p.cases[c];
+            return (
+              x && (
+                <div className="case-fig" key={c}>
+                  <p className="sheet-h">
+                    <a className="ref" href={x.href}>
+                      §{c} {x.title}
+                    </a>
+                  </p>
+                  {diagramNote(c) && <p className="sheet-src">{diagramNote(c)}</p>}
+                  <Blocks blocks={x.blocks} secId={p.sec.cases} links={p.links} />
+                </div>
+              )
+            );
+          })}
+        </Sec>
+
         {bandTools.length > 0 && (
-          <Sec n={3} id="m3" title="運用の内訳">
+          <Sec n={4} id="m4" title="運用の内訳">
             <OpsList tools={bandTools} />
           </Sec>
         )}
 
-        <Sec n={4} id="m4" title="条件が違うとき">
+        <Sec n={5} id="m5" title="条件が違うとき">
           <DiffList
             items={diffs(kind, answers, look)}
             p={p}
@@ -287,11 +306,11 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
           />
         </Sec>
 
-        <Sec n={5} id="m5" title="作り始める">
+        <Sec n={6} id="m6" title="作り始める">
           <CommandList keys={[p.sec.commandsCommon, ...d.commands]} p={p} />
         </Sec>
 
-        <Sec n={6} id="m6" title="次に読む">
+        <Sec n={7} id="m7" title="次に読む">
           <div className="nxs">
             {[...new Set(d.refs)].map((r) => {
               const x = p.refs[r];
@@ -322,27 +341,6 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
             ))}
           </div>
         )}
-        {d.cases.map((c) => {
-          const x = p.cases[c];
-          return (
-            x && (
-              <div className="marg-card" key={c}>
-                <p className="marg-k">
-                  構成図{' '}
-                  <a className="ref" href={x.href}>
-                    {x.title}
-                  </a>
-                </p>
-                {diagramNote(c) && <p className="marg-note">{diagramNote(c)}</p>}
-                {/* A preview: the §19 subsection opens large in the reference pane */}
-                <a className="marg-fig" href={x.href} aria-label={`構成図 ${x.title} を大きく開く`}>
-                  <Blocks blocks={x.blocks.filter((b) => b.t === 'mermaid')} secId={p.sec.cases} links={p.links} />
-                </a>
-                <Blocks blocks={x.blocks.filter((b) => b.t !== 'mermaid')} secId={p.sec.cases} links={p.links} />
-              </div>
-            )
-          );
-        })}
         <div className="marg-b">
           <p className="marg-k">記号</p>
           <ul className="legend-list">

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { Block } from '../lib/guide';
 import { HEADS } from '../lib/heads';
 import type { Data } from '../lib/schema';
@@ -287,8 +287,17 @@ function BlockView({ b, secId, names }: { b: Block; secId: string; names: (ids: 
     case 'mermaid':
       return (
         <figure className="diagram">
+          <button type="button" className="diagram-zoom" data-zoom aria-label="構成図を拡大して開く">
+            拡大
+          </button>
           {/* Pre-rendered at build time from our own guide content (scripts/diagrams.mjs) */}
-          <div dangerouslySetInnerHTML={{ __html: b.svg }} />
+          <div
+            className="diagram-svg"
+            style={
+              { '--dw': `${Math.min(Number(b.svg.match(/max-width: ([\d.]+)px/)?.[1] ?? 0), 720)}px` } as CSSProperties
+            }
+            dangerouslySetInnerHTML={{ __html: b.svg }}
+          />
           <figcaption className="legend">
             <span>
               <span className="om om-code" />
@@ -301,6 +310,10 @@ function BlockView({ b, secId, names }: { b: Block; secId: string; names: (ids: 
             <span>
               <span className="om om-managed" />
               マネージドに任せる
+            </span>
+            <span>
+              <span className="om om-none" />
+              灰色の地：分類なし
             </span>
           </figcaption>
         </figure>
