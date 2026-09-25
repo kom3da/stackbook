@@ -105,6 +105,10 @@ const tabs = [
     <main id="main" class:list={['mx-auto px-4 py-8 sm:px-6 sm:py-12', wide ? 'max-w-6xl' : 'max-w-3xl']}>
       <slot />
     </main>
+    <dialog id="peek" class="peek" aria-labelledby="peek-title">
+      <button type="button" class="peek-x" aria-label="閉じる" data-peek-close>×</button>
+      <div id="peek-body"></div>
+    </dialog>
     <script>
       import '../scripts/global';
     </script>

@@ -574,3 +574,44 @@
     @apply rounded-full border border-rule bg-surface px-3.5 py-1.5 text-sm no-underline hover:border-accent hover:text-accent;
   }
 }
+
+/* ---- tool peek dialog: a right-hand panel on desktop, a bottom sheet on phones ---- */
+@layer components {
+  .peek {
+    @apply m-0 border-0 bg-surface p-0 text-ink shadow-2xl;
+    position: fixed;
+    inset: auto 0 0 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 85dvh;
+    border-radius: 16px 16px 0 0;
+  }
+  @media (min-width: 768px) {
+    .peek {
+      inset: 0 0 0 auto;
+      width: 28rem;
+      height: 100dvh;
+      max-height: 100dvh;
+      border-radius: 0;
+    }
+  }
+  .peek::backdrop {
+    background: rgb(27 35 43 / 0.35);
+  }
+  .peek[open] {
+    display: flex;
+    flex-direction: column;
+  }
+  #peek-body {
+    @apply overflow-y-auto px-6 pt-5 pb-8;
+  }
+  .peek-x {
+    @apply absolute top-3 right-3 z-10 size-10 cursor-pointer rounded-full border border-rule bg-bg text-xl leading-none text-mute hover:text-ink;
+  }
+  .peek-h h2 {
+    @apply mt-1 mb-5 pr-12 text-2xl font-bold tracking-tight;
+  }
+  .peek-more {
+    @apply mt-4 border-t border-rule pt-4 text-sm;
+  }
+}

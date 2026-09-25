@@ -163,6 +163,39 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// ---- tool peek: tool links open a summary in a dialog; the full page stays one click away ----
+const peek = document.getElementById('peek') as HTMLDialogElement | null;
+const peekBody = document.getElementById('peek-body');
+const TOOL_PAGE = /^\/dict\/[^/]+\/$/;
+async function openPeek(href: string) {
+  if (!peek || !peekBody) return false;
+  try {
+    const res = await fetch(`${href}peek.html`);
+    if (!res.ok) return false;
+    peekBody.innerHTML = await res.text();
+  } catch {
+    return false;
+  }
+  syncProf();
+  if (!peek.open) peek.showModal();
+  peekBody.scrollTop = 0;
+  (peek.querySelector('[data-peek-close]') as HTMLElement | null)?.focus();
+  return true;
+}
+document.addEventListener('click', async (e) => {
+  const t = e.target as HTMLElement;
+  if (t.closest('[data-peek-close]') || e.target === peek) {
+    peek?.close();
+    return;
+  }
+  const a = t.closest<HTMLAnchorElement>('a[href]');
+  if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  const href = a.getAttribute('href') ?? '';
+  if (!TOOL_PAGE.test(href) || a.closest('.peek-more')) return;
+  e.preventDefault();
+  if (!(await openPeek(href))) location.href = href;
+});
+
 // The make island re-renders on its own; sync its controls after each render
 window.addEventListener('stackbook:render', hydrate);
 hydrate();
