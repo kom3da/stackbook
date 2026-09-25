@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { guide, parseGuide, rawSection, SEC, SECS } from './guide';
+import { guide, parseGuide, rawSection, rawSub, SEC, SECS } from './guide';
+import { linkNames } from './html';
 import { llmsTxt, makeMd } from './md';
-import { norm, TOOLS, tokens, toolInfo } from './tools';
+import { norm, parseAlts, TOOLS, tokens, toolInfo } from './tools';
 import { DEFAULTS, decide, KINDS } from './wizard';
 
 describe('parseGuide', () => {
@@ -10,6 +11,10 @@ describe('parseGuide', () => {
     expect(ids[0]).toBe('intro');
     expect(ids.at(-1)).toBe('memo');
     for (let n = 1; n <= 27; n++) expect(ids).toContain(String(n));
+  });
+
+  it('records a review month for every numbered section', () => {
+    for (const s of guide.sections) if (s.num) expect(s.checked, `§${s.num}`).toMatch(/^\d{4}年\d{1,2}月$/);
   });
 
   it('has every section and subsection the code refers to (SECS)', () => {
@@ -54,6 +59,13 @@ describe('parseGuide', () => {
     ]);
   });
 
+  it('slices raw subsections without being fooled by code fences', () => {
+    const sub = rawSub(SECS.commandsCommon);
+    expect(sub).toMatch(/^### 26-1\./);
+    expect(sub).toContain('```bash');
+    expect(sub).not.toContain('### 26-2');
+  });
+
   it('slices raw markdown per section', () => {
     expect(rawSection('7')).toMatch(/^## 7\. 決済/);
     expect(rawSection('7')).not.toContain('## 8.');
@@ -71,6 +83,31 @@ describe('tokens', () => {
     ['GMOペイメントゲートウェイ', []],
   ])('%s', (input, expected) => {
     expect(tokens(input)).toEqual(expected);
+  });
+});
+
+describe('parseAlts', () => {
+  it('splits "name：condition" pairs', () => {
+    const { alts, note } = parseAlts('Bun：スクリプトで速度を重視するとき。Deno：Deno Deploy前提のとき');
+    expect(alts.map((a) => [a.label, a.cond])).toEqual([
+      ['Bun', 'スクリプトで速度を重視するとき'],
+      ['Deno', 'Deno Deploy前提のとき'],
+    ]);
+    expect(note).toBe('');
+  });
+  it('keeps bare names and turns sentences into notes', () => {
+    expect(parseAlts('Bullet').alts.map((a) => a.label)).toEqual(['Bullet']);
+    const r = parseAlts('Neon・Supabaseは組み込みのプーラーを使う');
+    expect(r.alts).toEqual([]);
+    expect(r.note).toContain('プーラー');
+    expect(parseAlts('—')).toEqual({ alts: [], note: '' });
+  });
+});
+
+describe('linkNames', () => {
+  it('links whole words only', () => {
+    const html = linkNames('GoReleaserとGo', ['Go'], () => 'go');
+    expect(html).toBe('GoReleaserと<a class="tl" href="/dict/go/">Go</a>');
   });
 });
 
@@ -133,6 +170,7 @@ describe('markdown for agents', () => {
   });
   it('bundles recommendation, §19 case and commands', () => {
     const m = makeMd('web');
+    expect(m).toContain('最新安定版');
     expect(m).toContain('## 推奨：Ruby / Rails 8');
     expect(m).toContain('## §19-4');
     expect(m).toContain('## §26-4');

@@ -24,7 +24,7 @@ export type Tool = {
   lang?: { ref: string; lead: string };
 };
 
-function parseAlts(t: string) {
+export function parseAlts(t: string) {
   const alts: Alt[] = [];
   let note = '';
   if (!t || t === '—') return { alts, note };

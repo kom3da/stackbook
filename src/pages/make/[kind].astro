@@ -11,7 +11,8 @@ const kind = Astro.params.kind as Kind;
 const { name, desc } = Astro.props;
 const payload = makePayload(kind);
 const qs = QUESTIONS.filter((q) => SHOW[q.q].includes(kind));
-const html = renderMake(decide(kind, DEFAULTS), payload, {});
+const initial = decide(kind, DEFAULTS);
+const html = renderMake(initial, payload, {});
 ---
 
 <Base title={name} tab="make" md={`/make/${kind}.md`}>
@@ -46,7 +47,8 @@ const html = renderMake(decide(kind, DEFAULTS), payload, {});
     )
   }
 
-  <div id="result" class="mt-8" aria-live="polite" set:html={html} />
+  <p id="announce" class="sr-only" aria-live="polite">{`推奨：${initial.title}`}</p>
+  <div id="result" class="mt-8" set:html={html} />
   <script type="application/json" id="payload" set:html={JSON.stringify(payload).replace(/</g, '\\u003c')} />
 </Base>
 
@@ -70,7 +72,10 @@ const html = renderMake(decide(kind, DEFAULTS), payload, {});
   }
   function update() {
     const open = [...out.querySelectorAll('details[open] .s-layer')].map((e) => e.textContent ?? '');
-    out.innerHTML = renderMake(decide(kind, answers()), payload, loadProf());
+    const d = decide(kind, answers());
+    out.innerHTML = renderMake(d, payload, loadProf());
+    const announce = document.getElementById('announce');
+    if (announce && announce.textContent !== `推奨：${d.title}`) announce.textContent = `推奨：${d.title}`;
     for (const d of out.querySelectorAll('details'))
       if (open.includes(d.querySelector('.s-layer')?.textContent ?? '')) d.open = true;
     hydrate();

@@ -51,8 +51,14 @@ function table(b: Extract<Block, { t: 'table' }>, sec: Section) {
     .join('')}</div>`;
 }
 
+// Stable key for a checklist item, so saved state survives reordering (FNV-1a)
+const hash = (s: string) => {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
+  return (h >>> 0).toString(36);
+};
+
 export function blocks(list: Block[], sec: Section) {
-  let check = 0;
   return list
     .map((b) => {
       switch (b.t) {
@@ -67,7 +73,7 @@ export function blocks(list: Block[], sec: Section) {
         case 'ol':
           return `<ol>${b.items.map((t) => `<li>${inline(t)}</li>`).join('')}</ol>`;
         case 'check':
-          return `<ul class="check">${b.items.map((t) => `<li><label><input type="checkbox" data-ck="${sec.id}:${check++}"><span>${inline(t)}</span></label></li>`).join('')}</ul>`;
+          return `<ul class="check">${b.items.map((t) => `<li><label><input type="checkbox" data-ck="${sec.id}:${hash(t)}"><span>${inline(t)}</span></label></li>`).join('')}</ul>`;
         case 'code':
           return `<div class="code"><button type="button" class="copy">コピー</button><pre><code>${esc(b.text)}</code></pre></div>`;
         case 'mermaid':

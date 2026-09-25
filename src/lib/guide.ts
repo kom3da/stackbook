@@ -11,7 +11,8 @@ export type Block =
   | { t: 'code' | 'mermaid'; text: string }
   | { t: 'table'; head: string[]; rows: string[][] };
 
-export type Section = { id: string; num: string; title: string; blocks: Block[] };
+/** checked: when the section was last reviewed (the "確認：…" line under its heading) */
+export type Section = { id: string; num: string; title: string; checked: string; blocks: Block[] };
 export type Guide = { title: string; meta: string[]; sections: Section[] };
 
 const cells = (line: string) =>
@@ -58,6 +59,9 @@ export function parseGuide(src: string): Guide {
     if (L.startsWith('# ')) {
       title = L.slice(2).trim();
       i++;
+    } else if (L.startsWith('確認：') && cur && !cur.blocks.length && !para.length) {
+      cur.checked = L.slice(3).trim();
+      i++;
     } else if (L.startsWith('作成：')) {
       meta = L.split('／').map((p) => p.trim());
       i++;
@@ -69,7 +73,7 @@ export function parseGuide(src: string): Guide {
       const h = L.slice(3).trim();
       const m = h.match(/^(\d+)\.\s*(.*)/);
       const id = m ? m[1] : h.includes('使い方') ? 'intro' : 'memo';
-      cur = { id, num: m ? m[1] : '', title: m ? m[2] : h, blocks: [] };
+      cur = { id, num: m ? m[1] : '', title: m ? m[2] : h, checked: '', blocks: [] };
       sections.push(cur);
       i++;
     } else if (L.startsWith('#### ')) {
@@ -130,7 +134,7 @@ export const GROUPS = {
   kit: [SECS.checklist, SECS.commands, SECS.prof, 'memo'],
 } as const;
 export type Group = keyof typeof GROUPS;
-export const GROUP_LABEL: Record<Group, string> = { tools: '分野', read: '考え方', kit: '手元' };
+export const GROUP_LABEL: Record<Group, string> = { tools: '辞書（分野別）', read: '考え方', kit: '手元' };
 export const groupOf = (id: string): Group =>
   (Object.keys(GROUPS) as Group[]).find((g) => (GROUPS[g] as readonly string[]).includes(id)) ?? 'read';
 
@@ -158,14 +162,36 @@ export const firstText = (id: string) => {
 };
 
 // Raw markdown of one section ("## …" up to the next "## "), without the trailing rule
-export const rawSection = (id: string) => {
-  const parts = md.split(/^(?=## )/m).slice(1);
-  const i = guide.sections.findIndex((s) => s.id === id);
-  return i < 0 ? '' : parts[i].replace(/\n---\s*$/, '').trim();
+// Line-level outline of the raw markdown, ignoring anything inside ``` fences
+const LINES = md.split('\n');
+const OUTLINE: { i: number; level: 2 | 3 | 0; text: string }[] = [];
+{
+  let fenced = false;
+  LINES.forEach((l, i) => {
+    if (l.startsWith('```')) fenced = !fenced;
+    else if (!fenced && l.startsWith('## ')) OUTLINE.push({ i, level: 2, text: l.slice(3) });
+    else if (!fenced && l.startsWith('### ')) OUTLINE.push({ i, level: 3, text: l.slice(4) });
+    else if (!fenced && l.trim() === '---') OUTLINE.push({ i, level: 0, text: '' });
+  });
+}
+const slice = (k: number, stop: (level: number) => boolean) => {
+  const end = OUTLINE.slice(k + 1).find((o) => stop(o.level))?.i ?? LINES.length;
+  return LINES.slice(OUTLINE[k].i, end).join('\n').trim();
 };
-// Raw markdown of one h3 subsection ("### N-M. …" up to the next heading of level ≤ 3)
+// Raw markdown of one section ("## …" up to the next "## "), without the trailing rule
+export const rawSection = (id: string) => {
+  const n = guide.sections.findIndex((s) => s.id === id);
+  const h2 = OUTLINE.filter((o) => o.level === 2)[n];
+  const k = h2 ? OUTLINE.indexOf(h2) : -1;
+  return k < 0
+    ? ''
+    : slice(k, (l) => l === 2)
+        .replace(/\n---$/, '')
+        .trim();
+};
+// Raw markdown of one h3 subsection ("### N-M. …" up to the next heading of level ≤ 3 or a rule)
 export const rawSub = (h3id: string) => {
-  const m = md.match(new RegExp(`^### ${h3id.replace('-', '\\-')}\\.[\\s\\S]*?(?=^#{2,3} |^---$|(?![\\s\\S]))`, 'm'));
-  return m ? m[0].trim() : '';
+  const k = OUTLINE.findIndex((o) => o.level === 3 && o.text.startsWith(`${h3id}.`));
+  return k < 0 ? '' : slice(k, () => true);
 };
 export const rawGuide = md;

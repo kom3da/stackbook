@@ -14,10 +14,13 @@ export const inline = (t: string) =>
   esc(t)
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/https?:\/\/[^\s<）)、。]+/g, (u) => `<a class="ref" href="${u}" rel="noopener">${u}</a>`)
     .replace(
       /§(\d+)(?:-(\d+))?/g,
       (m, n, sub) => `<a class="ref" href="${secHref(n, sub ? `${n}-${sub}` : undefined)}">${m}</a>`,
     );
+
+const isWord = (c: string | undefined) => !!c && /[A-Za-z0-9_.#+-]/.test(c);
 
 // Link the first occurrence of each tool name found in already-escaped html (text outside tags only)
 export function linkNames(html: string, names: string[], slugOf: (name: string) => string | undefined) {
@@ -35,7 +38,9 @@ export function linkNames(html: string, names: string[], slugOf: (name: string) 
         return m;
       }
       if (done || inLink || !text) return m;
-      const i = text.indexOf(e);
+      // Whole-word match only: "Go" must not match inside "GoReleaser"
+      let i = text.indexOf(e);
+      while (i >= 0 && (isWord(text[i - 1]) || isWord(text[i + e.length]))) i = text.indexOf(e, i + 1);
       if (i < 0) return m;
       done = true;
       return `${text.slice(0, i)}<a class="tl" href="${toolHref(slug)}">${e}</a>${text.slice(i + e.length)}`;

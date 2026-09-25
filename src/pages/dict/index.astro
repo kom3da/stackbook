@@ -1,7 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { plain } from '../../lib/guide';
-import { category, dictionary, type Tool } from '../../lib/tools';
+import { GROUPS, plain, SEC, stripNo } from '../../lib/guide';
+import { secHref, toolHref } from '../../lib/html';
+import { dictionary, ROWS, type Tool } from '../../lib/tools';
 
 const summary = (t: Tool) => {
   if (t.lang) return `言語（§${t.lang.ref}）`;
@@ -15,7 +16,24 @@ const initial = (n: string) => (/^[a-z]/i.test(n) ? n[0].toUpperCase() : '#');
 const tools = dictionary();
 const groups = new Map<string, Tool[]>();
 for (const t of tools) groups.set(initial(t.name), [...(groups.get(initial(t.name)) ?? []), t]);
-const cats = [...new Set(tools.map(category))].sort((a, b) => (a === '言語' ? -1 : b === '言語' ? 1 : 0));
+
+// Field view: each §1–19 with its defaults (or its subsections for §2 and §19)
+const fields = GROUPS.tools.flatMap((id) => {
+  const s = SEC.get(id);
+  if (!s) return [];
+  const subs = id === '2' || id === '19';
+  const items = subs
+    ? s.blocks.flatMap((b) =>
+        b.t === 'h3'
+          ? [{ label: stripNo(plain(b.text)).replace(id === '2' ? /（.*$/ : /$^/, ''), href: secHref(id, b.id) }]
+          : [],
+      )
+    : [...new Set(ROWS.filter((r) => r.sec === s).flatMap((r) => r.names))].flatMap((n) => {
+        const t = tools.find((x) => x.name === n || x.name === n.replace(/ \d+$/, ''));
+        return t ? [{ label: t.name, href: toolHref(t.slug) }] : [];
+      });
+  return [{ s, items }];
+});
 ---
 
 <Base title="辞書" tab="dict" md="/dict.md" wide>
@@ -24,36 +42,30 @@ const cats = [...new Set(tools.map(category))].sort((a, b) => (a === '言語' ? 
     <p class="lead mt-2">ガイドに出てくる言語・ライブラリ・サービス {tools.length} 件。どこで既定か、何に乗り換えるか、根拠と費用をまとめて引ける。</p>
   </header>
 
-  <div class="sticky top-14 z-10 -mx-4 mt-8 border-b border-rule bg-bg/90 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6">
+  <div class="sticky top-14 z-10 -mx-4 mt-8 flex items-center gap-3 border-b border-rule bg-bg/90 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6">
+    <div role="tablist" aria-label="並べ方" class="flex shrink-0 rounded-lg border border-rule bg-surface p-0.5 text-sm">
+      <button role="tab" id="t-name" aria-controls="p-name" aria-selected="true" class="seg">名前順</button>
+      <button role="tab" id="t-fields" aria-controls="p-fields" aria-selected="false" class="seg">分野別</button>
+    </div>
     <input
       id="df"
       type="search"
       placeholder="絞り込み"
-      aria-label="辞書を絞り込み"
-      class="w-full max-w-sm rounded-lg border border-rule bg-surface px-3 py-1.5 text-sm placeholder:text-faint"
+      aria-label="辞書を名前で絞り込み"
+      class="w-full max-w-sm min-w-0 rounded-lg border border-rule bg-surface px-3 py-1.5 text-sm placeholder:text-faint"
     />
-    <div class="chips mt-3" id="dc" role="group" aria-label="分類">
-      <label><input type="radio" name="cat" value="" checked /><span>すべて</span></label>
-      {
-        cats.map((c) => (
-          <label>
-            <input type="radio" name="cat" value={c} />
-            <span>{c}</span>
-          </label>
-        ))
-      }
-    </div>
   </div>
+  <p id="dn" class="sr-only" aria-live="polite"></p>
 
-  <div id="dl" class="mt-6">
+  <div id="p-name" role="tabpanel" aria-labelledby="t-name" class="mt-6">
     {
       [...groups].map(([letter, list]) => (
         <section data-letter class="mt-8 first:mt-0">
           <h2 class="font-mono text-sm text-faint">{letter}</h2>
           <ul class="mt-2 grid grid-cols-1 gap-x-8 sm:grid-cols-2 lg:grid-cols-3">
             {list.map((t) => (
-              <li data-k={`${t.name} ${summary(t)}`.toLowerCase()} data-c={category(t)} class="border-b border-rule">
-                <a href={`/dict/${t.slug}/`} class="group flex min-w-0 items-baseline gap-3 py-2.5 no-underline">
+              <li data-k={`${t.name} ${summary(t)}`.toLowerCase()} class="border-b border-rule">
+                <a href={toolHref(t.slug)} class="group flex min-w-0 items-baseline gap-3 py-2.5 no-underline">
                   <span class="shrink-0 font-medium group-hover:text-accent">{t.name}</span>
                   <span class="min-w-0 truncate text-xs text-mute">{summary(t)}</span>
                 </a>
@@ -63,29 +75,80 @@ const cats = [...new Set(tools.map(category))].sort((a, b) => (a === '言語' ? 
         </section>
       ))
     }
+    <p id="dnone" hidden class="mt-6 text-mute">該当なし</p>
   </div>
-  <p id="dn" hidden class="mt-6 text-mute">該当なし</p>
+
+  <div id="p-fields" role="tabpanel" aria-labelledby="t-fields" hidden class="mt-6 grid gap-x-10 lg:grid-cols-2">
+    {
+      fields.map(({ s, items }) => (
+        <section class="border-b border-rule py-4">
+          <h2>
+            <a href={secHref(s.id)} class="group flex items-baseline gap-2 no-underline">
+              <span class="font-mono text-xs text-accent">§{s.num}</span>
+              <span class="font-semibold group-hover:text-accent">{s.title}</span>
+            </a>
+          </h2>
+          <p class="mt-1.5 text-sm leading-relaxed text-mute">
+            {items.map((it, i) => (
+              <>
+                {i > 0 && <span class="text-faint"> · </span>}
+                <a href={it.href} class="tl">
+                  {it.label}
+                </a>
+              </>
+            ))}
+          </p>
+        </section>
+      ))
+    }
+  </div>
 </Base>
+
+<style>
+  .seg {
+    border-radius: 0.4rem;
+    padding: 0.25rem 0.75rem;
+    color: var(--mute);
+    cursor: pointer;
+  }
+  .seg[aria-selected="true"] {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+</style>
 
 <script>
   const input = document.getElementById('df') as HTMLInputElement;
-  const chips = document.getElementById('dc') as HTMLElement;
-  function apply() {
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+  const live = document.getElementById('dn') as HTMLElement;
+
+  function show(view: 'name' | 'fields') {
+    for (const t of tabs) {
+      const on = t.id === `t-${view}`;
+      t.setAttribute('aria-selected', String(on));
+      (document.getElementById(t.getAttribute('aria-controls') ?? '') as HTMLElement).hidden = !on;
+    }
+    history.replaceState(null, '', view === 'fields' ? '#fields' : location.pathname);
+  }
+  function filter() {
     const t = input.value.toLowerCase().trim();
-    const c = (chips.querySelector('input:checked') as HTMLInputElement | null)?.value ?? '';
-    let any = false;
+    if (t) show('name');
+    let total = 0;
     for (const sec of document.querySelectorAll<HTMLElement>('[data-letter]')) {
       let n = 0;
       for (const li of sec.querySelectorAll<HTMLElement>('li')) {
-        const ok = (!t || (li.dataset.k ?? '').includes(t)) && (!c || li.dataset.c === c);
+        const ok = !t || (li.dataset.k ?? '').includes(t);
         li.hidden = !ok;
         if (ok) n++;
       }
       sec.hidden = n === 0;
-      any ||= n > 0;
+      total += n;
     }
-    (document.getElementById('dn') as HTMLElement).hidden = any;
+    (document.getElementById('dnone') as HTMLElement).hidden = total > 0;
+    live.textContent = t ? `${total}件` : '';
   }
-  input.addEventListener('input', apply);
-  chips.addEventListener('change', apply);
+  for (const t of tabs) t.addEventListener('click', () => show(t.id === 't-fields' ? 'fields' : 'name'));
+  input.addEventListener('input', filter);
+  if (location.hash === '#fields') show('fields');
 </script>

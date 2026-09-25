@@ -72,6 +72,13 @@ export const dictMd = () =>
     '',
   ].join('\n');
 
+// Context an agent needs before trusting any recommendation
+const PREAMBLE = () =>
+  [
+    `> ${guide.meta.join('。')}。個人の既定であり、プロジェクト固有の要件・既存資産・チームの制約と食い違う場合はそちらを優先する。`,
+    '> バージョン番号は書いていない。採用時は各ツールの最新安定版を確認して使う。料金も記載していないので、各サービスの最新の料金ページで確認する。',
+  ].join('\n');
+
 export function makeMd(kind: Kind) {
   const k = KINDS.find((x) => x[0] === kind);
   const d = decide(kind, DEFAULTS);
@@ -80,6 +87,8 @@ export function makeMd(kind: Kind) {
     q.multi ? 'なし' : (q.opts.find((o) => o[0] === DEFAULTS[q.q])?.[1] ?? '');
   const out = [
     `# ${k?.[1]}：推奨構成`,
+    '',
+    PREAMBLE(),
     '',
     qs.length ? `前提（既定の条件）：${qs.map((q) => `${q.label}＝${def(q)}`).join('、')}` : '',
     qs.length ? '条件が違う場合は §2-10（/s/2.md）の手順で言語を決め直す。' : '',
@@ -115,6 +124,8 @@ export function llmsTxt() {
     `# ${guide.title}`,
     '',
     '> 新規プロジェクトの技術スタックを決めるための個人用ガイド。各カテゴリの「既定」は1つだけで、代替には乗り換える条件が付いている。PHPは選択肢に含めない。',
+    '',
+    PREAMBLE(),
     '',
     '読み方：作るものが決まっていれば、まず該当する /make/<kind>.md だけを読む（推奨構成・根拠・構成図・雛形コマンドが1ファイルにまとまっている）。個別の判断が必要になったら該当セクションの .md を読む。全文（/guide.md）は大きいので、必要なときだけ読む。',
     '',

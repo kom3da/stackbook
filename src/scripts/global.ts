@@ -88,6 +88,21 @@ let index: Hit[] | null = null;
 const q = document.getElementById('q') as HTMLInputElement | null;
 const qres = document.getElementById('qres');
 let sel = -1;
+function setOpen(open: boolean) {
+  if (!q || !qres) return;
+  qres.hidden = !open;
+  q.setAttribute('aria-expanded', String(open));
+  if (!open) q.removeAttribute('aria-activedescendant');
+}
+function select(i: number) {
+  const items = [...(qres?.querySelectorAll<HTMLAnchorElement>('[role="option"]') ?? [])];
+  sel = Math.max(0, Math.min(items.length - 1, i));
+  items.forEach((a, k) => {
+    a.classList.toggle('on', k === sel);
+    a.setAttribute('aria-selected', String(k === sel));
+  });
+  if (items[sel]) q?.setAttribute('aria-activedescendant', items[sel].id);
+}
 async function results(term: string) {
   const all: Hit[] = index ?? (await fetch('/search.json').then((r) => r.json()));
   index = all;
@@ -104,7 +119,7 @@ const escHtml = (s: string) =>
 async function showResults() {
   if (!q || !qres) return;
   if (!q.value.trim()) {
-    qres.hidden = true;
+    setOpen(false);
     return;
   }
   const res = await results(q.value);
@@ -112,34 +127,34 @@ async function showResults() {
   qres.innerHTML = res.length
     ? res
         .map(
-          (r) =>
-            `<a href="${r.h}" class="block rounded-lg px-3 py-2 no-underline hover:bg-accent-soft [&.on]:bg-accent-soft"><span class="block text-sm font-medium">${escHtml(r.t)}</span><span class="block text-xs text-mute">${escHtml(r.s)}</span></a>`,
+          (r, i) =>
+            `<a href="${r.h}" id="qr-${i}" role="option" aria-selected="false" class="block rounded-lg px-3 py-2 no-underline hover:bg-accent-soft [&.on]:bg-accent-soft"><span class="block text-sm font-medium">${escHtml(r.t)}</span><span class="block text-xs text-mute">${escHtml(r.s)}</span></a>`,
         )
         .join('')
     : '<p class="px-3 py-2 text-sm text-mute">見つからない</p>';
-  qres.hidden = false;
+  const stat = document.getElementById('qstat');
+  if (stat) stat.textContent = res.length ? `${res.length}件の候補` : '見つからない';
+  q.removeAttribute('aria-activedescendant');
+  setOpen(true);
 }
 q?.addEventListener('input', showResults);
 q?.addEventListener('focus', showResults);
 q?.addEventListener('keydown', (e) => {
-  const items = [...(qres?.querySelectorAll('a') ?? [])];
+  const items = [...(qres?.querySelectorAll<HTMLAnchorElement>('[role="option"]') ?? [])];
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     e.preventDefault();
-    sel = Math.max(0, Math.min(items.length - 1, sel + (e.key === 'ArrowDown' ? 1 : -1)));
-    items.forEach((a, i) => {
-      a.classList.toggle('on', i === sel);
-    });
+    select(sel + (e.key === 'ArrowDown' ? 1 : -1));
   } else if (e.key === 'Enter') {
     const a = items[Math.max(sel, 0)];
     if (a) location.href = a.href;
   } else if (e.key === 'Escape') {
     q.value = '';
-    if (qres) qres.hidden = true;
+    setOpen(false);
     q.blur();
   }
 });
 document.addEventListener('click', (e) => {
-  if (qres && !(e.target as HTMLElement).closest('.search')) qres.hidden = true;
+  if (!(e.target as HTMLElement).closest('.search')) setOpen(false);
 });
 document.addEventListener('keydown', (e) => {
   const tag = document.activeElement?.tagName ?? '';

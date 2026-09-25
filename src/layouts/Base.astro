@@ -4,7 +4,7 @@ import { guide } from '../lib/guide';
 
 interface Props {
   title?: string;
-  tab?: 'make' | 'dict' | 'fields' | 'read' | 'kit';
+  tab?: 'make' | 'dict' | 'read' | 'kit';
   /** Markdown version of this page for AI agents */
   md?: string;
   wide?: boolean;
@@ -13,7 +13,6 @@ const { title, tab, md, wide = false } = Astro.props;
 const tabs = [
   ['make', '/', '作る'],
   ['dict', '/dict/', '辞書'],
-  ['fields', '/fields/', '分野'],
   ['read', '/read/', '考え方'],
   ['kit', '/kit/', '手元'],
 ] as const;
@@ -57,6 +56,10 @@ const tabs = [
           <input
             id="q"
             type="search"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded="false"
+            aria-controls="qres"
             placeholder="ツール・言語を検索"
             aria-label="ツール・言語を検索"
             autocomplete="off"
@@ -65,10 +68,13 @@ const tabs = [
           <kbd class="pointer-events-none absolute top-1/2 right-2 hidden -translate-y-1/2 rounded border border-rule px-1.5 font-mono text-[0.7rem] text-faint sm:block">/</kbd>
           <div
             id="qres"
+            role="listbox"
+            aria-label="検索結果"
             hidden
             class="absolute top-full right-0 mt-2 max-h-[70vh] w-[min(24rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-rule bg-surface p-1.5 shadow-lg"
           >
           </div>
+          <p id="qstat" class="sr-only" aria-live="polite"></p>
         </div>
       </div>
     </header>

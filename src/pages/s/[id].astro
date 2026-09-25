@@ -14,8 +14,8 @@ const bySec = (id?: string) => guide.sections.find((x) => x.id === id);
 const prev = bySec(list[i - 1]);
 const next = bySec(list[i + 1]);
 const h3 = s.blocks.filter((b) => b.t === 'h3');
-const tab = g === 'tools' ? 'fields' : g;
-const hub = g === 'tools' ? '/fields/' : `/${g}/`;
+const tab = g === 'tools' ? 'dict' : g;
+const hub = g === 'tools' ? '/dict/#fields' : `/${g}/`;
 ---
 
 <Base title={secLabel(s)} tab={tab} md={`/s/${s.id}.md`} wide={g === 'tools'}>
@@ -24,6 +24,7 @@ const hub = g === 'tools' ? '/fields/' : `/${g}/`;
     <header class="mt-4">
       {s.num && <p class="eyebrow">§{s.num}</p>}
       <h1 class="mt-1 text-3xl font-bold tracking-tight">{s.title}</h1>
+      {s.checked && <p class="mt-2 text-xs text-faint">最終確認：{s.checked}</p>}
     </header>
     {
       h3.length >= 3 && (
