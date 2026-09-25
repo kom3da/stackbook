@@ -1,0 +1,97 @@
+---
+// 名前で引く: a filterable name list beside the dictionary; names open in the reference pane
+import { dictionary } from '../lib/tools';
+
+interface Props {
+  /** The field being read, offered as a filter */
+  field?: string;
+}
+const { field } = Astro.props;
+const letters = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '#'];
+---
+
+<section class="np" aria-labelledby="np-h" data-field={field}>
+  <p class="np-top"><span id="np-h" class="marg-k">名前で引く</span><span class="text-xs text-mute">{dictionary().length}件</span></p>
+  <div class="np-box">
+    <label class="marg-k" for="np-q">絞り込む</label>
+    <input id="np-q" type="search" class="np-q" placeholder="名前の一部（例：pg）" autocomplete="off" />
+    <fieldset class="np-f" aria-label="種類で絞り込む">
+      <button type="button" data-nf="" aria-pressed="true">すべて</button>
+      <button type="button" data-nf="既定" aria-pressed="false">既定</button>
+      <button type="button" data-nf="代替" aria-pressed="false">代替</button>
+      {field && <button type="button" data-nf="field" aria-pressed="false">この分野（§{field}）</button>}
+    </fieldset>
+    <p class="np-n" aria-live="polite"></p>
+    <ul class="np-list"></ul>
+    <p class="marg-k mt-4">頭文字</p>
+    <div class="np-az">
+      {letters.map((l) => (
+        <button type="button" data-az={l} aria-pressed="false">
+          {l}
+        </button>
+      ))}
+    </div>
+    <p class="side-note mt-4">名前を押すと、右の欄にツールが開く。分野の表は動かない。</p>
+  </div>
+</section>
+
+<script>
+  type Row = { n: string; h: string; b: string; r: string; f: string[] };
+  const panel = document.querySelector<HTMLElement>('.np');
+  if (panel) {
+    const q = panel.querySelector<HTMLInputElement>('.np-q') as HTMLInputElement;
+    const list = panel.querySelector('.np-list') as HTMLElement;
+    const count = panel.querySelector('.np-n') as HTMLElement;
+    const field = panel.dataset.field ?? '';
+    let rows: Row[] = [];
+    let kind = '';
+    let letter = '';
+    const esc = (s: string) =>
+      s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string);
+    const initial = (n: string) => (/^[a-z]/i.test(n) ? n[0].toUpperCase() : '#');
+    function draw() {
+      const t = q.value.toLowerCase().trim();
+      const hit = rows.filter(
+        (r) =>
+          (!t || r.n.toLowerCase().includes(t)) &&
+          (!letter || initial(r.n) === letter) &&
+          (!kind || (kind === 'field' ? r.f.includes(field) : r.b === kind)),
+      );
+      const shown = hit.slice(0, 60);
+      count.textContent = `${hit.length}件${hit.length > shown.length ? `（先頭${shown.length}件を表示）` : ''}`;
+      list.innerHTML = shown
+        .map(
+          (r) =>
+            `<li><a class="tl" href="${esc(r.h)}">${esc(r.n)}</a><span class="np-b" data-b="${esc(r.b)}">${esc(r.b)}</span><span class="np-r">${esc(r.r)}</span></li>`,
+        )
+        .join('');
+    }
+    const load = () =>
+      rows.length
+        ? Promise.resolve()
+        : fetch('/dict.json')
+            .then((r) => r.json())
+            .then((j: Row[]) => {
+              rows = j;
+            });
+    load().then(draw);
+    q.addEventListener('input', () => {
+      letter = '';
+      for (const b of panel.querySelectorAll('[data-az]')) b.setAttribute('aria-pressed', 'false');
+      draw();
+    });
+    panel.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      const f = t.closest<HTMLElement>('[data-nf]');
+      const a = t.closest<HTMLElement>('[data-az]');
+      if (f) {
+        kind = f.dataset.nf ?? '';
+        for (const b of panel.querySelectorAll('[data-nf]')) b.setAttribute('aria-pressed', String(b === f));
+      } else if (a) {
+        letter = letter === a.dataset.az ? '' : (a.dataset.az ?? '');
+        for (const b of panel.querySelectorAll('[data-az]')) b.setAttribute('aria-pressed', String(b === a && !!letter));
+      } else return;
+      draw();
+    });
+  }
+</script>

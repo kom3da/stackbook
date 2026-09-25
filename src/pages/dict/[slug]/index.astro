@@ -1,4 +1,7 @@
 ---
+import NamePanel from '../../../components/NamePanel.astro';
+import SecNav from '../../../components/SecNav.astro';
+import SideNav from '../../../components/SideNav.astro';
 import Base from '../../../layouts/Base.astro';
 import { ToolBody } from '../../../components/ToolBody';
 import { LINKS, toolView } from '../../../lib/view';
@@ -11,11 +14,22 @@ export function getStaticPaths() {
 const { t } = Astro.props as { t: Tool };
 ---
 
-<Base title={t.name} tab="dict" md={`/dict/${t.slug}.md`}>
-  <p class="text-sm"><a href="/dict/" class="text-mute no-underline hover:text-ink">← 辞書</a></p>
-  <header class="mt-4">
-    <p class="eyebrow">{category(t)}</p>
-    <h1 class="mt-1 text-3xl font-bold tracking-tight">{t.name}</h1>
-  </header>
-  <div class="mt-8"><ToolBody tool={toolView(t)} links={LINKS} /></div>
+<Base title={t.name} tab="dict" md={`/dict/${t.slug}.md`} app>
+  <SideNav label="分野" rail={t.name}>
+    <SecNav slot="nav" group="tools" current="" />
+    <div class="sec-grid has-marg">
+      <article class="paper">
+        <header class="sec-top">
+          <p class="sec-meta">ツール・{category(t)}</p>
+          <span class="sec-acts pager">
+            <button type="button" class="btn btn-primary" data-copy-md={`/dict/${t.slug}.md`}>Markdownでコピー</button>
+            <button type="button" class="btn lg:hidden" aria-haspopup="dialog" data-sheet-open>分野</button>
+          </span>
+        </header>
+        <h1 class="sec-h">{t.name}</h1>
+        <div class="mt-8"><ToolBody tool={toolView(t)} links={LINKS} /></div>
+      </article>
+      <aside class="marg"><NamePanel /></aside>
+    </div>
+  </SideNav>
 </Base>

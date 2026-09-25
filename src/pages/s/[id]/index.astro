@@ -1,5 +1,6 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import NamePanel from '../../../components/NamePanel.astro';
 import SecNav from '../../../components/SecNav.astro';
 import SideNav from '../../../components/SideNav.astro';
 import { GROUP_LABEL, GROUPS, isStale, STALE_MONTHS, SECS, groupOf, guide, plain, type Section, secLabel, stripNo, subBlocks } from '../../../lib/guide';
@@ -26,7 +27,7 @@ const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : s.
 <Base title={secLabel(s)} tab={tab} md={`/s/${s.id}.md`} app>
   <SideNav label={GROUP_LABEL[g]} rail={secLabel(s)}>
     <SecNav slot="nav" group={g} current={s.id} />
-    <div class:list={['sec-grid', g === 'kit' && 'has-marg']}>
+    <div class:list={['sec-grid', (g === 'kit' || g === 'tools') && 'has-marg']}>
     <article class="paper">
     <header class="sec-top">
       <p class="sec-meta">{meta}{s.checked && `　確認：${s.checked}`}</p>
@@ -83,6 +84,7 @@ const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : s.
       }
     </nav>
     </article>
+    {g === 'tools' && <aside class="marg"><NamePanel field={s.id} /></aside>}
     {
       g === 'kit' && (
         <aside class="marg" aria-label="このケースの雛形と習熟度">

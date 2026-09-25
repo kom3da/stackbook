@@ -595,6 +595,72 @@
       grid-template-columns: minmax(0, 880px) minmax(320px, 1fr);
     }
   }
+  /* Dictionary: fields overview and the 名前で引く panel */
+  .dict-fields {
+    @apply mt-8 grid gap-x-10;
+  }
+  @container memo (min-width: 620px) {
+    .dict-fields {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .dict-fields section {
+    @apply border-b border-rule py-4;
+  }
+  .dict-fields p {
+    @apply mt-1.5 text-sm leading-relaxed;
+  }
+  .dict-f {
+    @apply flex items-baseline gap-2 font-semibold text-ink no-underline hover:text-accent;
+  }
+  .np-top {
+    @apply flex items-baseline justify-between;
+  }
+  .np-box {
+    @apply mt-2 rounded-[4px] border border-rule bg-surface p-4;
+  }
+  .np-q {
+    @apply h-10 w-full rounded-[5px] border border-ink bg-surface px-3 text-sm;
+  }
+  .np-f {
+    @apply mt-3 flex flex-wrap gap-1.5;
+  }
+  .np-f button,
+  .np-az button {
+    @apply min-h-8 cursor-pointer rounded-full border border-rule bg-surface px-3 text-xs text-ink;
+  }
+  .np-f button[aria-pressed="true"],
+  .np-az button[aria-pressed="true"] {
+    @apply border-ink bg-ink text-surface;
+  }
+  .np-n {
+    @apply mt-3 border-b border-ink pb-1.5 text-xs text-mute;
+  }
+  .np-list {
+    @apply m-0 max-h-[50vh] list-none overflow-y-auto p-0;
+  }
+  .np-list li {
+    @apply grid items-baseline gap-x-2 border-b border-rule py-2 text-sm;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .np-list a.tl {
+    @apply truncate text-accent underline underline-offset-2;
+  }
+  .np-b {
+    @apply rounded-[3px] border border-ink px-1 text-[11px] leading-4;
+  }
+  .np-b[data-b="代替"] {
+    @apply border-dashed;
+  }
+  .np-r {
+    @apply col-span-2 truncate text-xs text-mute;
+  }
+  .np-az {
+    @apply grid grid-cols-7 gap-1;
+  }
+  .np-az button {
+    @apply rounded-[4px] px-0 font-mono;
+  }
   .case-pick {
     @apply min-h-10 w-full cursor-pointer rounded-[5px] border border-rule bg-surface px-2 text-sm font-semibold;
   }
