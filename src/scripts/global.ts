@@ -171,9 +171,14 @@ function drawDiagrams() {
   drawing = drawing.then(draw);
 }
 async function draw() {
-  if (!document.querySelector('pre.mermaid:not([data-processed])')) return;
+  // Skip islands React has not hydrated yet; they fire stackbook:render once they have
+  const pending = () =>
+    [...document.querySelectorAll<HTMLElement>('pre.mermaid:not([data-processed])')].filter(
+      (n) => !n.closest('astro-island[ssr]'),
+    );
+  if (!pending().length) return;
   const { default: mermaid } = await import('mermaid');
-  const nodes = [...document.querySelectorAll<HTMLElement>('pre.mermaid:not([data-processed])')];
+  const nodes = pending();
   if (!nodes.length) return;
   const root = document.documentElement.dataset.theme;
   const dark = root === 'dark' || (root !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
@@ -213,4 +218,6 @@ async function draw() {
   await mermaid.run({ nodes }).catch((e: unknown) => console.error(e));
 }
 
+// The make island re-renders on its own; sync controls and diagrams after each render
+window.addEventListener('stackbook:render', hydrate);
 hydrate();

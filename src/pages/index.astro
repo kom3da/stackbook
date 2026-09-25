@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { guide } from '../lib/guide';
-import { inline } from '../lib/html';
+import { Inline } from '../components/Inline';
 import { KINDS } from '../lib/wizard';
 
 const doors = [
@@ -44,7 +44,13 @@ const doors = [
   </div>
 
   <footer class="mt-16 space-y-0.5 border-t border-rule pt-6 text-xs text-faint">
-    {guide.meta.map((m) => <p set:html={inline(m)} />)}
+    {
+      guide.meta.map((m) => (
+        <p>
+          <Inline text={m} />
+        </p>
+      ))
+    }
     <p>AIエージェント向け：<a class="ref" href="/llms.txt">/llms.txt</a></p>
   </footer>
 </Base>

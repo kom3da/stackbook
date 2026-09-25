@@ -1,6 +1,9 @@
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { Inline, LinksContext } from '../components/Inline';
 import { guide, parseGuide, rawSection, rawSub, SEC, SECS } from './guide';
-import { linkNames } from './html';
+import { findName, segments } from './inline';
 import { llmsTxt, makeMd, toMarkdown } from './md';
 import { parseData } from './schema';
 import { dictionary, ROWS, TOOLS } from './tools';
@@ -89,10 +92,35 @@ describe('data blocks', () => {
   });
 });
 
-describe('linkNames', () => {
-  it('links whole words only', () => {
-    const html = linkNames('GoReleaserとGo', ['Go'], () => 'go');
-    expect(html).toBe('GoReleaserと<a class="tl" href="/dict/go/">Go</a>');
+describe('inline markdown', () => {
+  it('splits code, bold, refs and urls', () => {
+    expect(segments('a `x` **b** §2-10 https://e.com/。').map((x) => x.t)).toEqual([
+      'text',
+      'code',
+      'text',
+      'bold',
+      'text',
+      'ref',
+      'text',
+      'url',
+      'text',
+    ]);
+  });
+  it('matches tool names on whole words only', () => {
+    expect(findName('GoReleaserとGo', 'Go')).toEqual(['GoReleaserと', '']);
+    expect(findName('GoReleaser', 'Go')).toBeNull();
+  });
+  it('renders escaped html with tool links', () => {
+    const html = renderToStaticMarkup(
+      createElement(
+        LinksContext.Provider,
+        { value: { go: { name: 'Go', slug: 'go' } } },
+        createElement(Inline, { text: '<b>GoReleaserとGo</b> §2', tools: ['go'] }),
+      ),
+    );
+    expect(html).toBe(
+      '&lt;b&gt;GoReleaserと<a class="tl" href="/dict/go/">Go</a>&lt;/b&gt; <a class="ref" href="/s/2/">§2</a>',
+    );
   });
 });
 

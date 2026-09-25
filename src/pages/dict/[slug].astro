@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { toolBody } from '../../lib/render';
+import { ToolBody } from '../../components/ToolBody';
+import { LINKS, toolView } from '../../lib/view';
 import { category, dictionary, type Tool } from '../../lib/tools';
 
 export function getStaticPaths() {
@@ -15,5 +16,5 @@ const { t } = Astro.props as { t: Tool };
     <p class="eyebrow">{category(t)}</p>
     <h1 class="mt-1 text-3xl font-bold tracking-tight">{t.name}</h1>
   </header>
-  <div class="mt-8" set:html={toolBody(t)} />
+  <div class="mt-8"><ToolBody tool={toolView(t)} links={LINKS} /></div>
 </Base>
