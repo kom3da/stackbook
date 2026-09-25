@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { guide, parseGuide, rawSection, rawSub, SEC, SECS } from './guide';
 import { linkNames } from './html';
-import { llmsTxt, makeMd } from './md';
-import { norm, parseAlts, TOOLS, tokens, toolInfo } from './tools';
-import { DEFAULTS, decide, KINDS } from './wizard';
+import { llmsTxt, makeMd, toMarkdown } from './md';
+import { parseData } from './schema';
+import { dictionary, ROWS, TOOLS } from './tools';
+import { allAnswers, DEFAULTS, decide, KINDS } from './wizard';
 
 describe('parseGuide', () => {
   it('reads every numbered section plus intro and memo', () => {
@@ -72,35 +73,19 @@ describe('parseGuide', () => {
   });
 });
 
-describe('tokens', () => {
-  it.each([
-    ['PostgreSQL＋Drizzle（SQLに近い）', ['PostgreSQL', 'Drizzle']],
-    ['Render または Fly.io＋Neon', ['Render', 'Fly.io', 'Neon']],
-    ['Zodでスキーマ定義して起動時に検証', ['Zod']],
-    ['Ruby / Rails 8', ['Ruby', 'Rails 8']],
-    ['フレームワーク標準のメタデータAPI', []],
-    ['リポジトリ内 `docs/runbooks/`', []],
-    ['GMOペイメントゲートウェイ', []],
-  ])('%s', (input, expected) => {
-    expect(tokens(input)).toEqual(expected);
+describe('data blocks', () => {
+  it('rejects unknown keys and missing fields', () => {
+    expect(() => parseData('choices', { rows: [{ role: 'x', default: 'y', typo: 1 }] })).toThrow();
+    expect(() => parseData('cost', { rows: [{ service: 'x' }] })).toThrow();
   });
-});
-
-describe('parseAlts', () => {
-  it('splits "name：condition" pairs', () => {
-    const { alts, note } = parseAlts('Bun：スクリプトで速度を重視するとき。Deno：Deno Deploy前提のとき');
-    expect(alts.map((a) => [a.label, a.cond])).toEqual([
-      ['Bun', 'スクリプトで速度を重視するとき'],
-      ['Deno', 'Deno Deploy前提のとき'],
-    ]);
-    expect(note).toBe('');
+  it('reports the section of an invalid block', () => {
+    expect(() => parseGuide('## 1. S\n\n```choices\nrows: [{ role: x }]\n```')).toThrow(/choices.*§1/);
   });
-  it('keeps bare names and turns sentences into notes', () => {
-    expect(parseAlts('Bullet').alts.map((a) => a.label)).toEqual(['Bullet']);
-    const r = parseAlts('Neon・Supabaseは組み込みのプーラーを使う');
-    expect(r.alts).toEqual([]);
-    expect(r.note).toContain('プーラー');
-    expect(parseAlts('—')).toEqual({ alts: [], note: '' });
+  it('round-trips to markdown tables for agents', () => {
+    const m = toMarkdown(
+      '```choices\nrows:\n  - role: R\n    default: "**A**"\n    tools: [a]\n    alts: [{ name: B, when: C }]\n```',
+    );
+    expect(m).toBe('| 役割 | 既定 | 代替と乗り換え条件 |\n|---|---|---|\n| R | **A** | B：C |');
   });
 });
 
@@ -112,25 +97,24 @@ describe('linkNames', () => {
 });
 
 describe('tool index', () => {
-  it('merges versions and marks languages', () => {
-    const rails = TOOLS.get(norm('Rails 8'));
-    expect(rails?.name).toBe('Rails');
-    expect(rails?.lang?.ref).toBe('2-3');
-    for (const l of ['TypeScript', 'Go', 'Python', 'Rust', 'Kotlin', 'Elixir', 'C#'])
-      expect(TOOLS.get(norm(l))?.lang, l).toBeDefined();
+  it('marks languages', () => {
+    expect(TOOLS.get('rails')?.lang?.ref).toBe('2-3');
+    for (const id of ['typescript', 'go', 'python', 'rust', 'kotlin', 'elixir', 'csharp'])
+      expect(TOOLS.get(id)?.lang, id).toBeDefined();
   });
 
-  it('collects alternatives, rationale and cost', () => {
-    const i = toolInfo('PostgreSQL');
-    expect(i.t?.def.length).toBeGreaterThan(0);
-    expect(i.why.length).toBe(1);
-    expect(toolInfo('Vercel').cost.length).toBe(1);
-    expect(toolInfo('Bun').t?.alt.some((a) => a.alt.cond.includes('スクリプト'))).toBe(true);
+  it('collects defaults, alternatives, rationale, cost and growth', () => {
+    const pg = TOOLS.get('postgresql');
+    expect(pg?.def.length).toBeGreaterThan(0);
+    expect(pg?.why.length).toBe(1);
+    expect(TOOLS.get('vercel')?.cost.length).toBe(1);
+    expect(TOOLS.get('supabase')?.growth.length).toBe(1);
+    expect(TOOLS.get('bun')?.alt.some((a) => a.alt.when?.includes('スクリプト'))).toBe(true);
   });
 
-  it('assigns unique slugs', () => {
-    const slugs = [...TOOLS.values()].map((t) => t.slug);
-    expect(new Set(slugs).size).toBe(slugs.length);
+  it('lists every tool the dictionary links to', () => {
+    const listed = new Set(dictionary().map((t) => t.id));
+    for (const r of ROWS) for (const id of r.tools) expect(listed.has(id), id).toBe(true);
   });
 });
 
@@ -156,6 +140,11 @@ describe('decide (§2-9, §2-10, §19)', () => {
     expect(run('rt', { stage: 'prod', team: 'small' }).title).toBe('Elixir');
     expect(run('saas', { stage: 'prod', team: 'small', load: 'p99' }).title).toBe('Rust');
     expect(run('cli', { load: 'cpu' }).title).toBe('Rust');
+  });
+  it('refers only to registered tools', () => {
+    for (const [k] of KINDS)
+      for (const ans of allAnswers(k))
+        for (const r of decide(k, ans).rows) for (const id of r.tools) expect(TOOLS.has(id), `${k}: ${id}`).toBe(true);
   });
   it('points every case at an existing §19 subsection', () => {
     for (const [k] of KINDS)

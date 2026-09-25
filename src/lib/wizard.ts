@@ -1,4 +1,5 @@
-// Stack selection logic. Must stay consistent with §2-9, §2-10 and §19 of content/guide.md.
+// Stack selection logic. Must stay consistent with §2-9, §2-10 and §19 of content/guide/.
+// Tool ids refer to content/tools.yaml.
 
 export type Kind =
   | 'web'
@@ -22,7 +23,7 @@ export type Answers = {
 };
 export type Decision = {
   title: string;
-  rows: [string, string][];
+  rows: { layer: string; text: string; tools: string[] }[];
   why: string[];
   notes: string[];
   /** Section refs such as "2-10" or "24" */
@@ -109,59 +110,78 @@ export const SHOW: Record<keyof Answers, Kind[]> = {
 export const DEFAULTS: Answers = { load: 'db', env: 'paas', team: 'solo', stage: 'mvp', cons: [] };
 
 type Lang = 'ts' | 'go' | 'rails' | 'py' | 'rust' | 'kt' | 'ex' | 'cs';
-const L: Record<Lang, { n: string; fw: string; db: string; job: string; test: string; ref: string }> = {
+/** Display text followed by the ids (content/tools.yaml) of the tools it names */
+type Part = [text: string, ...tools: string[]];
+const L: Record<Lang, { n: Part; fw: Part; db: Part; job: Part; test: Part; ref: string }> = {
   ts: {
-    n: 'TypeScript',
-    fw: 'Hono（大人数で構造を強制したいならNestJS）',
-    db: 'PostgreSQL＋Drizzle',
-    job: 'BullMQ＋Valkey（Redisを増やしたくなければpg-boss）',
-    test: 'Vitest＋Playwright',
+    n: ['TypeScript', 'typescript'],
+    fw: ['Hono（大人数で構造を強制したいならNestJS）', 'hono', 'nestjs'],
+    db: ['PostgreSQL＋Drizzle', 'postgresql', 'drizzle'],
+    job: ['BullMQ＋Valkey（Redisを増やしたくなければpg-boss）', 'bullmq', 'valkey', 'pg-boss'],
+    test: ['Vitest＋Playwright', 'vitest', 'playwright'],
     ref: '2-1',
   },
   go: {
-    n: 'Go',
-    fw: '標準net/http（必要ならchi）＋oapi-codegen',
-    db: 'PostgreSQL＋sqlc＋pgx',
-    job: 'River',
-    test: '標準testing＋testcontainers-go',
+    n: ['Go', 'go'],
+    fw: ['標準net/http（必要ならchi）＋oapi-codegen', 'net-http', 'chi', 'oapi-codegen'],
+    db: ['PostgreSQL＋sqlc＋pgx', 'postgresql', 'sqlc', 'pgx'],
+    job: ['River', 'river'],
+    test: ['標準testing＋testcontainers-go', 'testing', 'testcontainers-go'],
     ref: '2-2',
   },
   rails: {
-    n: 'Ruby / Rails 8',
-    fw: 'Rails 8',
-    db: 'PostgreSQL（ActiveRecord）',
-    job: 'Solid Queue',
-    test: 'Minitest＋システムテスト',
+    n: ['Ruby / Rails 8', 'ruby', 'rails'],
+    fw: ['Rails 8', 'rails'],
+    db: ['PostgreSQL（ActiveRecord）', 'postgresql', 'active-record'],
+    job: ['Solid Queue', 'solid-queue'],
+    test: ['Minitest＋システムテスト', 'minitest'],
     ref: '2-3',
   },
-  py: { n: 'Python', fw: 'FastAPI', db: 'PostgreSQL＋SQLAlchemy＋Alembic', job: 'Celery', test: 'pytest', ref: '2-4' },
+  py: {
+    n: ['Python', 'python'],
+    fw: ['FastAPI', 'fastapi'],
+    db: ['PostgreSQL＋SQLAlchemy＋Alembic', 'postgresql', 'sqlalchemy', 'alembic'],
+    job: ['Celery', 'celery'],
+    test: ['pytest', 'pytest'],
+    ref: '2-4',
+  },
   rust: {
-    n: 'Rust',
-    fw: 'axum（Tokio）',
-    db: 'PostgreSQL＋sqlx',
-    job: 'SQS＋ワーカー',
-    test: 'cargo-nextest',
+    n: ['Rust', 'rust'],
+    fw: ['axum（Tokio）', 'axum', 'tokio'],
+    db: ['PostgreSQL＋sqlx', 'postgresql', 'sqlx'],
+    job: ['SQS＋ワーカー', 'sqs'],
+    test: ['cargo-nextest', 'cargo-nextest'],
     ref: '2-5',
   },
   kt: {
-    n: 'Kotlin',
-    fw: 'Spring Boot',
-    db: 'PostgreSQL＋jOOQ＋Flyway',
-    job: 'Spring Batch',
-    test: 'JUnit 5＋Kotest＋MockK',
+    n: ['Kotlin', 'kotlin'],
+    fw: ['Spring Boot', 'spring-boot'],
+    db: ['PostgreSQL＋jOOQ＋Flyway', 'postgresql', 'jooq', 'flyway'],
+    job: ['Spring Batch', 'spring-batch'],
+    test: ['JUnit 5＋Kotest＋MockK', 'junit', 'kotest', 'mockk'],
     ref: '2-6',
   },
-  ex: { n: 'Elixir', fw: 'Phoenix', db: 'PostgreSQL＋Ecto', job: 'Oban', test: 'ExUnit', ref: '2-7' },
+  ex: {
+    n: ['Elixir', 'elixir'],
+    fw: ['Phoenix', 'phoenix'],
+    db: ['PostgreSQL＋Ecto', 'postgresql', 'ecto'],
+    job: ['Oban', 'oban'],
+    test: ['ExUnit', 'exunit'],
+    ref: '2-7',
+  },
   cs: {
-    n: 'C#',
-    fw: 'ASP.NET Core（Minimal API）',
-    db: 'PostgreSQL＋EF Core',
-    job: 'Quartz.NET',
-    test: 'xUnit＋NSubstitute',
+    n: ['C#', 'csharp'],
+    fw: ['ASP.NET Core（Minimal API）', 'asp-net-core'],
+    db: ['PostgreSQL＋EF Core', 'postgresql', 'ef-core'],
+    job: ['Quartz.NET', 'quartz-net'],
+    test: ['xUnit＋NSubstitute', 'xunit', 'nsubstitute'],
     ref: '2-8',
   },
 };
 const CASE: Partial<Record<Kind, string>> = { saas: '19-6', toc: '19-7', ai: '19-8', rt: '19-9' };
+const name = (l: Lang) => L[l].n[0];
+// Joins parts into one; used where the text is composed from pieces
+const join = (...parts: Part[]): Part => [parts.map((p) => p[0]).join(''), ...parts.flatMap((p) => p.slice(1))];
 
 type Input = Omit<Answers, 'cons'> & { kind: Kind; cons: Set<string> };
 
@@ -228,7 +248,7 @@ function pick(a: Input) {
     orig = lang;
     lang = a.kind === 'web' ? 'rails' : 'ts';
     why.push(
-      `試作段階なので開発速度を優先して${L[lang].n}で始め、本番化の段階で${L[orig].n}への切り替え・切り出しを検討する（§2-10 手順3、§24）`,
+      `試作段階なので開発速度を優先して${name(lang)}で始め、本番化の段階で${name(orig)}への切り替え・切り出しを検討する（§2-10 手順3、§24）`,
     );
   }
   if (!hard && a.team === 'solo' && lang === 'go') {
@@ -237,17 +257,43 @@ function pick(a: Input) {
   }
   return { lang, why, orig };
 }
-function infra(a: Input, next: boolean) {
+function infra(a: Input, next: boolean): Part {
   if (a.env === 'aws')
-    return `${next ? 'フロントはVercel（AWSに集約するならOpenNext）、' : ''}API：ECS on Fargate＋RDS for PostgreSQL＋Terraform`;
-  if (a.env === 'onprem') return 'Docker＋Kamal（オンプレVM／VPS）、PostgreSQLは自前運用（PgBouncer・pgBackRest）';
-  if (a.env === 'edge') return 'Cloudflare Workers＋D1、またはNeon（Hyperdrive経由）';
-  return `${next ? 'Vercel（フロント）＋' : ''}Render または Fly.io＋Neon`;
+    return next
+      ? [
+          'フロントはVercel（AWSに集約するならOpenNext）、API：ECS on Fargate＋RDS for PostgreSQL＋Terraform',
+          'vercel',
+          'opennext',
+          'ecs-on-fargate',
+          'rds',
+          'terraform',
+        ]
+      : ['API：ECS on Fargate＋RDS for PostgreSQL＋Terraform', 'ecs-on-fargate', 'rds', 'terraform'];
+  if (a.env === 'onprem')
+    return [
+      'Docker＋Kamal（オンプレVM／VPS）、PostgreSQLは自前運用（PgBouncer・pgBackRest）',
+      'docker',
+      'kamal',
+      'postgresql',
+      'pgbouncer',
+      'pgbackrest',
+    ];
+  if (a.env === 'edge')
+    return [
+      'Cloudflare Workers＋D1、またはNeon（Hyperdrive経由）',
+      'cloudflare-workers',
+      'cloudflare-d1',
+      'neon',
+      'cloudflare-hyperdrive',
+    ];
+  return next
+    ? ['Vercel（フロント）＋Render または Fly.io＋Neon', 'vercel', 'render', 'fly-io', 'neon']
+    : ['Render または Fly.io＋Neon', 'render', 'fly-io', 'neon'];
 }
 
 export function decide(kind: Kind, answers: Answers): Decision {
   const a: Input = { ...answers, kind, cons: new Set(answers.cons) };
-  const rows: [string, string][] = [];
+  const parts: [string, Part][] = [];
   const why: string[] = [];
   const refs: string[] = [];
   const notes: string[] = [];
@@ -257,63 +303,88 @@ export function decide(kind: Kind, answers: Answers): Decision {
     const p = pick(a);
     const l = L[p.lang];
     why.push(...p.why);
-    title = l.n;
-    let fe: string;
+    title = l.n[0];
+    let fe: Part;
     if (a.kind === 'web')
       fe =
         p.lang === 'rails'
-          ? 'Hotwire（Turbo＋Stimulus）＋tailwindcss-rails＋ViewComponent'
+          ? [
+              'Hotwire（Turbo＋Stimulus）＋tailwindcss-rails＋ViewComponent',
+              'hotwire',
+              'turbo',
+              'stimulus',
+              'tailwindcss-rails',
+              'viewcomponent',
+            ]
           : p.lang === 'ex'
-            ? 'Phoenix LiveView'
-            : 'React＋Vite＋TanStack Router／Query＋shadcn/ui';
-    else if (a.kind === 'toc') fe = 'Next.js（Web）＋React Native／Expo（アプリ）';
-    else if (a.kind === 'rt' && p.lang === 'ex') fe = 'Phoenix LiveView、またはNext.js＋Phoenix Channels';
-    else fe = a.kind === 'ai' ? 'Next.js（ストリーミング表示）' : 'Next.js＋shadcn/ui＋TanStack Query';
-    const next = /Next\.js/.test(fe);
-    rows.push(['言語', l.n], ['フロント', fe]);
-    if (!(p.lang === 'rails' && a.kind === 'web')) rows.push(['バックエンド', l.fw]);
-    else rows.push(['フレームワーク', 'Rails 8（管理画面はAvo、認可はPundit）']);
-    rows.push(['DB', l.db], ['ジョブ', l.job]);
-    const auth = {
-      web: `社内ならGoogle Workspace／Entra IDのSSO、社外向けは${p.lang === 'rails' ? 'Rails 8認証ジェネレータ' : 'Better Auth'}`,
-      saas: 'Clerk（SSO・SCIMが必要になったらWorkOS）',
-      toc: 'Supabase Auth または Clerk',
-      ai: 'Clerk または Better Auth',
-      rt: 'Clerk または Better Auth',
+            ? ['Phoenix LiveView', 'phoenix-liveview']
+            : [
+                'React＋Vite＋TanStack Router／Query＋shadcn/ui',
+                'react',
+                'vite',
+                'tanstack-router',
+                'tanstack-query',
+                'shadcn-ui',
+              ];
+    else if (a.kind === 'toc') fe = ['Next.js（Web）＋React Native／Expo（アプリ）', 'next-js', 'react-native', 'expo'];
+    else if (a.kind === 'rt' && p.lang === 'ex')
+      fe = ['Phoenix LiveView、またはNext.js＋Phoenix Channels', 'phoenix-liveview', 'next-js', 'phoenix-channels'];
+    else
+      fe =
+        a.kind === 'ai'
+          ? ['Next.js（ストリーミング表示）', 'next-js']
+          : ['Next.js＋shadcn/ui＋TanStack Query', 'next-js', 'shadcn-ui', 'tanstack-query'];
+    const next = fe.includes('next-js');
+    parts.push(['言語', l.n], ['フロント', fe]);
+    if (!(p.lang === 'rails' && a.kind === 'web')) parts.push(['バックエンド', l.fw]);
+    else parts.push(['フレームワーク', ['Rails 8（管理画面はAvo、認可はPundit）', 'rails', 'avo', 'pundit']]);
+    parts.push(['DB', l.db], ['ジョブ', l.job]);
+    const auth: Part = {
+      web: join(
+        ['社内ならGoogle Workspace／Entra IDのSSO、社外向けは', 'google-workspace', 'microsoft-entra-id'],
+        p.lang === 'rails' ? ['Rails 8認証ジェネレータ', 'rails'] : ['Better Auth', 'better-auth'],
+      ),
+      saas: ['Clerk（SSO・SCIMが必要になったらWorkOS）', 'clerk', 'workos'] as Part,
+      toc: ['Supabase Auth または Clerk', 'supabase-auth', 'clerk'] as Part,
+      ai: ['Clerk または Better Auth', 'clerk', 'better-auth'] as Part,
+      rt: ['Clerk または Better Auth', 'clerk', 'better-auth'] as Part,
     }[a.kind as 'web' | 'saas' | 'toc' | 'ai' | 'rt'];
-    rows.push(['認証', auth + (a.env === 'aws' ? '（AWSに集約するならCognito）' : '')]);
-    if (a.kind === 'saas') rows.push(['課金・テナント', 'Stripe Billing、テナントIDカラム＋Row Level Security']);
+    parts.push(['認証', a.env === 'aws' ? join(auth, ['（AWSに集約するならCognito）', 'amazon-cognito']) : auth]);
+    if (a.kind === 'saas')
+      parts.push(['課金・テナント', ['Stripe Billing、テナントIDカラム＋Row Level Security', 'stripe', 'postgresql']]);
     if (a.kind === 'toc')
-      rows.push(['プッシュ通知', 'FCM（Expo Notifications）'], ['配信', 'EAS Build／Submit／Update']);
-    if (a.kind === 'ai')
-      rows.push(
-        ['LLM・ベクトル', 'LLM API＋pgvector、評価・トレースはLangfuse'],
-        ['長時間処理', 'Temporal または Inngest'],
+      parts.push(
+        ['プッシュ通知', ['FCM（Expo Notifications）', 'fcm', 'expo-notifications']],
+        ['配信', ['EAS Build／Submit／Update', 'eas-build', 'eas-submit', 'eas-update']],
       );
-    if (a.kind === 'rt')
-      rows.push([
-        'リアルタイム',
-        (
-          {
-            ex: 'Phoenix Channels＋Presence',
-            go: 'WebSocket＋Valkey Pub/Sub',
-            ts: 'Cloudflare Durable Objects（マネージド）',
-          } as Partial<Record<Lang, string>>
-        )[p.lang] || 'WebSocket＋Valkey Pub/Sub',
-      ]);
+    if (a.kind === 'ai')
+      parts.push(
+        ['LLM・ベクトル', ['LLM API＋pgvector、評価・トレースはLangfuse', 'pgvector', 'langfuse']],
+        ['長時間処理', ['Temporal または Inngest', 'temporal', 'inngest']],
+      );
+    if (a.kind === 'rt') {
+      const rt: Partial<Record<Lang, Part>> = {
+        ex: ['Phoenix Channels＋Presence', 'phoenix-channels', 'phoenix-presence'],
+        ts: ['Cloudflare Durable Objects（マネージド）', 'cloudflare-durable-objects'],
+      };
+      parts.push(['リアルタイム', rt[p.lang] ?? ['WebSocket＋Valkey Pub/Sub', 'valkey']]);
+    }
     if (a.load === 'cpu' && p.lang !== 'rust')
-      rows.push(['重い処理', 'Rustで切り出し（ワーカー、またはnapi-rs／PyO3でネイティブ拡張）']);
-    rows.push(
+      parts.push([
+        '重い処理',
+        ['Rustで切り出し（ワーカー、またはnapi-rs／PyO3でネイティブ拡張）', 'rust', 'napi-rs', 'pyo3'],
+      ]);
+    parts.push(
       ['テスト', l.test],
       ['インフラ', infra(a, next)],
-      ['監視', 'Sentry＋OpenTelemetry（Grafana Cloud）'],
-      ['CI', 'GitHub Actions＋Renovate'],
+      ['監視', ['Sentry＋OpenTelemetry（Grafana Cloud）', 'sentry', 'opentelemetry', 'grafana-cloud']],
+      ['CI', ['GitHub Actions＋Renovate', 'github-actions', 'renovate']],
     );
     cases.push(a.kind === 'web' ? (p.lang === 'rails' ? '19-4' : '19-5') : (CASE[a.kind] as string));
     refs.push('2-10', l.ref);
     if (p.orig)
       notes.push(
-        `本番化で${L[p.orig].n}に移るときの手順は §24 を確認する。APIをOpenAPIで定義しておくと差し替えやすい。`,
+        `本番化で${name(p.orig)}に移るときの手順は §24 を確認する。APIをOpenAPIで定義しておくと差し替えやすい。`,
       );
     if (a.team === 'large')
       notes.push(
@@ -322,14 +393,20 @@ export function decide(kind: Kind, answers: Answers): Decision {
   } else if (a.kind === 'site') {
     title = 'Astro＋ヘッドレスCMS';
     why.push('静的出力でサーバー保守がほぼ不要、非エンジニアの更新はCMSで賄える（§19-1）');
-    rows.push(
-      ['フロント', 'Astro＋Tailwind CSS'],
-      ['CMS', 'microCMS（セルフホストならPayload）'],
-      ['ホスティング', a.env === 'aws' ? 'S3＋CloudFront' : 'Cloudflare Pages'],
-      ['フォーム', 'Cloudflare Workers＋Resend、スパム対策にTurnstile'],
-      ['検索', 'Pagefind'],
-      ['分析', 'GA4'],
-      ['監視', 'Better Stack（外形監視）'],
+    parts.push(
+      ['フロント', ['Astro＋Tailwind CSS', 'astro', 'tailwind-css']],
+      ['CMS', ['microCMS（セルフホストならPayload）', 'microcms', 'payload']],
+      [
+        'ホスティング',
+        a.env === 'aws' ? ['S3＋CloudFront', 's3', 'cloudfront'] : ['Cloudflare Pages', 'cloudflare-pages'],
+      ],
+      [
+        'フォーム',
+        ['Cloudflare Workers＋Resend、スパム対策にTurnstile', 'cloudflare-workers', 'resend', 'cloudflare-turnstile'],
+      ],
+      ['検索', ['Pagefind', 'pagefind']],
+      ['分析', ['GA4', 'ga4']],
+      ['監視', ['Better Stack（外形監視）', 'better-stack']],
     );
     cases.push('19-1');
     refs.push('11');
@@ -338,12 +415,18 @@ export function decide(kind: Kind, answers: Answers): Decision {
     why.push(
       '独自要件が少なければSaaSに任せるのが最も安全で安い。定期購入・BtoB価格など独自要件が多いならMedusa（§19-2、§19-3）',
     );
-    rows.push(
-      ['独自要件が少ない', 'Shopify（テーマはLiquid、決済はShopify Payments）'],
-      ['独自要件が多い', 'Medusa＋Next.js＋Stripe／KOMOJU＋Meilisearch'],
+    parts.push(
+      [
+        '独自要件が少ない',
+        ['Shopify（テーマはLiquid、決済はShopify Payments）', 'shopify', 'liquid', 'shopify-payments'],
+      ],
+      [
+        '独自要件が多い',
+        ['Medusa＋Next.js＋Stripe／KOMOJU＋Meilisearch', 'medusa', 'next-js', 'stripe', 'komoju', 'meilisearch'],
+      ],
       ['インフラ（Medusa）', infra(a, true)],
-      ['アクセス集中対策', 'Cloudflare Waiting Room＋静的化（§19-12）'],
-      ['監視', 'Sentry＋Grafana Cloud'],
+      ['アクセス集中対策', ['Cloudflare Waiting Room＋静的化（§19-12）', 'cloudflare-waiting-room']],
+      ['監視', ['Sentry＋Grafana Cloud', 'sentry', 'grafana-cloud']],
     );
     cases.push('19-2', '19-3');
     refs.push('7');
@@ -355,23 +438,38 @@ export function decide(kind: Kind, answers: Answers): Decision {
         ? '起動時間・処理速度を詰める必要があるのでRust（§2-9）'
         : '単一バイナリで配布しやすく、クロスコンパイルも簡単なGo（§2-9）',
     );
-    rows.push(
-      ['言語', title],
-      ['CLI', r ? 'clap' : 'Cobra'],
-      ['配布', r ? 'cargo-dist（クロスコンパイルはcargo-zigbuild）' : 'GoReleaser（GitHub Releases・Homebrew tap）'],
-      ['テスト', r ? 'cargo-nextest' : '標準testing'],
-      ['脆弱性チェック', r ? 'cargo-audit／cargo-deny' : 'govulncheck'],
+    parts.push(
+      ['言語', r ? ['Rust', 'rust'] : ['Go', 'go']],
+      ['CLI', r ? ['clap', 'clap'] : ['Cobra', 'cobra']],
+      [
+        '配布',
+        r
+          ? ['cargo-dist（クロスコンパイルはcargo-zigbuild）', 'cargo-dist', 'cargo-zigbuild']
+          : ['GoReleaser（GitHub Releases・Homebrew tap）', 'goreleaser', 'github-releases', 'homebrew'],
+      ],
+      ['テスト', r ? ['cargo-nextest', 'cargo-nextest'] : ['標準testing', 'testing']],
+      ['脆弱性チェック', r ? ['cargo-audit／cargo-deny', 'cargo-audit', 'cargo-deny'] : ['govulncheck', 'govulncheck']],
     );
     cases.push('19-10');
     refs.push('2-9', r ? '2-5' : '2-2');
   } else if (a.kind === 'devtool') {
     title = 'Rust';
     why.push('近年の高速な開発ツールの主流で、WebAssemblyやネイティブ拡張として他言語に組み込める（§2-9）');
-    rows.push(
-      ['言語', 'Rust'],
-      ['組み込み先', 'WebAssembly：wasm-bindgen＋wasm-pack／Node.js：napi-rs／Python：PyO3＋maturin'],
-      ['テスト', 'cargo-nextest＋criterion（ベンチマーク）'],
-      ['配布', 'cargo-dist'],
+    parts.push(
+      ['言語', ['Rust', 'rust']],
+      [
+        '組み込み先',
+        [
+          'WebAssembly：wasm-bindgen＋wasm-pack／Node.js：napi-rs／Python：PyO3＋maturin',
+          'wasm-bindgen',
+          'wasm-pack',
+          'napi-rs',
+          'pyo3',
+          'maturin',
+        ],
+      ],
+      ['テスト', ['cargo-nextest＋criterion（ベンチマーク）', 'cargo-nextest', 'criterion']],
+      ['配布', ['cargo-dist', 'cargo-dist']],
     );
     refs.push('2-9', '2-5');
   } else if (a.kind === 'desktop') {
@@ -382,18 +480,18 @@ export function decide(kind: Kind, answers: Answers): Decision {
         ? 'Windows専用の業務アプリでMicrosoft環境が中心なら.NET（§2-9）'
         : 'UIはWeb技術、裏側はRustで軽量なバイナリになるTauri（§2-9）',
     );
-    rows.push(
-      ['構成', ms ? 'C#（.NET）' : 'Tauri（Rust＋React／Vite）'],
-      ['代替', 'Electron：Node.jsのAPIに強く依存するとき'],
+    parts.push(
+      ['構成', ms ? ['C#（.NET）', 'csharp', 'net'] : ['Tauri（Rust＋React／Vite）', 'tauri', 'rust', 'react', 'vite']],
+      ['代替', ['Electron：Node.jsのAPIに強く依存するとき', 'electron']],
     );
     refs.push('2-9', ms ? '2-8' : '2-5');
   } else if (a.kind === 'embedded') {
     title = 'Rust';
     why.push('メモリ安全性とC並みの性能を両立できる（§2-9）');
-    rows.push(
-      ['言語', 'Rust'],
-      ['非同期フレームワーク', 'Embassy（厳密な割り込み駆動ならRTIC）'],
-      ['代替', 'C：ベンダーSDKがCしかないとき'],
+    parts.push(
+      ['言語', ['Rust', 'rust']],
+      ['非同期フレームワーク', ['Embassy（厳密な割り込み駆動ならRTIC）', 'embassy', 'rtic']],
+      ['代替', ['C：ベンダーSDKがCしかないとき']],
     );
     refs.push('2-9', '2-5');
   } else if (a.kind === 'data') {
@@ -401,15 +499,21 @@ export function decide(kind: Kind, answers: Answers): Decision {
     title = kt ? 'Kotlin（Spring Batch）＋SQL' : 'SQL＋Python（Polars）';
     why.push('集計はまずSQLで書くのが最短で、SQLで表現しにくい変換だけPythonにする（§2-9）');
     if (kt) why.push('再実行・中断再開が必要な大規模バッチやストリーム処理はKotlin（§2-10 手順2）');
-    rows.push(
-      ['集計', 'SQL（DuckDB／BigQuery／PostgreSQL）'],
-      ['変換', kt ? 'Kotlin（Spring Batch／Kafka Streams）' : 'Python＋Polars（uv、Ruff）'],
-      ['ワークフロー', 'Temporal または AWS Step Functions'],
+    parts.push(
+      ['集計', ['SQL（DuckDB／BigQuery／PostgreSQL）', 'sql', 'duckdb', 'bigquery', 'postgresql']],
+      [
+        '変換',
+        kt
+          ? ['Kotlin（Spring Batch／Kafka Streams）', 'kotlin', 'spring-batch', 'kafka-streams']
+          : ['Python＋Polars（uv、Ruff）', 'python', 'polars', 'uv', 'ruff'],
+      ],
+      ['ワークフロー', ['Temporal または AWS Step Functions', 'temporal', 'aws-step-functions']],
       ['実行', infra(a, false)],
     );
     refs.push('2-9', '2-10');
   }
   refs.push('23', '24', '25');
+  const rows = parts.map(([layer, [text, ...tools]]) => ({ layer, text, tools }));
   return { title, rows, why, notes, refs, cases };
 }
 

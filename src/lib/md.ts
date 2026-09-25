@@ -1,49 +1,115 @@
 // Compact markdown views for AI agents: same facts as the HTML pages, no markup overhead
-import { GROUPS, guide, plain, rawSub, SECS } from './guide';
-import { type ChoiceRow, category, dictionary, type Tool, toolInfo } from './tools';
+import YAML from 'yaml';
+import { GROUPS, guide, plain, rawSub, SECS, stripNo } from './guide';
+import { type Data, HEADS, isDataKind, parseData } from './schema';
+import { type ChoiceRow, category, dictionary, namesOf, type Tool } from './tools';
 import { DEFAULTS, decide, KINDS, type Kind, QUESTIONS, SHOW } from './wizard';
 
 const where = (r: ChoiceRow) => (r.sub ? `§${r.sub.id}` : `§${r.sec.id}`);
+const altText = (a: ChoiceRow['alts'][number]) =>
+  `${a.name ?? namesOf(a.tools).join('＋')}${a.when ? `：${a.when}` : ''}`;
+
+// Data blocks back to plain markdown tables (compact for agents)
+const row = (cells: (string | undefined)[]) => `| ${cells.map((c) => c || '—').join(' | ')} |`;
+function dataMd(d: Data): string {
+  const h = d.head ?? HEADS[d.kind];
+  const table = (head: string[], rows: (string | undefined)[][]) =>
+    [row(head), `|${head.map(() => '---').join('|')}|`, ...rows.map(row)].join('\n');
+  switch (d.kind) {
+    case 'choices':
+      return table(
+        h,
+        d.rows.map((r) =>
+          [r.role, r.default, [...r.alts.map(altText), r.note].filter(Boolean).join('。')].slice(0, h.length),
+        ),
+      );
+    case 'uses':
+      return table(
+        h,
+        d.rows.map((r) => [r.situation, r.pick, r.next, r.example, r.reason].slice(0, h.length)),
+      );
+    case 'stack':
+      return table(
+        h,
+        d.rows.map((r) => [r.layer, r.pick]),
+      );
+    case 'rationale':
+      return table(
+        h,
+        d.rows.map((r) => [r.name, r.why, r.concern]),
+      );
+    case 'growth':
+      return table(
+        h,
+        d.rows.map((r) => [r.from, r.to, r.trigger, r.prepare]),
+      );
+    case 'cost':
+      return table(
+        h,
+        d.rows.map((r) => [r.service, r.axis, r.grows, r.action]),
+      );
+    case 'prof':
+      return table(
+        h.slice(0, 2),
+        d.rows.map((r) => [r.name, r.kind]),
+      );
+  }
+}
+/** Raw guide markdown with YAML data blocks rendered as tables */
+export const toMarkdown = (raw: string) =>
+  raw.replace(/^```(\w+)\n([\s\S]*?)^```$/gm, (m, kind: string, body: string) =>
+    isDataKind(kind) ? dataMd(parseData(kind, YAML.parse(body))) : m,
+  );
 
 export function toolMd(t: Tool) {
-  const i = toolInfo(t.name);
   const out = [`# ${t.name}`, '', `分類：${category(t)}`];
   if (t.lang) out.push('', `言語別の既定セット：§${t.lang.ref}（/s/2.md）`, t.lang.lead && plain(t.lang.lead));
   if (t.uses.length)
     out.push(
       '',
       '## 選ぶ場面（§2-10）',
-      ...t.uses.map((u) => `- ${plain(u.situation)}${u.detail ? `：${plain(u.detail)}` : ''}`),
+      ...t.uses.map((u) => `- ${plain(u.situation)}${u.reason ? `：${plain(u.reason)}` : ''}`),
     );
   if (t.def.length) {
     out.push('', '## 既定として使う役割');
     for (const r of t.def) {
-      out.push(`- ${plain(r.role)}（${where(r)}）：${plain(r.def)}`);
-      for (const a of r.alts) out.push(`  - 代替 ${plain(a.label)}${a.cond ? `：${plain(a.cond)}` : ''}`);
+      out.push(`- ${plain(r.role)}（${where(r)}）：${plain(r.default)}`);
+      for (const a of r.alts) out.push(`  - 代替 ${plain(altText(a))}`);
       if (r.note) out.push(`  - ${plain(r.note)}`);
     }
   }
   if (t.alt.length) {
     out.push('', '## 代替として使う条件');
-    for (const { row, alt } of t.alt)
-      out.push(
-        `- ${plain(row.role)}（${where(row)}、既定は${plain(row.def)}）${alt.cond ? `：${plain(alt.cond)}` : ''}`,
-      );
+    for (const { row: r, alt } of t.alt)
+      out.push(`- ${plain(r.role)}（${where(r)}、既定は${plain(r.default)}）${alt.when ? `：${plain(alt.when)}` : ''}`);
   }
-  for (const e of i.why)
-    out.push('', `## 採用の根拠（§${SECS.whyTools}）`, plain(e.r[1]), e.r[2] ? `懸念と回答：${plain(e.r[2])}` : '');
-  for (const e of i.cost)
+  for (const e of t.why)
+    out.push(
+      '',
+      `## 採用の根拠（§${SECS.whyTools}）`,
+      plain(e.why),
+      e.concern ? `懸念と回答：${plain(e.concern)}` : '',
+    );
+  for (const e of t.cost)
     out.push(
       '',
       `## 費用の注意（§${SECS.cost}）`,
-      ...e.head.slice(1).map((k, j) => `- ${k}：${plain(e.r[j + 1] ?? '')}`),
+      `- ${HEADS.cost[1]}：${plain(e.axis)}`,
+      `- ${HEADS.cost[2]}：${plain(e.grows)}`,
+      `- ${HEADS.cost[3]}：${plain(e.action)}`,
     );
-  for (const e of i.move)
+  for (const e of t.growth)
     out.push(
       '',
-      `## 育ったときの移行（§${SECS.growth}）→ ${plain(e.r[1])}`,
-      `- きっかけ：${plain(e.r[2])}`,
-      `- 最初からの備え：${plain(e.r[3])}`,
+      `## 育ったときの移行（§${SECS.growth}）→ ${plain(e.to)}`,
+      `- きっかけ：${plain(e.trigger)}`,
+      `- 最初からの備え：${plain(e.prepare)}`,
+    );
+  if (t.stacks.length)
+    out.push(
+      '',
+      '## ケース別の構成（§19）',
+      ...t.stacks.map((x) => `- ${x.sub ? stripNo(plain(x.sub.text)) : ''}：${plain(x.layer)}＝${plain(x.pick)}`),
     );
   return `${out
     .filter((l) => l !== undefined)
@@ -100,13 +166,13 @@ export function makeMd(kind: Kind) {
     '## 構成',
     '| レイヤー | 採用 |',
     '|---|---|',
-    ...d.rows.map(([l, v]) => `| ${l} | ${v} |`),
+    ...d.rows.map((r) => `| ${r.layer} | ${r.text} |`),
   ];
-  for (const c of d.cases) out.push('', rawSub(c).replace(/^### (\d+-\d+)\. /, '## §$1 '));
+  for (const c of d.cases) out.push('', toMarkdown(rawSub(c)).replace(/^### (\d+-\d+)\. /, '## §$1 '));
   const cmd = guide.sections
     .find((s) => s.id === SECS.commands)
     ?.blocks.find((b) => b.t === 'h3' && d.cases.some((c) => b.text.includes(`§${c}`)));
-  if (cmd?.t === 'h3') out.push('', rawSub(cmd.id).replace(/^### (\d+-\d+)\. /, '## §$1 '));
+  if (cmd?.t === 'h3') out.push('', toMarkdown(rawSub(cmd.id)).replace(/^### (\d+-\d+)\. /, '## §$1 '));
   out.push('', `次に読む：${[...new Set(d.refs)].map((r) => `§${r}`).join('、')}（/s/<N>.md）`);
   return `${out.join('\n').replace(/\n{3,}/g, '\n\n')}\n`;
 }

@@ -1,6 +1,6 @@
 # stackbook
 
-ケース別の技術スタック・周辺ツール選定ガイド。`content/guide.md` を正本とし、Astro で静的サイトに変換して閲覧する。
+ケース別の技術スタック・周辺ツール選定ガイド。`content/guide/` の Markdown（表は YAML ブロック）と `content/tools.yaml` を正本とし、Astro で静的サイトに変換して閲覧する。
 
 - **作る**：作るものと条件を選ぶと、推奨構成・根拠・構成図・雛形コマンドを1画面に表示する
 - **辞書**：言語・ライブラリ・サービスを名前から引き、既定・代替・根拠・費用・移行先をまとめて表示する
@@ -32,8 +32,10 @@ pnpm check          # Biome と astro check
 
 | パス | 役割 |
 |---|---|
-| `content/guide.md` | 本文の正本。内容の変更は必ずここで行う |
-| `src/lib/guide.ts` | Markdown を構造化データに変換するパーサー |
+| `content/guide/*.md` | 本文の正本（セクションごと）。辞書・判定に使う表は YAML ブロック |
+| `content/tools.yaml` | ツールの登録簿（id と表示名） |
+| `src/lib/schema.ts` | YAML ブロックと登録簿のスキーマ（Zod） |
+| `src/lib/guide.ts` | 本文の読み込み・検査 |
 | `src/lib/tools.ts` | 辞書の索引（既定・代替・根拠・費用・移行・習熟度） |
 | `src/lib/wizard.ts` | 「作る」の判定ロジック（§2-9・§2-10・§19 と一致させる） |
 | `src/lib/render.ts` `make.ts` `html.ts` | HTML の描画（`make.ts` と `html.ts` はブラウザでも動く） |

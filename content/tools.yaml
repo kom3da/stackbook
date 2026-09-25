@@ -1,0 +1,545 @@
+# Tool registry: id -> display name (or {name, lang}). Ids are referenced from data blocks in content/guide/*.md
+1password: 1Password
+acm: ACM
+action-cable: Action Cable
+action-policy: Action Policy
+actionlint: actionlint
+active-record: Active Record
+active-storage: Active Storage
+actix-web: Actix Web
+administrate: Administrate
+adr: ADR
+ag-grid: AG Grid
+age: age
+air: air
+alb: ALB
+alembic: Alembic
+algolia: Algolia
+amazon-cognito: Amazon Cognito
+amazon-corretto: Amazon Corretto
+amazon-msk: Amazon MSK
+amazon-opensearch-service: Amazon OpenSearch Service
+amazon-rds-for-postgresql: Amazon RDS for PostgreSQL
+amazon-ses: Amazon SES
+amazon-sns: Amazon SNS
+amplitude: Amplitude
+anycable: AnyCable
+anyhow: anyhow
+apache-echarts: Apache ECharts
+app-runner: App Runner
+argon2id: Argon2id
+arq: arq
+asdf: asdf
+asp-net-core: ASP.NET Core
+astro: Astro
+astro-assets: astro:assets
+astro-starlight: Astro Starlight
+asynq: Asynq
+atlantis: Atlantis
+atlas: Atlas
+aurora-postgresql: Aurora PostgreSQL
+auth-js: Auth.js
+auth0: Auth0
+avo: Avo
+aws: AWS
+aws-cdk: AWS CDK
+aws-secrets-manager: AWS Secrets Manager
+aws-step-functions: AWS Step Functions
+aws-systems-manager-session-manager: AWS Systems Manager Session Manager
+aws-waf: AWS WAF
+axe: axe
+axum: axum
+better-auth: Better Auth
+better-stack: Better Stack
+bigquery: BigQuery
+biome: Biome
+brakeman: Brakeman
+broadway: Broadway
+bruno: Bruno
+buf: Buf
+bullet: Bullet
+bullmq: BullMQ
+bun: Bun
+bundler: Bundler
+bundler-audit: bundler-audit
+candle: candle
+capybara: Capybara
+capybara-playwright-driver: capybara-playwright-driver
+cargo: Cargo
+cargo-audit: cargo-audit
+cargo-deny: cargo-deny
+cargo-dist: cargo-dist
+cargo-nextest: cargo-nextest
+cargo-zigbuild: cargo-zigbuild
+celery: Celery
+chainguard-images: Chainguard Images
+changesets: Changesets
+checkov: Checkov
+chi: chi
+clamav: ClamAV
+clap: clap
+claude-code: Claude Code
+clerk: Clerk
+clippy: clippy
+cloud-run: Cloud Run
+cloud-sql: Cloud SQL
+cloudflare: Cloudflare
+cloudflare-access: Cloudflare Access
+cloudflare-d1: Cloudflare D1
+cloudflare-dns: Cloudflare DNS
+cloudflare-durable-objects: Cloudflare Durable Objects
+cloudflare-hyperdrive: Cloudflare Hyperdrive
+cloudflare-images: Cloudflare Images
+cloudflare-pages: Cloudflare Pages
+cloudflare-r2: Cloudflare R2
+cloudflare-stream: Cloudflare Stream
+cloudflare-tunnel: Cloudflare Tunnel
+cloudflare-turnstile: Cloudflare Turnstile
+cloudflare-waf: Cloudflare WAF
+cloudflare-waiting-room: Cloudflare Waiting Room
+cloudflare-web-analytics: Cloudflare Web Analytics
+cloudflare-workers: Cloudflare Workers
+cloudfront: CloudFront
+cloudwatch: CloudWatch
+cobra: Cobra
+codeql: CodeQL
+conform: Conform
+connect: Connect
+contentful: Contentful
+context: Context
+conventional-commits: Conventional Commits
+copilot-code-review: Copilot code review
+credo: Credo
+criterion: criterion
+cross: cross
+csharp:
+  name: C#
+  lang: 2-8
+csp: CSP
+css-modules: CSS Modules
+d2: D2
+dapper: Dapper
+datadog: Datadog
+date-fns: date-fns
+day-js: Day.js
+dbeaver: DBeaver
+deno: Deno
+dependabot: Dependabot
+detekt: detekt
+dev-containers: Dev Containers
+devise: Devise
+dialyxir: Dialyxir
+direnv: direnv
+distroless: distroless
+divan: divan
+django: Django
+dkim: DKIM
+dmarc: DMARC
+dnd-kit: dnd kit
+docker: Docker
+docker-compose: Docker Compose
+dockerfile: Dockerfile
+docusaurus: Docusaurus
+doppler: Doppler
+dotnet-cli: dotnet CLI
+dotnet-format: dotnet format
+dotnet-publish: dotnet publish
+dramatiq: Dramatiq
+draw-io: draw.io
+drizzle: Drizzle
+drizzle-kit: drizzle-kit
+duckdb: DuckDB
+eas-build: EAS Build
+eas-submit: EAS Submit
+eas-update: EAS Update
+echo: Echo
+eclipse-temurin: Eclipse Temurin
+ecr: ECR
+ecs-on-fargate: ECS on Fargate
+ecto: Ecto
+ef-core: EF Core
+ef-core-migrations: EF Core Migrations
+eks: EKS
+electron: Electron
+elixir:
+  name: Elixir
+  lang: 2-7
+embassy: Embassy
+ent: ent
+envconfig: envconfig
+esbuild: esbuild
+eslint: ESLint
+eventbridge: EventBridge
+expo: Expo
+expo-notifications: Expo Notifications
+expo-router: Expo Router
+exposed: Exposed
+exunit: ExUnit
+factorybot: FactoryBot
+fastapi: FastAPI
+fastify: Fastify
+fcm: FCM
+fetch: fetch
+firebase-authentication: Firebase Authentication
+fixtures: fixtures
+flutter: Flutter
+fly-io: Fly.io
+flyway: Flyway
+ga4: GA4
+ghcr: GHCR
+github-actions: GitHub Actions
+github-copilot: GitHub Copilot
+github-flow: GitHub Flow
+github-pages: GitHub Pages
+github-releases: GitHub Releases
+gitlab-ci: GitLab CI
+gitleaks: gitleaks
+gke: GKE
+go:
+  name: Go
+  lang: 2-2
+go-cmp: go-cmp
+go-modules: Go modules
+gofmt: gofmt
+gofumpt: gofumpt
+golang-migrate: golang-migrate
+golangci-lint: golangci-lint
+gomock: gomock
+google-workspace: Google Workspace
+goose: goose
+goreleaser: GoReleaser
+gorm: GORM
+govulncheck: govulncheck
+gqlgen: gqlgen
+graalvm: GraalVM
+gradle: Gradle
+grafana: Grafana
+grafana-cloud: Grafana Cloud
+graphql: GraphQL
+graphql-yoga: GraphQL Yoga
+grpc: gRPC
+hadolint: hadolint
+hcp-terraform: HCP Terraform
+hex: Hex
+homebrew: Homebrew
+hono: Hono
+hono-rpc: Hono RPC
+hotwire: Hotwire
+hotwire-native: Hotwire Native
+htmx: htmx
+httpx: httpx
+husky: husky
+i18next: i18next
+idp: IdP
+imgproxy: imgproxy
+importmap: importmap
+incident-io: incident.io
+inngest: Inngest
+jackson: Jackson
+jest: Jest
+jib: Jib
+jooq: jOOQ
+jotai: Jotai
+jsbundling: jsbundling
+junit: JUnit
+jupyter: Jupyter
+k6: k6
+kafka: Kafka
+kafka-streams: Kafka Streams
+kamal: Kamal
+keycloak: Keycloak
+knock: Knock
+koanf: koanf
+komoju: KOMOJU
+kotest: Kotest
+kotlin:
+  name: Kotlin
+  lang: 2-6
+kotlinx-serialization: kotlinx.serialization
+ktlint: ktlint
+ktor: Ktor
+ky: ky
+kysely: Kysely
+ladle: Ladle
+lambda: Lambda
+langfuse: Langfuse
+lefthook: lefthook
+lexical: Lexical
+liquibase: Liquibase
+liquid: Liquid
+liveblocks: Liveblocks
+localstack: LocalStack
+locust: Locust
+log-slog: log/slog
+logback: Logback
+lucide-react: lucide-react
+magiconion: MagicOnion
+mailpit: Mailpit
+mantine: Mantine
+marimo: marimo
+markdown: Markdown
+maturin: maturin
+maven: Maven
+medusa: Medusa
+meilisearch: Meilisearch
+mermaid: Mermaid
+microcms: microCMS
+microsoft-entra-id: Microsoft Entra ID
+minio: MinIO
+minitest: Minitest
+mise: mise
+mix: Mix
+mix-format: mix format
+mix-release: mix release
+mixpanel: Mixpanel
+mjml: MJML
+mockery: mockery
+mockk: MockK
+motion: Motion
+mox: Mox
+mozilla-observatory: Mozilla Observatory
+msw: MSW
+mui: MUI
+mux: Mux
+mysql: MySQL
+napi-rs: napi-rs
+nat-gateway: NAT Gateway
+nativewind: NativeWind
+neon: Neon
+nestjs: NestJS
+net: .NET
+net-http: net/http
+new-relic: New Relic
+next-image: next/image
+next-intl: next-intl
+next-js: Next.js
+ngrok: ngrok
+node-js: Node.js
+novu: Novu
+nsubstitute: NSubstitute
+nuget: NuGet
+nx: Nx
+oapi-codegen: oapi-codegen
+oban: Oban
+ogen: ogen
+oidc: OIDC
+openapi: OpenAPI
+openapi-fetch: openapi-fetch
+openapi-typescript: openapi-typescript
+openfeature: OpenFeature
+openfga: OpenFGA
+opennext: OpenNext
+opentelemetry: OpenTelemetry
+opentofu: OpenTofu
+orval: Orval
+owasp-zap: OWASP ZAP
+pagefind: Pagefind
+pagerduty: PagerDuty
+pagy: Pagy
+pandas: pandas
+pay-jp: PAY.JP
+payload: Payload
+pg-bigm: pg_bigm
+pg-boss: pg-boss
+pg-dump: pg_dump
+pgbackrest: pgBackRest
+pgbouncer: PgBouncer
+pgvector: pgvector
+pgx: pgx
+phlex: Phlex
+phoenix: Phoenix
+phoenix-channels: Phoenix Channels
+phoenix-liveview: Phoenix LiveView
+phoenix-presence: Phoenix Presence
+pino: pino
+plausible: Plausible
+playwright: Playwright
+plug: Plug
+pnpm: pnpm
+pnpm-audit: pnpm audit
+pnpm-workspaces: pnpm workspaces
+poetry: Poetry
+polars: Polars
+postgres: Postgres
+postgresql: PostgreSQL
+postgresql-anonymizer: PostgreSQL Anonymizer
+posthog: PostHog
+postman: Postman
+postmark: Postmark
+pothos: Pothos
+prettier: Prettier
+prisma: Prisma
+prisma-migrate: Prisma Migrate
+propshaft: Propshaft
+prosopite: Prosopite
+pulumi: Pulumi
+pundit: Pundit
+pydantic: Pydantic
+pyo3: PyO3
+pyright: Pyright
+pytest: pytest
+python:
+  name: Python
+  lang: 2-4
+qdrant: Qdrant
+quartz-net: Quartz.NET
+rails:
+  name: Rails
+  lang: 2-3
+railway: Railway
+rbenv: rbenv
+rds: RDS
+rds-proxy: RDS Proxy
+react: React
+react-day-picker: react-day-picker
+react-email: React Email
+react-hook-form: React Hook Form
+react-i18next: react-i18next
+react-native: React Native
+react-router: React Router
+recharts: Recharts
+redis: Redis
+redoc: Redoc
+redocly-cli: Redocly CLI
+redpanda: Redpanda
+release-please: release-please
+render: Render
+renovate: Renovate
+req: Req
+resend: Resend
+rest: REST
+river: River
+rodauth: Rodauth
+route: Route
+rspec: RSpec
+rtic: RTIC
+rubocop: RuboCop
+ruby: Ruby
+ruff: Ruff
+rulesets: Rulesets
+rust:
+  name: Rust
+  lang: 2-5
+rustfmt: rustfmt
+s3: S3
+saas: SaaS
+sanity: Sanity
+scalar: Scalar
+seaorm: SeaORM
+selenium: Selenium
+semgrep: Semgrep
+sentry: Sentry
+serde: serde
+serilog: Serilog
+server-sent-events: Server-Sent Events
+shadcn-ui: shadcn/ui
+shopify: Shopify
+shopify-functions: Shopify Functions
+shopify-payments: Shopify Payments
+sidekiq: Sidekiq
+signalr: SignalR
+slack-incoming-webhook: Slack Incoming Webhook
+slf4j: SLF4J
+slim: slim
+sns: SNS
+sobelow: Sobelow
+solid-cable: Solid Cable
+solid-cache: Solid Cache
+solid-queue: Solid Queue
+sonner: Sonner
+sops: SOPS
+spectral: Spectral
+spf: SPF
+spicedb: SpiceDB
+spring-batch: Spring Batch
+spring-boot: Spring Boot
+spring-data-jpa: Spring Data JPA
+spring-for-apache-kafka: Spring for Apache Kafka
+springdoc-openapi: springdoc-openapi
+sql: SQL
+sqlalchemy: SQLAlchemy
+sqlc: sqlc
+sqlite: SQLite
+sqlmodel: SQLModel
+sqlx: sqlx
+sqs: SQS
+squawk: Squawk
+standard: Standard
+stimulus: Stimulus
+storybook: Storybook
+strapi: Strapi
+stripe: Stripe
+stripe-cli: Stripe CLI
+stripe-invoicing: Stripe Invoicing
+structlog: structlog
+supabase: Supabase
+supabase-auth: Supabase Auth
+swift: Swift
+swr: SWR
+syft: Syft
+tableplus: TablePlus
+tailscale: Tailscale
+tailwind-css: Tailwind CSS
+tailwindcss-rails: tailwindcss-rails
+tanstack-form: TanStack Form
+tanstack-query: TanStack Query
+tanstack-router: TanStack Router
+tanstack-start: TanStack Start
+tanstack-table: TanStack Table
+tanstack-virtual: TanStack Virtual
+tauri: Tauri
+tbls: tbls
+telemetry: Telemetry
+temporal: Temporal
+temporal-api: Temporal API
+terraform: Terraform
+terraform-docs: terraform-docs
+terraform-fmt: terraform fmt
+testcontainers: Testcontainers
+testcontainers-go: testcontainers-go
+testify: testify
+testing: testing
+tflint: TFLint
+thiserror: thiserror
+tiptap: Tiptap
+tokio: Tokio
+tonic: tonic
+tracing: tracing
+trigger-dev: Trigger.dev
+trivy: Trivy
+trpc: tRPC
+tsc-noemit: tsc --noEmit
+tsdown: tsdown
+tsup: tsup
+tsx: tsx
+turbo: Turbo
+turborepo: Turborepo
+twilio: Twilio
+typescript:
+  name: TypeScript
+  lang: 2-1
+typescript-eslint: typescript-eslint
+typesense: Typesense
+typst: Typst
+unleash: Unleash
+uptimerobot: UptimeRobot
+urfave-cli: urfave/cli
+usestate: useState
+uv: uv
+valibot: Valibot
+valkey: Valkey
+vercel: Vercel
+vercel-speed-insights: Vercel Speed Insights
+viewcomponent: ViewComponent
+vite: Vite
+vitest: Vitest
+wasm-bindgen: wasm-bindgen
+wasm-pack: wasm-pack
+web-worker: Web Worker
+webassembly: WebAssembly
+workos: WorkOS
+xunit: xUnit
+yjs: Yjs
+zitadel: Zitadel
+zod: Zod
+zustand: Zustand

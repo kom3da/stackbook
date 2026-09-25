@@ -3,31 +3,31 @@ import { h3Text, plain, SEC, SECS, stripNo, subBlocks } from './guide';
 import { secHref } from './html';
 import type { MakePayload } from './make';
 import { blocks, toolBody } from './render';
-import { hasInfo, tokens, toolInfo } from './tools';
+import { dictionary } from './tools';
 import { allAnswers, decide, type Kind } from './wizard';
+
+const listed = new Map(dictionary().map((t) => [t.id, t]));
 
 export function makePayload(kind: Kind): MakePayload {
   const p: MakePayload = { cards: {}, cases: {}, cmds: {}, refs: {}, prof: SECS.prof };
-  const s19 = SEC.get('19');
+  const s19 = SEC.get(SECS.cases);
   const cmdSec = SEC.get(SECS.commands);
   for (const a of allAnswers(kind)) {
     const d = decide(kind, a);
-    for (const [, val] of d.rows)
-      for (const n of tokens(val)) {
-        if (n in p.cards) continue;
-        const i = toolInfo(n);
-        if (!hasInfo(i)) continue;
-        p.cards[n] = {
-          slug: i.t?.slug ?? '',
-          name: i.name,
-          html: toolBody(i),
-          prof: i.prof.map((e) => e.r[0]),
-        };
+    for (const row of d.rows)
+      for (const id of row.tools) {
+        const t = listed.get(id);
+        if (!t || id in p.cards) continue;
+        p.cards[id] = { slug: t.slug, name: t.name, html: toolBody(t), prof: t.prof.map((e) => e.name) };
       }
     for (const c of d.cases) {
       if (!s19 || c in p.cases) continue;
-      const bl = subBlocks('19', c).filter((b) => b.t === 'mermaid' || b.t === 'p');
-      p.cases[c] = { title: stripNo(plain(h3Text('19', c))), href: secHref('19', c), html: blocks(bl, s19) };
+      const bl = subBlocks(SECS.cases, c).filter((b) => b.t === 'mermaid' || b.t === 'p');
+      p.cases[c] = {
+        title: stripNo(plain(h3Text(SECS.cases, c))),
+        href: secHref(SECS.cases, c),
+        html: blocks(bl, s19),
+      };
     }
     for (const r of d.refs) {
       if (r in p.refs) continue;

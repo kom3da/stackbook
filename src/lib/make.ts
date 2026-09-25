@@ -1,11 +1,10 @@
 // Renders a wizard decision. Pure: runs at build time and in the browser when conditions change.
 import { esc, inline, linkNames, toolHref } from './html';
-import { tokens } from './text';
 import type { Decision } from './wizard';
 
 export type Card = { slug: string; name: string; html: string; prof: string[] };
 export type MakePayload = {
-  /** keyed by token as produced by tokens() */
+  /** keyed by tool id */
   cards: Record<string, Card>;
   cases: Record<string, { title: string; href: string; html: string }>;
   /** Command blocks keyed by §19 case id; "" holds the common setup */
@@ -16,12 +15,13 @@ export type MakePayload = {
 };
 
 export function renderMake(d: Decision, p: MakePayload, prof: Record<string, string>) {
-  const slugOf = (n: string) => p.cards[n]?.slug || undefined;
+  const bySlug = new Map(Object.values(p.cards).map((c) => [c.name, c.slug]));
+  const slugOf = (n: string) => bySlug.get(n);
   const unknown = new Set<string>();
   const sheet = d.rows
-    .map(([layer, val]) => {
-      const toks = [...new Set(tokens(val))];
-      const cards = toks.map((n) => p.cards[n]).filter(Boolean);
+    .map(({ layer, text: val, tools }) => {
+      const cards = tools.map((id) => p.cards[id]).filter(Boolean);
+      const toks = cards.map((c) => c.name);
       const warn = [...new Set(cards.flatMap((c) => c.prof).filter((t) => prof[t] === '未経験'))];
       for (const w of warn) unknown.add(w);
       const head = `<span class="s-layer">${esc(layer)}</span><span class="s-val">${linkNames(inline(val), toks, slugOf)}${warn.map((t) => ` <span class="badge">未経験：${esc(t)}</span>`).join('')}</span>`;

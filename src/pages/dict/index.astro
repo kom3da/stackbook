@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import { GROUPS, plain, SEC, stripNo } from '../../lib/guide';
 import { secHref, toolHref } from '../../lib/html';
-import { dictionary, ROWS, type Tool } from '../../lib/tools';
+import { dictionary, ROWS, type Tool, TOOLS } from '../../lib/tools';
 
 const summary = (t: Tool) => {
   if (t.lang) return `言語（§${t.lang.ref}）`;
@@ -28,8 +28,8 @@ const fields = GROUPS.tools.flatMap((id) => {
           ? [{ label: stripNo(plain(b.text)).replace(id === '2' ? /（.*$/ : /$^/, ''), href: secHref(id, b.id) }]
           : [],
       )
-    : [...new Set(ROWS.filter((r) => r.sec === s).flatMap((r) => r.names))].flatMap((n) => {
-        const t = tools.find((x) => x.name === n || x.name === n.replace(/ \d+$/, ''));
+    : [...new Set(ROWS.filter((r) => r.sec === s).flatMap((r) => r.tools))].flatMap((id) => {
+        const t = TOOLS.get(id);
         return t ? [{ label: t.name, href: toolHref(t.slug) }] : [];
       });
   return [{ s, items }];

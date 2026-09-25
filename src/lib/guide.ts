@@ -1,5 +1,14 @@
-import md from '../../content/guide.md?raw';
+import YAML from 'yaml';
+import toolsYaml from '../../content/tools.yaml?raw';
+import { type Data, isDataKind, parseData, TOOLS_FILE, toolIds } from './schema';
 import { plain } from './text';
+
+// Sections live in content/guide/NN.md; files are read in name order and joined
+const files = import.meta.glob<string>('../../content/guide/*.md', { query: '?raw', import: 'default', eager: true });
+const md = Object.keys(files)
+  .sort()
+  .map((k) => files[k].trimEnd())
+  .join('\n\n');
 
 export { plain };
 
@@ -9,7 +18,8 @@ export type Block =
   | { t: 'p'; text: string }
   | { t: 'ul' | 'ol' | 'check'; items: string[] }
   | { t: 'code' | 'mermaid'; text: string }
-  | { t: 'table'; head: string[]; rows: string[][] };
+  | { t: 'table'; head: string[]; rows: string[][] }
+  | { t: 'data'; d: Data };
 
 /** checked: when the section was last reviewed (the "確認：…" line under its heading) */
 export type Section = { id: string; num: string; title: string; checked: string; blocks: Block[] };
@@ -88,7 +98,16 @@ export function parseGuide(src: string): Guide {
       i++;
     } else if (L.startsWith('```')) {
       flush();
-      push({ t: L.startsWith('```mermaid') ? 'mermaid' : 'code', text: fence() });
+      const info = L.slice(3).trim();
+      const at = `§${cur?.num || cur?.id} line ${i + 1}`;
+      const text = fence();
+      if (isDataKind(info)) {
+        try {
+          push({ t: 'data', d: parseData(info, YAML.parse(text)) });
+        } catch (e) {
+          throw new Error(`Invalid \`${info}\` block (${at}): ${(e as Error).message}`);
+        }
+      } else push({ t: info === 'mermaid' ? 'mermaid' : 'code', text });
     } else if (L.startsWith('|')) {
       flush();
       const [head, , ...rows] = collect(/^\|/, cells);
@@ -112,6 +131,21 @@ export function parseGuide(src: string): Guide {
 }
 
 export const guide = parseGuide(md);
+
+// Tool registry (content/tools.yaml); every id used in a data block must be registered
+export const REGISTRY = new Map(
+  Object.entries(TOOLS_FILE.parse(YAML.parse(toolsYaml))).map(([id, v]) => [
+    id,
+    typeof v === 'string' ? { name: v, lang: undefined as string | undefined } : v,
+  ]),
+);
+{
+  const missing = new Set<string>();
+  for (const s of guide.sections)
+    for (const b of s.blocks)
+      if (b.t === 'data') for (const id of toolIds(b.d)) if (!REGISTRY.has(id)) missing.add(`${id} (§${s.id})`);
+  if (missing.size) throw new Error(`Unknown tool ids, add them to content/tools.yaml: ${[...missing].join(', ')}`);
+}
 export const SEC = new Map(guide.sections.map((s) => [s.id, s]));
 
 // Sections the code refers to by role. Update here when the guide is renumbered.
