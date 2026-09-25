@@ -36,6 +36,13 @@ export function findName(text: string, name: string): [string, string] | null {
 
 /** Anchor of a step heading (#### 手順K) inside subsection N-M */
 export const stepId = (sub: string, step: string) => `${sub}-s${step}`;
+/** A reference as shown on screen: its target's name (and step), not the number */
+export const refText = (x: { v: string; sec: string; sub?: string; step?: string }) => {
+  const names = (globalThis as { __stackbookTitles?: Record<string, string> }).__stackbookTitles ?? {};
+  const name = names[x.sub ?? x.sec];
+  if (!name) return x.v.replace(/^§/, '');
+  return x.step ? `${name}・手順${x.step}` : name;
+};
 export const secHref = (id: string, sub?: string, step?: string) =>
   `/s/${id}/${sub ? `#${step ? stepId(sub, step) : sub}` : ''}`;
 export const toolHref = (slug: string) => `/dict/${slug}/`;

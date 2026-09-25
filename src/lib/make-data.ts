@@ -1,6 +1,6 @@
 // Build-time payload for a "make" page: everything any answer combination can show
 import type { MakePayload } from '../components/MakeApp';
-import { type Block, h3Text, plain, SEC, SECS, stripNo, subBlocks } from './guide';
+import { type Block, h3Text, headText, SEC, SECS, subBlocks, TITLES } from './guide';
 import { secHref } from './inline';
 import { CASE_ROWS, CHOICES, LOOKUP } from './lookup';
 import { dictionary, hrefOf } from './tools';
@@ -18,6 +18,7 @@ export function makePayload(kind: Kind): MakePayload {
     refs: {},
     caseRows: {},
     choices: {},
+    titles: TITLES,
     sec: { prof: SECS.prof, cases: SECS.cases, commands: SECS.commands, commandsCommon: SECS.commandsCommon },
   };
   const addLink = (id: string) => {
@@ -52,7 +53,7 @@ export function makePayload(kind: Kind): MakePayload {
     for (const c of d.cases) {
       if (c in p.cases) continue;
       const blocks = subBlocks(SECS.cases, c).filter((b) => b.t === 'mermaid' || b.t === 'p');
-      p.cases[c] = { title: stripNo(plain(h3Text(SECS.cases, c))), href: secHref(SECS.cases, c), blocks };
+      p.cases[c] = { title: headText(h3Text(SECS.cases, c)), href: secHref(SECS.cases, c), blocks };
     }
     for (const r of d.refs) {
       if (r in p.refs) continue;
@@ -61,7 +62,7 @@ export function makePayload(kind: Kind): MakePayload {
       if (s)
         p.refs[r] = {
           href: secHref(n, sub ? r : undefined),
-          label: `§${r} ${sub ? stripNo(plain(h3Text(n, r))) : s.title}`,
+          label: sub ? headText(h3Text(n, r)) : s.title,
         };
     }
   }
@@ -70,7 +71,7 @@ export function makePayload(kind: Kind): MakePayload {
     if (b.t !== 'h3') continue;
     const blocks = subBlocks(SECS.commands, b.id);
     linkBlocks(blocks);
-    p.cmds[b.id] = { title: stripNo(plain(b.text)).replace(/（§19-\d+）$/, ''), blocks };
+    p.cmds[b.id] = { title: headText(b.text).replace(/（§19-\d+）$/, ''), blocks };
   }
   return p;
 }

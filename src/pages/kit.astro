@@ -3,7 +3,7 @@ import KitMarg from '../components/KitMarg.astro';
 import SecNav from '../components/SecNav.astro';
 import SideNav from '../components/SideNav.astro';
 import Base from '../layouts/Base.astro';
-import { GROUP_LABEL, GROUPS, plain, SEC, SECS, secLabel, stripNo } from '../lib/guide';
+import { headText, screenText, GROUP_LABEL, GROUPS, plain, SEC, SECS, secLabel } from '../lib/guide';
 import { checkTotal, commandTotal, profTotal } from '../lib/kit';
 
 // 準備: every chapter with its opening line and subsections, so the tab shows the whole before diving in
@@ -15,8 +15,8 @@ const chapters = GROUPS[group].flatMap((id) => {
   // Chapters that open with a table or a checklist say how much they hold instead
   const first = s.blocks.find((b) => b.t === 'table' || b.t === 'check');
   const size = first?.t === 'table' ? `${first.rows.length}件の表` : first?.t === 'check' ? `${first.items.length}項目のチェックリスト` : '';
-  const subs = s.blocks.flatMap((b) => (b.t === 'h3' && /^\d+-\d+$/.test(b.id) ? [{ id: b.id, text: stripNo(plain(b.text)) }] : []));
-  return [{ s, lead: p?.t === 'p' ? plain(p.text) : size, subs }];
+  const subs = s.blocks.flatMap((b) => (b.t === 'h3' && /^\d+-\d+$/.test(b.id) ? [{ id: b.id, text: headText(b.text) }] : []));
+  return [{ s, lead: p?.t === 'p' ? screenText(plain(p.text)) : size, subs }];
 });
 // Progress saved in this browser, filled in by the page script
 const progress: Record<string, Record<string, string>> = {
@@ -37,7 +37,7 @@ const progress: Record<string, Record<string, string>> = {
           </span>
         </header>
         <h1 class="sec-h">{GROUP_LABEL[group]}</h1>
-        <p class="mt-3 text-mute">案件開始時のチェックリスト、雛形を作るコマンド、習熟度の記録。チェックと習熟度はこのブラウザに保存する。対象のケース（§19）を選ぶと、そのケースの雛形コマンドと、使うツールの習熟度が並ぶ。</p>
+        <p class="mt-3 text-mute">案件開始時のチェックリスト、雛形を作るコマンド、習熟度の記録。チェックと習熟度はこのブラウザに保存する。対象のケースを選ぶと、そのケースの雛形コマンドと、使うツールの習熟度が並ぶ。</p>
         <ol class="ov">
           {
             chapters.map(({ s, lead, subs }) => (
@@ -52,7 +52,7 @@ const progress: Record<string, Record<string, string>> = {
                   <p class="ov-s">
                     {subs.map((x) => (
                       <a class="ref" href={`/s/${s.id}/#${x.id}`}>
-                        {x.id} {x.text}
+                        {x.text}
                       </a>
                     ))}
                   </p>

@@ -1,5 +1,5 @@
 // The kit pages' marginalia: for each §19 case, its §26 starter commands and the §27 tools it uses
-import { plain, SEC, SECS, stripNo } from './guide';
+import { headText, SEC, SECS } from './guide';
 import { CASE_ROWS } from './lookup';
 import { TOOLS } from './tools';
 
@@ -11,7 +11,7 @@ export const kitCases = () => {
     const commands = cmds.flatMap((h) => (h.t === 'h3' && h.text.includes(`（§${b.id}）`) ? [h.id] : []));
     const tools = (CASE_ROWS.get(b.id) ?? []).flatMap((r) => r.tools);
     const prof = [...new Set(tools.flatMap((id) => TOOLS.get(id)?.prof.map((p) => p.name) ?? []))];
-    return [{ id: b.id, title: stripNo(plain(b.text)), commands, prof }];
+    return [{ id: b.id, title: headText(b.text), commands, prof }];
   });
 };
 

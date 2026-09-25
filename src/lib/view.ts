@@ -1,5 +1,5 @@
 // Serializable view models shared by static pages and the "make" island (no references to sections)
-import { plain, SECS, stripNo } from './guide';
+import { headText, SECS } from './guide';
 import { secHref } from './inline';
 import { type ChoiceRow, category, dictionary, hrefOf, type Tool } from './tools';
 import { MAKE_USES, type MakeUse, RULES, type Rule } from './usage';
@@ -34,7 +34,7 @@ export type ToolView = {
 
 const where = (r: ChoiceRow): Where => ({
   href: secHref(r.sec.id, r.sub?.id),
-  label: r.sub ? stripNo(plain(r.sub.text)) : r.sec.title,
+  label: r.sub ? headText(r.sub.text) : r.sec.title,
 });
 const choice = (r: ChoiceRow): ChoiceView => ({
   role: r.role,
@@ -61,7 +61,7 @@ export const toolView = (t: Tool): ToolView => ({
   cost: t.cost.map((c) => ({ axis: c.axis, grows: c.grows, action: c.action })),
   growth: t.growth.map((g) => ({ to: g.to, to_tools: g.to_tools, trigger: g.trigger, prepare: g.prepare })),
   stacks: t.stacks.map((s) => ({
-    label: s.sub ? stripNo(plain(s.sub.text)) : '',
+    label: s.sub ? headText(s.sub.text) : '',
     layer: s.layer,
     pick: s.pick,
     tools: s.tools,

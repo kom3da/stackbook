@@ -7,7 +7,7 @@ import { Inline, type Links, LinksContext } from './Inline';
 
 const Ref = ({ id, sub }: { id: string; sub?: string }) => (
   <a className="ref" href={secHref(id, sub)}>
-    §{sub ?? id}
+    {sub ?? id}
   </a>
 );
 const WhereLink = ({ w }: { w: Where }) => (

@@ -2,7 +2,7 @@
 import { backlinks } from '../lib/backlinks';
 import { secHref } from '../lib/inline';
 import { checkTotal, commandTotal, kitCases, profTotal } from '../lib/kit';
-import { GROUP_LABEL, GROUPS, SECS, type Group, guide, plain, secLabel, stripNo } from '../lib/guide';
+import { headText, TITLES, GROUP_LABEL, GROUPS, SECS, type Group, guide, secLabel } from '../lib/guide';
 
 interface Props {
   group: Group;
@@ -15,7 +15,7 @@ const refs = group === 'read' ? backlinks(current) : [];
 // Sections without a number (the introduction, the notes) go by their title
 const secNum = (id: string) => {
   const s = guide.sections.find((x) => x.id === id);
-  return s?.num ? `§${s.num}` : (s?.title ?? id);
+  return s?.num ? s.num : (s?.title ?? id);
 };
 // The kit shows progress beside each tool, filled in from this browser's saved state
 const counts: Record<string, { attrs: Record<string, string>; text: string }> = {
@@ -39,7 +39,7 @@ const counts: Record<string, { attrs: Record<string, string>; text: string }> = 
             {s.blocks.flatMap((b) =>
               b.t === 'h3' ? [
                 <li>
-                  <a href={`#${b.id}`}>{stripNo(plain(b.text))}</a>
+                  <a href={`#${b.id}`}>{headText(b.text)}</a>
                 </li>,
               ] : [],
             )}
@@ -52,17 +52,15 @@ const counts: Record<string, { attrs: Record<string, string>; text: string }> = 
 {
   group === 'kit' && (
     <>
-      <p class="side-g mt-9">対象のケース（§19）</p>
+      <p class="side-g mt-9">対象のケース</p>
       <select class="case-pick" data-case-pick aria-label="対象のケース">
         {kitCases().map((c) => (
-          <option value={c.id}>
-            {c.id} {c.title}
-          </option>
+          <option value={c.id}>{c.title}</option>
         ))}
       </select>
       <p class="side-note">選ぶと、右の欄にこのケースの雛形コマンドと、使うツールの習熟度が出る。</p>
       <p class="side-g mt-9">保存</p>
-      <p class="side-note">チェックと習熟度はこのブラウザに保存する。§27 は JSON で書き出し・読み込みができる。</p>
+      <p class="side-note">チェックと習熟度はこのブラウザに保存する。習熟度表は JSON で書き出し・読み込みができる。</p>
     </>
   )
 }
@@ -74,10 +72,10 @@ const counts: Record<string, { attrs: Record<string, string>; text: string }> = 
         {refs.slice(0, 12).map((r) => (
           <li>
             <a href={secHref(r.fromSec, r.fromSub, r.step)}>
-              {r.fromSub ? `§${r.fromSub}` : secNum(r.fromSec)}
+              {TITLES[r.fromSub ?? r.fromSec] ?? secNum(r.fromSec)}
               {r.step && ` 手順${r.step}`}
             </a>
-            <span class="side-d"> → §{r.target}</span>
+            <span class="side-d"> → {TITLES[r.target] ?? r.target}</span>
           </li>
         ))}
       </ul>

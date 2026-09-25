@@ -2,7 +2,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Blocks } from '../components/Blocks';
-import { type Block, guide, plain, type Section, secLabel, stripNo, subBlocks } from './guide';
+import { type Block, GROUP_LABEL, groupOf, guide, headText, type Section, secLabel, subBlocks } from './guide';
 import { secHref } from './inline';
 import { LINKS } from './view';
 
@@ -18,7 +18,7 @@ const render = (blocks: Block[], secId: string) =>
   renderToStaticMarkup(createElement(Blocks, { blocks, secId, links: LINKS }));
 
 export const sectionPeek = (s: Section) =>
-  fragment(s.num ? `§${s.num}` : '', s.title, render(s.blocks, s.id), secHref(s.id), `/s/${s.id}.md`);
+  fragment(GROUP_LABEL[groupOf(s.id)], s.title, render(s.blocks, s.id), secHref(s.id), `/s/${s.id}.md`);
 
 /** Subsections that §N-M references can point at */
 export const subsections = () =>
@@ -27,10 +27,4 @@ export const subsections = () =>
   );
 
 export const subsectionPeek = (s: Section, id: string, text: string) =>
-  fragment(
-    `§${id}　${secLabel(s)}`,
-    stripNo(plain(text)),
-    render(subBlocks(s.id, id), s.id),
-    secHref(s.id, id),
-    `/s/${s.id}.md`,
-  );
+  fragment(secLabel(s), headText(text), render(subBlocks(s.id, id), s.id), secHref(s.id, id), `/s/${s.id}.md`);

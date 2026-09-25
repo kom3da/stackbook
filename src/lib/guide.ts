@@ -198,7 +198,12 @@ export const GROUP_LABEL: Record<Group, string> = { tools: '辞書（分野別�
 export const groupOf = (id: string): Group =>
   (Object.keys(GROUPS) as Group[]).find((g) => (GROUPS[g] as readonly string[]).includes(id)) ?? 'read';
 
-export const secLabel = (s: Section) => (s.num ? `§${s.num} ` : '') + s.title;
+// Screen labels go without the section sign, which many readers don't know; the Markdown keeps it
+export const secLabel = (s: Section) => s.title;
+/** A heading as screen text: no "N-M." prefix, no markup, no § before numbers */
+export const screenText = (t: string) => t.replace(/§(?=\d)/g, '');
+export const headText = (h: string) => screenText(stripNo(plain(h)));
+
 export const stripNo = (h: string) => h.replace(/^\d+-\d+\.\s*/, '');
 // Blocks between an h3 (by id) and the next h3
 export function subBlocks(secId: string, h3id: string): Block[] {
@@ -261,3 +266,13 @@ export const isStale = (s: Section) => !!s.num && monthsSince(s.checked) >= STAL
   const stale = guide.sections.filter(isStale).map((s) => `§${s.num}（${s.checked || '確認なし'}）`);
   if (stale.length) console.warn(`[stackbook] ${STALE_MONTHS}か月以上見直していないセクション: ${stale.join('、')}`);
 }
+
+/** Names for section and subsection numbers ("2" → 言語の決め方…, "2-10" → バックエンドの言語の決め方): references show these */
+export const TITLES: Record<string, string> = Object.fromEntries(
+  guide.sections.flatMap((s) => [
+    [s.id, s.title],
+    ...s.blocks.flatMap((b) => (b.t === 'h3' && /^\d+-\d+$/.test(b.id) ? [[b.id, headText(b.text)]] : [])),
+  ]),
+);
+// Rendering on the server reads the names from here; the make island sets the same names from its payload
+(globalThis as { __stackbookTitles?: Record<string, string> }).__stackbookTitles = TITLES;

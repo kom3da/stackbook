@@ -4,7 +4,7 @@ import KitMarg from '../../../components/KitMarg.astro';
 import NamePanel from '../../../components/NamePanel.astro';
 import SecNav from '../../../components/SecNav.astro';
 import SideNav from '../../../components/SideNav.astro';
-import { GROUP_LABEL, GROUPS, isStale, STALE_MONTHS, SECS, groupOf, guide, plain, type Section, secLabel, stripNo } from '../../../lib/guide';
+import { headText, GROUP_LABEL, GROUPS, isStale, STALE_MONTHS, SECS, groupOf, guide, type Section, secLabel } from '../../../lib/guide';
 import { Blocks } from '../../../components/Blocks';
 import { LINKS } from '../../../lib/view';
 
@@ -20,7 +20,7 @@ const prev = bySec(list[i - 1]);
 const next = bySec(list[i + 1]);
 const h3 = s.blocks.filter((b) => b.t === 'h3');
 const tab = g === 'tools' ? 'dict' : g;
-const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : s.num ? `§${s.num}` : GROUP_LABEL[g];
+const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : GROUP_LABEL[g];
 ---
 
 <Base title={secLabel(s)} tab={tab} md={`/s/${s.id}.md`} app>
@@ -38,14 +38,14 @@ const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : s.
         <button type="button" class="btn lg:hidden" aria-haspopup="dialog" data-sheet-open>目次</button>
       </span>
     </header>
-    <h1 class="sec-h">{s.num && <span class="sec-h-n">§{s.num}</span>}{s.title}</h1>
+    <h1 class="sec-h">{s.title}</h1>
     {isStale(s) && <p class="warn">{STALE_MONTHS}か月以上見直していない。内容が古くなっている可能性がある。</p>}
     {
       h3.length >= 3 && (
         <nav aria-label="このページの見出し" class="mt-6 flex flex-wrap gap-1.5 lg:hidden">
           {h3.map((b) => (
             <a href={`#${b.t === 'h3' ? b.id : ''}`} class="nx">
-              {b.t === 'h3' && stripNo(plain(b.text))}
+              {b.t === 'h3' && headText(b.text)}
             </a>
           ))}
         </nav>

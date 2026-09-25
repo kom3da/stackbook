@@ -144,7 +144,7 @@ describe('inline markdown', () => {
       ),
     );
     expect(html).toBe(
-      '&lt;b&gt;GoReleaserと<a class="tl" href="/dict/go/">Go</a>&lt;/b&gt; <a class="ref" href="/s/2/">§2</a>',
+      '&lt;b&gt;GoReleaserと<a class="tl" href="/dict/go/">Go</a>&lt;/b&gt; <a class="ref" href="/s/2/">言語の決め方と言語別の既定</a>',
     );
   });
 });

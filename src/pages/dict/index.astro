@@ -3,7 +3,7 @@ import NamePanel from '../../components/NamePanel.astro';
 import SecNav from '../../components/SecNav.astro';
 import SideNav from '../../components/SideNav.astro';
 import Base from '../../layouts/Base.astro';
-import { GROUPS, plain, SEC, stripNo } from '../../lib/guide';
+import { headText, GROUPS, SEC } from '../../lib/guide';
 import { secHref } from '../../lib/inline';
 import { dictionary, hrefOf, ROWS, TOOLS } from '../../lib/tools';
 
@@ -17,7 +17,7 @@ const fields = GROUPS.tools.flatMap((id) => {
   const items = subs
     ? s.blocks.flatMap((b) =>
         b.t === 'h3'
-          ? [{ label: stripNo(plain(b.text)).replace(id === '2' ? /（.*$/ : /$^/, ''), href: secHref(id, b.id) }]
+          ? [{ label: headText(b.text).replace(id === '2' ? /（.*$/ : /$^/, ''), href: secHref(id, b.id) }]
           : [],
       )
     : [...new Set(ROWS.filter((r) => r.sec === s).flatMap((r) => r.tools))].flatMap((id) => {
@@ -48,7 +48,6 @@ const fields = GROUPS.tools.flatMap((id) => {
               <section>
                 <h2 class="pager">
                   <a href={secHref(s.id)} class="dict-f">
-                    <span class="font-mono text-xs text-mute">§{s.num}</span>
                     {s.title}
                   </a>
                 </h2>

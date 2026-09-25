@@ -14,14 +14,14 @@ import { Blocks, ProfSeg } from './Blocks';
         {[SECS.commandsCommon, ...c.commands].map((id) => (
           <div class="marg-b">
             <p class="marg-k">
-              §{id} {id === SECS.commandsCommon ? '共通の準備' : 'このケースの雛形'}
+              {id === SECS.commandsCommon ? '共通の準備' : 'このケースの雛形'}
             </p>
             <Blocks blocks={subBlocks(SECS.commands, id)} secId={SECS.commands} links={LINKS} />
           </div>
         ))}
         {c.prof.length > 0 && (
           <div class="marg-b">
-            <p class="marg-k">§{SECS.prof} このケースの習熟度</p>
+            <p class="marg-k">このケースの習熟度</p>
             <ul class="kit-prof">
               {c.prof.map((n) => (
                 <li class="pl" data-pl={n}>

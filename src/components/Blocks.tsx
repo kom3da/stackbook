@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { Block } from '../lib/guide';
 import { HEADS } from '../lib/heads';
-import { secHref, segments } from '../lib/inline';
+import { refText, secHref, segments } from '../lib/inline';
 import type { Data } from '../lib/schema';
 import { Inline, type Links, LinksContext } from './Inline';
 
@@ -303,7 +303,7 @@ function BlockView({ b, secId, names }: { b: Block; secId: string; names: (ids: 
                     x.t === 'ref'
                       ? [
                           <a key={x.v} className="ck-chip" href={secHref(x.sec, x.sub, x.step)}>
-                            {x.v}
+                            {refText(x)}
                           </a>,
                         ]
                       : [],

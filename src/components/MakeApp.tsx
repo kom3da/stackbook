@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { type Diff, diffs } from '../lib/diff';
 import type { Block } from '../lib/guide';
-import { secHref, segments } from '../lib/inline';
+import { refText, secHref, segments } from '../lib/inline';
 import type { ToolView } from '../lib/view';
 import {
   type Answers,
@@ -30,6 +30,8 @@ export type MakePayload = {
   /** §19 stack rows and choice defaults the wizard can reference, keyed like srcKey() */
   caseRows: Record<string, { layer: string; text: string; tools: string[] }[]>;
   choices: Record<string, { layer: string; text: string; tools: string[] }>;
+  /** Section and subsection names, so references read as names on the client too */
+  titles: Record<string, string>;
   /** Section ids used in messages */
   sec: { prof: string; cases: string; commands: string; commandsCommon: string };
 };
@@ -71,6 +73,7 @@ function toQuery(a: Answers, keep = '') {
 }
 
 export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: MakePayload }) {
+  (globalThis as { __stackbookTitles?: Record<string, string> }).__stackbookTitles = p.titles;
   const [answers, setAnswers] = useState<Answers>(DEFAULTS);
   // A pinned set of conditions (A) to compare with the current one (B); kept in ?vs= as its own query string
   const [pinned, setPinned] = useState<Answers | null>(null);
@@ -152,7 +155,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
   const diagramNote = (c: string) => {
     const t = d.tables.find((x) => x.base === c);
     if (!t) return '参考として載せている。言語や構成は上の表と異なる場合がある。';
-    return t.edits.length ? '§19 の既定の構成の図。「差し替え」の付いた行は図に反映していない。' : '';
+    return t.edits.length ? 'ケース別の構成の既定の図。「差替」の付いた行は図に反映していない。' : '';
   };
   const unknown = new Set<string>();
   const tables = d.tables.map((t) => ({
@@ -270,7 +273,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
                 {t.base && (
                   <p className="sheet-src">
                     <a className="ref" href={`/s/${p.sec.cases}/#${t.base}`}>
-                      §{t.base}
+                      {p.titles[t.base] ?? t.base}
                     </a>
                     {t.edits.length ? 'の構成を、選んだ条件に合わせて一部差し替えている' : 'の構成'}
                   </p>
@@ -288,7 +291,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
                 <div className="case-fig" key={c}>
                   <p className="sheet-h">
                     <a className="ref" href={x.href}>
-                      §{c} {x.title}
+                      {x.title}
                     </a>
                   </p>
                   {diagramNote(c) && <p className="sheet-src">{diagramNote(c)}</p>}
@@ -342,14 +345,14 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
       </article>
 
       <aside className="marg" aria-label="傍注">
-        <p className="marg-h">傍注 — 名前や § を押すと、ここに開く</p>
+        <p className="marg-h">傍注 — ツールや章の名前を押すと、ここに開く</p>
         {grounds.length > 0 && (
           <div className="marg-b">
             <p className="marg-k">根拠</p>
             {grounds.map((r) => (
               <p key={r.v}>
                 <a className="ref" href={secHref(r.sec, r.sub, r.step)}>
-                  {r.v}
+                  {refText(r)}
                 </a>{' '}
                 の全文をこの欄に開く
               </p>
@@ -376,7 +379,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
             <p>
               {[...unknown].join('・')} は習熟度が「未経験」。検証期間を見積もりに入れる（
               <a className="ref" href={`/s/${p.sec.prof}/`}>
-                §{p.sec.prof}
+                習熟度表
               </a>
               ）。
             </p>
@@ -621,9 +624,8 @@ function DiffList({
               <li>
                 構成 →{' '}
                 <a className="ref" href={`/s/${p.sec.cases}/#${x.base}`}>
-                  §{x.base}
-                </a>{' '}
-                {p.cases[x.base]?.title ?? ''}
+                  {p.titles[x.base] ?? x.base}
+                </a>
               </li>
             )}
             {x.rebuilt && <li>構成 → 言語別の既定から組み立て直す</li>}
