@@ -41,12 +41,18 @@ pnpm shots          # 主要ページを幅別（360・390・768・1280）と操
 | `src/lib/guide.ts` | 本文の読み込み・検査、見直し時期の警告 |
 | `src/lib/tools.ts` `view.ts` | 辞書の索引と、画面・島に渡す形への変換 |
 | `src/lib/wizard.ts` `lookup.ts` | 「作る」の判定（§19 を土台に、条件に応じて本文の行で差し替える）と、その参照の解決 |
+| `src/lib/diff.ts` `make-data.ts` | 条件を1つ変えたときの差分と、「作る」画面に渡すデータ |
+| `src/lib/kit.ts` `usage.ts` `backlinks.ts` | 準備の傍注（ケースごとの雛形と習熟度）、ツールの使われ方、章を参照している箇所 |
+| `src/lib/peek.ts` | 参照のシートに開く HTML の断片（ビルド時に作る） |
 | `src/lib/md.ts` | AIエージェント向け Markdown の生成（条件別の差分を含む） |
-| `src/lib/inline.ts` | 本文中の強調・コード・§参照・URL の分解 |
+| `src/lib/inline.ts` `text.ts` | 本文中の強調・コード・§参照・リンク（`[文字](URL)`）・URL の分解 |
 | `src/components/` | React コンポーネント（`Blocks` `ToolBody` `Inline` は静的ページと島で共用、`MakeApp` は「作る」の島） |
 | `src/pages/` | ルーティング（`/make/<kind>/`、`/dict/<slug>/`、`/s/<id>/` など） |
 | `src/scripts/global.ts` | 検索・習熟度・チェックリスト・コピー・Mermaid 描画 |
 | `src/styles/global.css` | Tailwind CSS とデザイントークン（ライトテーマのみ） |
+| `scripts/diagrams.mjs` | 構成図（mermaid）を SVG に変換する |
+| `scripts/shots.mjs` | 画面の撮影（`pnpm shots`） |
+| `.claude/` | Claude Code のスキル・点検用エージェント・許可設定（`CLAUDE.md` の「スキル」） |
 
 ## AIエージェント向けの配信
 
@@ -61,6 +67,10 @@ HTML を読ませずに済むよう、同じ内容を Markdown でも出力し�
 | `/guide.md` | 全文 |
 
 プロジェクト開始時は、エージェントに `/llms.txt` と該当する `/make/<kind>.md` だけを読ませれば足りる。
+
+## Issue
+
+種類（`誤り` `追加` `改善` `見直し` `質問`）と領域（`本文` `作る` `画面` `AI向け` `運用`）のラベルを1つずつ付ける。内容の誤りの報告と、追加・改善の提案はフォームから書ける。運用の決まりは `CLAUDE.md` の「Issue」にある。
 
 ## 習熟度とチェックリスト
 

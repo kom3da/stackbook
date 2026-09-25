@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm build)",
+      "Bash(pnpm test)",
+      "Bash(pnpm check)",
+      "Bash(pnpm diagrams)",
+      "Bash(pnpm diagrams *)",
+      "Bash(pnpm shots)",
+      "Bash(pnpm shots *)",
+      "Bash(pnpm exec biome *)",
+      "Bash(pnpm exec astro check)",
+      "Bash(pnpm vitest *)",
+      "Bash(git status)",
+      "Bash(git diff *)",
+      "Bash(git log *)"
+    ]
+  }
+}

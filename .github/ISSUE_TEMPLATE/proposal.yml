@@ -1,0 +1,28 @@
+name: 追加・改善の提案
+description: 作るもの・ツール・章の追加や、今ある内容と画面の改善
+labels: ["改善"]
+body:
+  - type: input
+    id: target
+    attributes:
+      label: 対象
+      description: どの範囲の話か
+      placeholder: 例）作るもの「動画配信」の追加／辞書の検索／§6 認証
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: いま何が困るか
+      description: 提案の中身より先に、どう困るかを書いてください。困りごとが分かれば、別のやり方も検討できます
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 提案
+      description: どう変えるか。ツールの提案なら、既定にするのか代替にするのか、乗り換える条件も
+    validations:
+      required: true

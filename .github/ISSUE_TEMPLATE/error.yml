@@ -1,0 +1,31 @@
+name: 誤りの報告
+description: 内容・判定・表示が間違っている、リンクが切れている
+labels: ["誤り"]
+body:
+  - type: input
+    id: where
+    attributes:
+      label: どこ
+      description: ページの URL、章の名前、ツールの名前のいずれか
+      placeholder: 例）https://stackbook.kom3da.dev/make/rt/ の「構成」／辞書の Hono
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: 何が違うか
+      description: 書かれていることと、正しいと考えること
+      placeholder: |
+        書かれていること：
+        正しいと考えること：
+    validations:
+      required: true
+
+  - type: textarea
+    id: source
+    attributes:
+      label: 根拠
+      description: 公式ドキュメント、リリースノートなどの一次情報の URL。表示の崩れなら、端末とブラウザ、スクリーンショット
+    validations:
+      required: true
