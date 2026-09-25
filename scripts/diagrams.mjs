@@ -41,8 +41,9 @@ const CONFIG = {
     background: 'transparent',
     fontFamily: FONT,
     fontSize: '14px',
-    primaryColor: '#E6EEF6',
-    primaryBorderColor: '#1F4E79',
+    // Nodes without an operations class stay neutral
+    primaryColor: '#EFEFEB',
+    primaryBorderColor: '#E2E4DF',
     primaryTextColor: '#1B232B',
     lineColor: '#5B6770',
     secondaryColor: '#F7F7F4',
@@ -108,6 +109,8 @@ const VARS = {
   '#5b6770': 'var(--mute)',
   '#1b232b': 'var(--ink)',
   '#f7f7f4': 'var(--bg)',
+  '#efefeb': 'var(--sunk)',
+  '#e2e4df': 'var(--rule)',
 };
 const themed = (svg) =>
   svg.replace(/(style="[^"]*"|<style>[\s\S]*?<\/style>)/g, (m) =>
