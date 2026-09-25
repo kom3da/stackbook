@@ -1403,3 +1403,10 @@
     padding-inline: 2.5rem;
   }
 }
+
+/* Phones: the paper is the page (after the app frame's ground, so it wins) */
+@media (max-width: 639px) {
+  body.app {
+    background: var(--surface);
+  }
+}
