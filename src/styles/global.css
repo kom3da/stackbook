@@ -301,6 +301,23 @@
     }
   }
 
+  .legend {
+    @apply mt-3 flex flex-wrap justify-center gap-4 text-xs text-mute;
+  }
+  .lg::before {
+    content: "";
+    @apply mr-1.5 inline-block size-2.5 translate-y-[1px] rounded-sm;
+  }
+  .lg-code::before {
+    background: #1f4e79;
+  }
+  .lg-self::before {
+    background: #3d6b99;
+  }
+  .lg-managed::before {
+    background: #dce8f3;
+    box-shadow: inset 0 0 0 1px #b9cfe4;
+  }
   select.prof {
     @apply cursor-pointer rounded-full border border-rule bg-surface px-3 py-1 text-sm text-ink;
   }

@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/*.astro"]
+    "includes": ["**", "!**/*.astro", "!src/diagrams"]
   },
   "formatter": {
     "indentStyle": "space",

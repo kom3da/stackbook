@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import YAML from 'yaml';
 
 const root = new URL('..', import.meta.url).pathname;
 const out = join(root, 'src/diagrams');
@@ -51,19 +52,65 @@ writeFileSync(
       tertiaryColor: '#FFFFFF',
       edgeLabelBackground: '#FFFFFF',
     },
-    flowchart: { htmlLabels: false, padding: 14, nodeSpacing: 28, rankSpacing: 36, useMaxWidth: true },
+    flowchart: { htmlLabels: false, padding: 16, nodeSpacing: 36, rankSpacing: 44, useMaxWidth: true, curve: 'basis' },
+    // Flat, rounded nodes and softer edges to match the site
+    themeCSS: [
+      '.node rect, .node polygon, .node path, .node circle { filter: none !important; stroke-width: 1.5px; }',
+      '.node rect { rx: 8px; ry: 8px; }',
+      '.flowchart-link { stroke: #86919a !important; stroke-width: 1.5px !important; }',
+      '.marker { fill: #86919a !important; stroke: #86919a !important; }',
+      '.edgeLabel rect { fill: #f7f7f4 !important; }',
+      '.edgeLabel text, .edgeLabel tspan { fill: #5b6770 !important; font-size: 12px; }',
+      '.node .label text, .node .label tspan { font-weight: 500; }',
+    ].join(' '),
   }),
 );
 writeFileSync(puppeteer, JSON.stringify({ executablePath: chrome, args: ['--no-sandbox'] }));
 mkdirSync(out, { recursive: true });
 
+// Colour each node by who runs the tool its label names (content/tools.yaml `ops`), like the answer bands
+const registry = YAML.parse(readFileSync(join(root, 'content/tools.yaml'), 'utf8'));
+const TOOLS = Object.values(registry)
+  .map((v) => (typeof v === 'string' ? { name: v } : v))
+  .filter((t) => t.ops || t.lang)
+  .sort((a, b) => b.name.length - a.name.length);
+const ACTORS = /ユーザー|社員|購入者|利用企業|クライアント|編集者|大量アクセス/;
+const CLASSES = [
+  'classDef code fill:#1f4e79,stroke:#1f4e79,color:#ffffff',
+  'classDef self fill:#3d6b99,stroke:#3d6b99,color:#ffffff',
+  'classDef managed fill:#dce8f3,stroke:#b9cfe4,color:#1b232b',
+  'classDef actor fill:#ffffff,stroke:#86919a,color:#1b232b',
+];
+function styled(code) {
+  const assigned = new Map();
+  // Node definitions such as A["label"], DB[("label")], X{"label"}
+  for (const m of code.matchAll(/\b([A-Za-z][\w]*)\s*[[({]+"([^"]+)"/g)) {
+    const [, id, label] = m;
+    if (assigned.has(id)) continue;
+    const text = label.replace(/<br\/?>/g, ' ');
+    if (ACTORS.test(text)) {
+      assigned.set(id, 'actor');
+      continue;
+    }
+    // With several tools in one label, the most managed one wins (e.g. "PostgreSQL / RDS" is managed)
+    const found = TOOLS.filter((t) =>
+      new RegExp(`(^|[^A-Za-z0-9])${t.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[^A-Za-z0-9])`, 'i').test(text),
+    ).map((t) => t.ops ?? 'code');
+    const cls = ['managed', 'self', 'code'].find((c) => found.includes(c));
+    if (cls) assigned.set(id, cls);
+  }
+  const lines = [...assigned].map(([id, cls]) => `  class ${id} ${cls}`);
+  return [code, ...CLASSES.map((c) => `  ${c}`), ...lines].join('\n');
+}
+
+const force = process.argv.includes('--force');
 const mmdc = join(root, 'node_modules/.bin/mmdc');
 let made = 0;
 for (const [hash, code] of sources) {
   const svg = join(out, `${hash}.svg`);
-  if (existsSync(svg)) continue;
+  if (existsSync(svg) && !force) continue;
   const input = join(tmp, `${hash}.mmd`);
-  writeFileSync(input, code);
+  writeFileSync(input, styled(code));
   // A unique svg id keeps each diagram's scoped styles from clashing on one page
   execFileSync(mmdc, ['-i', input, '-o', svg, '-c', config, '-p', puppeteer, '-b', 'transparent', '-I', `mm-${hash}`], {
     stdio: 'inherit',

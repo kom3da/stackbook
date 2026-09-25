@@ -286,9 +286,15 @@ function BlockView({ b, secId, names }: { b: Block; secId: string; names: (ids: 
       );
     case 'mermaid':
       return (
-        // Pre-rendered at build time from our own guide content (scripts/diagrams.mjs)
-        // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted SVG generated from the guide
-        <figure className="diagram" dangerouslySetInnerHTML={{ __html: b.svg }} />
+        <figure className="diagram">
+          {/* Pre-rendered at build time from our own guide content (scripts/diagrams.mjs) */}
+          <div dangerouslySetInnerHTML={{ __html: b.svg }} />
+          <figcaption className="legend">
+            <span className="lg lg-code">自分で書く</span>
+            <span className="lg lg-self">自分で運用する</span>
+            <span className="lg lg-managed">マネージド</span>
+          </figcaption>
+        </figure>
       );
     case 'table':
       return <Table head={b.head} rows={b.rows} />;

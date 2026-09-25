@@ -481,7 +481,7 @@ function RowIcons({ tools }: { tools: ToolView[] }) {
   return (
     <span className="s-icons" aria-hidden="true">
       {icons.map((i) => (
-        <svg key={i.title} viewBox="0 0 24 24" width="15" height="15">
+        <svg key={i.title} viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
           <path d={i.path} fill="currentColor" />
         </svg>
       ))}
