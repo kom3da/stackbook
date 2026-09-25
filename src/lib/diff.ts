@@ -40,8 +40,12 @@ export function diffs(kind: Kind, from: Answers, look: Lookup): Diff[] {
         : { ...from, [q.q]: v };
       const d = decide(kind, answers);
       const after = flat(d, look);
-      const other = d.tables.find((t) => t.base && !base.tables.some((b) => b.base === t.base))?.base;
-      const rebuilt = !other && bases(d) !== bases(base);
+      // A different §19 case replaces the stack, unless the current tables all stay (then its rows are additions)
+      const kept = base.tables.every((b) => d.tables.some((t) => t.base === b.base && t.title === b.title));
+      const other = kept
+        ? undefined
+        : d.tables.find((t) => t.base && !base.tables.some((b) => b.base === t.base))?.base;
+      const rebuilt = !other && !kept && bases(d) !== bases(base);
       const rows = [...after.values()]
         .filter((r) => other || rebuilt || before.get(r.layer)?.text !== r.text)
         .map((r) => ({ layer: r.layer, text: r.text, tools: r.tools }));

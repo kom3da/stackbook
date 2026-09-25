@@ -239,7 +239,7 @@ jotai: { name: Jotai, url: https://jotai.org/ }
 jsbundling: { name: jsbundling, url: https://github.com/rails/jsbundling-rails }
 junit: { name: JUnit, url: https://junit.org/, ops: code }
 jupyter: { name: Jupyter, url: https://jupyter.org/ }
-k6: { name: k6, url: https://k6.io/ }
+k6: { name: k6, url: https://k6.io/, ops: code }
 kafka: { name: Kafka, url: https://kafka.apache.org/ }
 kafka-streams: { name: Kafka Streams, url: https://kafka.apache.org/documentation/streams/ }
 kamal: { name: Kamal, url: https://kamal-deploy.org/, ops: self }
@@ -381,7 +381,7 @@ rails: { name: Rails, lang: 2-3, url: https://rubyonrails.org/, ops: code }
 railway: { name: Railway, url: https://railway.com/ }
 rbenv: { name: rbenv, url: https://github.com/rbenv/rbenv }
 rds: { name: RDS, url: https://aws.amazon.com/rds/, ops: managed }
-rds-proxy: { name: RDS Proxy, url: https://aws.amazon.com/rds/proxy/ }
+rds-proxy: { name: RDS Proxy, url: https://aws.amazon.com/rds/proxy/, ops: managed }
 react: { name: React, url: https://react.dev/, ops: code }
 react-day-picker: { name: react-day-picker, url: https://daypicker.dev/ }
 react-email: { name: React Email, url: https://react.email/, ops: code }

@@ -57,6 +57,7 @@ export const QUESTIONS: { q: keyof Answers; label: string; multi?: true; opts: [
       ['p99', '厳しいレイテンシ（p99で10ms未満）', '低レイテンシ'],
       ['domain', '複雑な業務ルール', '複雑な業務'],
       ['batch', '大規模バッチ・ストリーム', 'バッチ'],
+      ['spike', 'セール・チケット販売などの瞬間的な大量アクセス', '瞬間アクセス'],
     ],
   },
   {
@@ -100,7 +101,7 @@ export const QUESTIONS: { q: keyof Answers; label: string; multi?: true; opts: [
 ];
 const BACK = ['web', 'saas', 'toc', 'ai', 'rt'] as const satisfies Kind[];
 export const SHOW: Record<keyof Answers, Kind[]> = {
-  load: [...BACK, 'cli', 'data'],
+  load: [...BACK, 'cli', 'data', 'ec'],
   env: [...BACK, 'site', 'ec', 'data'],
   team: BACK,
   stage: BACK,
@@ -110,7 +111,13 @@ export const DEFAULTS: Answers = { load: 'db', env: 'paas', team: 'solo', stage:
 
 type Opt = [string, string, string];
 /** Kinds where only some choices change the result; a string picks the shared option as is */
+// Spikes change the answer only where §19-12 applies: consumer services and shops
+const STEADY = ['db', 'io', 'conn', 'cpu', 'p99', 'domain', 'batch'];
 const ONLY: Partial<Record<Kind, Partial<Record<keyof Answers, (Opt | string)[]>>>> = {
+  web: { load: STEADY },
+  saas: { load: STEADY },
+  ai: { load: STEADY },
+  rt: { load: STEADY },
   cli: {
     load: [
       ['db', '一般的な処理', '一般'],
@@ -126,7 +133,10 @@ const ONLY: Partial<Record<Kind, Partial<Record<keyof Answers, (Opt | string)[]>
   },
   desktop: { cons: ['ms'] },
   site: { env: ['paas', 'aws'] },
-  ec: { env: ['paas', 'onprem'] },
+  ec: {
+    env: ['paas', 'onprem'],
+    load: [['db', '通常のアクセス', '通常'], 'spike'],
+  },
 };
 /** The questions shown for a kind, each option guaranteed to matter (see lib.test.ts) */
 export function questionsFor(kind: Kind) {
@@ -668,16 +678,19 @@ const isBackend = (k: Kind): k is Backend => (BACK as Kind[]).includes(k);
 
 export function decide(kind: Kind, answers: Answers): Decision {
   const a: Input = { ...answers, kind, cons: new Set(answers.cons) };
-  if (isBackend(kind)) return backend(kind, a);
-  const o = OTHER[kind](a);
+  const o = isBackend(kind) ? backend(kind, a) : { notes: [], ...OTHER[kind](a) };
+  const d: Decision = isBackend(kind) ? o : { ...o, refs: [...o.refs, ...COMMON_REFS] };
+  return a.load === 'spike' ? withSpike(d) : d;
+}
+
+/** Sale or ticket-drop traffic: §19-12's measures go on top of the stack */
+function withSpike(d: Decision): Decision {
   return {
-    title: o.title,
-    tables: o.tables,
-    why: o.why,
-    notes: [],
-    refs: [...o.refs, ...COMMON_REFS],
-    cases: o.cases,
-    commands: o.commands,
+    ...d,
+    tables: [...d.tables, { title: '瞬間的な大量アクセスへの対策', base: '19-12', edits: [] }],
+    notes: [...d.notes, '瞬間的な大量アクセスがあるので、入場制御・キャッシュ・注文の直列化を加える（§19-12）'],
+    refs: [...new Set([...d.refs, '19-12', '23'])],
+    cases: [...d.cases, '19-12'],
   };
 }
 
