@@ -290,9 +290,18 @@ function BlockView({ b, secId, names }: { b: Block; secId: string; names: (ids: 
           {/* Pre-rendered at build time from our own guide content (scripts/diagrams.mjs) */}
           <div dangerouslySetInnerHTML={{ __html: b.svg }} />
           <figcaption className="legend">
-            <span className="lg lg-code">自分で書く</span>
-            <span className="lg lg-self">自分で運用する</span>
-            <span className="lg lg-managed">マネージド</span>
+            <span>
+              <span className="om om-code" />
+              自分で書く
+            </span>
+            <span>
+              <span className="om om-self" />
+              自分で運用する
+            </span>
+            <span>
+              <span className="om om-managed" />
+              マネージドに任せる
+            </span>
           </figcaption>
         </figure>
       );

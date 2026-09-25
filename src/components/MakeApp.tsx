@@ -13,7 +13,7 @@ import {
   resolve,
 } from '../lib/wizard';
 import { Blocks } from './Blocks';
-import { Inline, type Links } from './Inline';
+import { Inline, type Links, LinksContext } from './Inline';
 import {
   Drawer,
   DrawerClose,
@@ -209,7 +209,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
               </li>
             ))}
           </ul>
-          <Bands tools={bandTools} />
+          <OpsList tools={bandTools} />
           {d.notes.length > 0 && (
             <ul className="why note">
               {d.notes.map((n) => (
@@ -234,7 +234,14 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
                     <>
                       <span className="s-layer">{r.layer}</span>
                       <span className="s-val">
-                        <Inline text={r.text} linkTools={false} />
+                        <LinksContext.Provider value={p.links}>
+                          <Inline
+                            text={r.text}
+                            tools={r.cards.map((c) => c.id)}
+                            linkTools={false}
+                            mark={(id) => <OpsMark ops={p.tools[id]?.ops} />}
+                          />
+                        </LinksContext.Provider>
                         {r.edited && <span className="tag">差し替え</span>}
                         {r.warn.map((n) => (
                           <span key={n} className="badge">
@@ -452,20 +459,27 @@ const BANDS = [
   { ops: 'managed', label: 'マネージドに任せる' },
 ] as const;
 
-/** The stack split by who runs each part; widths follow the number of tools */
-function Bands({ tools }: { tools: MakeTool[] }) {
+/** Who runs a tool, as a shape (■ write, □ run, dashed ○ managed) with its label for screen readers */
+function OpsMark({ ops }: { ops?: MakeTool['ops'] }) {
+  const b = BANDS.find((x) => x.ops === ops);
+  return b ? <span className={`om om-${b.ops}`} role="img" aria-label={b.label} /> : null;
+}
+
+/** The stack split by who runs each part */
+function OpsList({ tools }: { tools: MakeTool[] }) {
   const groups = BANDS.map((b) => ({ ...b, names: tools.filter((t) => t.ops === b.ops).map((t) => t.name) })).filter(
     (g) => g.names.length,
   );
   if (!groups.length) return null;
   return (
-    <ul className="bands" aria-label="運用の内訳">
+    <ul className="ops-list" aria-label="運用の内訳">
       {groups.map((g) => (
-        <li key={g.ops} className={`band band-${g.ops}`} style={{ flexGrow: g.names.length }}>
-          <span className="band-k">
+        <li key={g.ops}>
+          <span className="ops-k">
+            <span className={`om om-${g.ops}`} aria-hidden="true" />
             {g.label}（{g.names.length}）
           </span>
-          <span className="band-v">{g.names.join(' · ')}</span>
+          <span>{g.names.join('、')}</span>
         </li>
       ))}
     </ul>

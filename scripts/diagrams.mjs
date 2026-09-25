@@ -42,11 +42,11 @@ const CONFIG = {
     fontFamily: FONT,
     fontSize: '14px',
     // Nodes without an operations class stay neutral
-    primaryColor: '#EFEFEB',
-    primaryBorderColor: '#E2E4DF',
-    primaryTextColor: '#1B232B',
-    lineColor: '#5B6770',
-    secondaryColor: '#F7F7F4',
+    primaryColor: '#EFECE5',
+    primaryBorderColor: '#E4E0D6',
+    primaryTextColor: '#1D1B18',
+    lineColor: '#6B655A',
+    secondaryColor: '#F7F5F0',
     tertiaryColor: '#FFFFFF',
     edgeLabelBackground: '#FFFFFF',
   },
@@ -55,16 +55,17 @@ const CONFIG = {
   themeCSS: [
     '.node rect, .node polygon, .node path, .node circle { filter: none !important; stroke-width: 1.5px; }',
     '.node rect { rx: 8px; ry: 8px; }',
-    '.flowchart-link { stroke: #86919a !important; stroke-width: 1.5px !important; }',
-    '.marker { fill: #86919a !important; stroke: #86919a !important; }',
-    '.edgeLabel rect { fill: #f7f7f4 !important; }',
-    '.edgeLabel text, .edgeLabel tspan { fill: #5b6770 !important; font-size: 12px; }',
+    '.flowchart-link { stroke: #6b655a !important; stroke-width: 1.5px !important; }',
+    '.marker { fill: #6b655a !important; stroke: #6b655a !important; }',
+    '.edgeLabel rect { fill: #f7f5f0 !important; }',
+    '.edgeLabel text, .edgeLabel tspan { fill: #4a453d !important; font-size: 12px; }',
     '.node .label text, .node .label tspan { font-weight: 500; }',
   ].join(' '),
 };
 mkdirSync(out, { recursive: true });
 
-// Colour each node by who runs the tool its label names (content/tools.yaml `ops`), like the answer bands
+// Shape each node by who runs the tool its label names (content/tools.yaml `ops`), like the marks on the make page:
+// filled = you write it, solid outline = you run it, dashed outline = managed
 const registry = YAML.parse(readFileSync(join(root, 'content/tools.yaml'), 'utf8'));
 const TOOLS = Object.values(registry)
   .map((v) => (typeof v === 'string' ? { name: v } : v))
@@ -72,10 +73,10 @@ const TOOLS = Object.values(registry)
   .sort((a, b) => b.name.length - a.name.length);
 const ACTORS = /ユーザー|社員|購入者|利用企業|クライアント|編集者|大量アクセス/;
 const CLASSES = [
-  'classDef code fill:#1f4e79,stroke:#1f4e79,color:#ffffff',
-  'classDef self fill:#3d6b99,stroke:#3d6b99,color:#ffffff',
-  'classDef managed fill:#dce8f3,stroke:#b9cfe4,color:#1b232b',
-  'classDef actor fill:#ffffff,stroke:#86919a,color:#1b232b',
+  'classDef code fill:#1d1b18,stroke:#1d1b18,color:#ffffff',
+  'classDef self fill:#ffffff,stroke:#1d1b18,stroke-width:2px,color:#1d1b18',
+  'classDef managed fill:#ffffff,stroke:#1d1b18,stroke-width:1.5px,stroke-dasharray:5 4,color:#1d1b18',
+  'classDef actor fill:#efece5,stroke:#efece5,color:#1d1b18',
 ];
 function styled(code) {
   const assigned = new Map();
@@ -101,16 +102,12 @@ function styled(code) {
 
 // Site colours as CSS variables (defined in src/styles/global.css); only style values accept var()
 const VARS = {
-  '#1f4e79': 'var(--band-code)',
-  '#3d6b99': 'var(--band-self)',
-  '#dce8f3': 'var(--band-managed)',
-  '#b9cfe4': 'var(--band-managed-line)',
-  '#86919a': 'var(--faint)',
-  '#5b6770': 'var(--mute)',
-  '#1b232b': 'var(--ink)',
-  '#f7f7f4': 'var(--bg)',
-  '#efefeb': 'var(--sunk)',
-  '#e2e4df': 'var(--rule)',
+  '#1d1b18': 'var(--ink)',
+  '#4a453d': 'var(--mute)',
+  '#6b655a': 'var(--faint)',
+  '#f7f5f0': 'var(--bg)',
+  '#efece5': 'var(--sunk)',
+  '#e4e0d6': 'var(--rule)',
 };
 const themed = (svg) =>
   svg.replace(/(style="[^"]*"|<style>[\s\S]*?<\/style>)/g, (m) =>

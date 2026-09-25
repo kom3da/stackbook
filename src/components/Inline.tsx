@@ -11,11 +11,13 @@ type Props = {
   tools?: string[];
   /** Set false to render tool names as plain text (e.g. inside a clickable row) */
   linkTools?: boolean;
+  /** Drawn before each tool name found in the text */
+  mark?: (id: string) => ReactNode;
 };
 
-export function Inline({ text, tools = [], linkTools = true }: Props) {
+export function Inline({ text, tools = [], linkTools = true, mark }: Props) {
   const links = useContext(LinksContext);
-  const pending = linkTools ? tools.map((id) => links[id]).filter(Boolean) : [];
+  const pending = linkTools || mark ? tools.flatMap((id) => (links[id] ? [{ id, ...links[id] }] : [])) : [];
 
   // Links each pending tool name once, in text order
   const linkify = (v: string, key: string): ReactNode[] => {
@@ -23,11 +25,17 @@ export function Inline({ text, tools = [], linkTools = true }: Props) {
       const hit = findName(v, l.name);
       if (!hit) continue;
       pending.splice(n, 1);
-      return [
-        ...linkify(hit[0], `${key}a`),
+      const name = linkTools ? (
         <a key={key} className="tl" href={l.href}>
           {l.name}
-        </a>,
+        </a>
+      ) : (
+        <Fragment key={key}>{l.name}</Fragment>
+      );
+      return [
+        ...linkify(hit[0], `${key}a`),
+        ...(mark ? [<Fragment key={`${key}m`}>{mark(l.id)}</Fragment>] : []),
+        name,
         ...linkify(hit[1], `${key}b`),
       ];
     }

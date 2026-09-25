@@ -1,22 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f7f7f4;
+  /* Paper and ink; indigo marks what you can act on, vermilion what needs care */
+  --bg: #f7f5f0;
   --surface: #ffffff;
-  --sunk: #efefeb;
-  --ink: #1b232b;
-  --mute: #5b6770;
-  --faint: #86919a;
-  --rule: #e2e4df;
-  --accent: #1f4e79;
-  --accent-soft: #e6eef6;
-  --warn: #8a5300;
-  --warn-soft: #fcefd6;
-  /* Operations layers: code you write / services you run / managed services (bands, diagrams) */
-  --band-code: #1f4e79;
-  --band-self: #3d6b99;
-  --band-managed: #dce8f3;
-  --band-managed-line: #b9cfe4;
+  --sunk: #efece5;
+  --ink: #1d1b18;
+  --mute: #4a453d;
+  --faint: #6b655a;
+  --rule: #e4e0d6;
+  --accent: #24477f;
+  --accent-soft: #e7ecf4;
+  --warn: #a3361a;
+  --warn-soft: #f8e9e3;
+  --diff-soft: #fff1c2;
   color-scheme: light;
 }
 @theme inline {
@@ -309,19 +306,17 @@
   .legend {
     @apply mt-3 flex flex-wrap justify-center gap-4 text-xs text-mute;
   }
-  .lg::before {
-    content: "";
-    @apply mr-1.5 inline-block size-2.5 translate-y-[1px] rounded-sm;
+  /* Who runs a tool, told by shape: ■ you write it, □ you run it, dashed ○ managed */
+  .om {
+    @apply mr-1.5 inline-block size-[0.6em] shrink-0 align-[0.05em];
+    border: 1.5px solid var(--ink);
   }
-  .lg-code::before {
-    background: var(--band-code);
+  .om-code {
+    background: var(--ink);
   }
-  .lg-self::before {
-    background: var(--band-self);
-  }
-  .lg-managed::before {
-    background: var(--band-managed);
-    box-shadow: inset 0 0 0 1px var(--band-managed-line);
+  .om-managed {
+    border-style: dashed;
+    border-radius: 999px;
   }
   select.prof {
     @apply cursor-pointer rounded-full border border-rule bg-surface px-3 py-1 text-sm text-ink;
@@ -458,31 +453,15 @@
     content: "";
     @apply absolute top-[0.7em] left-0 h-px w-2 bg-faint;
   }
-  .bands {
-    @apply mt-5 flex flex-wrap gap-2;
+  .ops-list {
+    @apply mt-5 grid gap-1.5 text-sm;
   }
-  .band {
-    @apply flex min-w-[12rem] flex-col gap-0.5 rounded-xl px-3.5 py-3;
-    flex-basis: 0;
-    transition: flex-grow 0.35s ease;
+  .ops-list li {
+    @apply grid gap-x-4;
+    grid-template-columns: 11.5rem 1fr;
   }
-  .band-code {
-    background: var(--band-code);
-    color: #ffffff;
-  }
-  .band-self {
-    background: var(--band-self);
-    color: #ffffff;
-  }
-  .band-managed {
-    background: var(--band-managed);
-    color: var(--ink);
-  }
-  .band-k {
-    @apply text-[0.7rem] font-semibold opacity-80;
-  }
-  .band-v {
-    @apply text-sm leading-snug font-medium;
+  .ops-k {
+    @apply flex items-baseline text-mute;
   }
   .why.note {
     @apply mt-3 border-t border-rule pt-3;
