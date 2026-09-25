@@ -1237,6 +1237,20 @@
   .side-sub {
     @apply mt-1 mb-2 ml-3 border-l border-rule;
   }
+  .side-nav .side-sub a[aria-current] {
+    @apply border-l-2 border-ink bg-transparent font-semibold text-ink;
+    margin-left: -1px;
+  }
+  .side-nav .side-sub a[aria-current]::after {
+    content: "読んでいる";
+    @apply ml-2 text-[11px] font-normal text-mute;
+  }
+  .backlinks ul {
+    @apply grid gap-1.5 text-xs;
+  }
+  .side-nav .backlinks a {
+    @apply inline p-0 text-accent underline underline-offset-2 hover:bg-transparent;
+  }
   .side-nav .side-sub a {
     @apply rounded-none rounded-r-lg py-1 pl-3 text-[0.8rem] font-normal text-mute hover:text-ink;
   }

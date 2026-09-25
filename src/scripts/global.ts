@@ -428,7 +428,8 @@ document.addEventListener('click', async (e) => {
   const a = t.closest<HTMLAnchorElement>('a[href]');
   if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   // Moving between pages stays a page move
-  if (a.closest('.peek-more, .pager, .side-nav, header nav, nav[aria-label="主要"]')) return;
+  if (a.closest('.peek-more, .pager, header nav, nav[aria-label="主要"]')) return;
+  if (a.closest('.side-nav') && !a.closest('.backlinks')) return;
   const frag = fragmentOf(a.getAttribute('href') ?? '');
   if (!frag) return;
   e.preventDefault();
@@ -479,6 +480,20 @@ document.addEventListener('click', (e) => {
   if (z) zoomTo(z === 'in' ? zoomScale * 1.25 : z === 'out' ? zoomScale / 1.25 : (zoomBody.clientWidth - 32) / zoomW);
   if (t.closest('[data-zoom-close]') || t === zoom) zoom.close();
 });
+
+// ---- the index marks the subsection being read ----
+const heads = [...document.querySelectorAll<HTMLElement>('.paper h3[id]')];
+if (heads.length && document.querySelector('.side-sub')) {
+  const mark = () => {
+    // The last heading above the top quarter of the screen
+    const cur = heads.filter((h) => h.getBoundingClientRect().top < innerHeight / 4).at(-1) ?? heads[0];
+    for (const a of document.querySelectorAll<HTMLAnchorElement>('.side-sub a[href^="#"]'))
+      if (a.getAttribute('href') === `#${cur.id}`) a.setAttribute('aria-current', 'location');
+      else a.removeAttribute('aria-current');
+  };
+  addEventListener('scroll', mark, { passive: true });
+  mark();
+}
 
 // ---- kit: the chosen §19 case decides what the marginalia shows ----
 const CASE = 'stackbook:case';
