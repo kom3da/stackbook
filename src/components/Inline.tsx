@@ -9,15 +9,11 @@ type Props = {
   text: string;
   /** Ids of tools whose first whole-word occurrence becomes a dictionary link */
   tools?: string[];
-  /** Set false to render tool names as plain text (e.g. inside a clickable row) */
-  linkTools?: boolean;
-  /** Drawn before each tool name found in the text */
-  mark?: (id: string) => ReactNode;
 };
 
-export function Inline({ text, tools = [], linkTools = true, mark }: Props) {
+export function Inline({ text, tools = [] }: Props) {
   const links = useContext(LinksContext);
-  const pending = linkTools || mark ? tools.flatMap((id) => (links[id] ? [{ id, ...links[id] }] : [])) : [];
+  const pending = tools.flatMap((id) => (links[id] ? [{ id, ...links[id] }] : []));
 
   // Links each pending tool name once, in text order
   const linkify = (v: string, key: string): ReactNode[] => {
@@ -25,17 +21,11 @@ export function Inline({ text, tools = [], linkTools = true, mark }: Props) {
       const hit = findName(v, l.name);
       if (!hit) continue;
       pending.splice(n, 1);
-      const name = linkTools ? (
-        <a key={key} className="tl" href={l.href}>
-          {l.name}
-        </a>
-      ) : (
-        <Fragment key={key}>{l.name}</Fragment>
-      );
       return [
         ...linkify(hit[0], `${key}a`),
-        ...(mark ? [<Fragment key={`${key}m`}>{mark(l.id)}</Fragment>] : []),
-        name,
+        <a key={key} className="tl" href={l.href}>
+          {l.name}
+        </a>,
         ...linkify(hit[1], `${key}b`),
       ];
     }

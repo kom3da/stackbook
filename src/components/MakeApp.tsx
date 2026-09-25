@@ -77,6 +77,13 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
   const [answers, setAnswers] = useState<Answers>(DEFAULTS);
   // A pinned set of conditions (A) to compare with the current one (B); kept in ?vs= as its own query string
   const [pinned, setPinned] = useState<Answers | null>(null);
+  // Scroll to the comparison once it has rendered
+  const toCmp = useRef(false);
+  useEffect(() => {
+    if (!pinned || !toCmp.current) return;
+    toCmp.current = false;
+    document.getElementById('cmp')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [pinned]);
   const ready = useRef(false);
   // Conditions come from the URL (shareable); without one, from the last visit
   useEffect(() => {
@@ -102,6 +109,12 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
       localStorage.setItem(lastKey(kind), toQuery(answers));
     } catch {}
   }, [answers, pinned, kind]);
+  // Links to other conditions of this kind (e.g. from a tool's make usage) change them in place
+  useEffect(() => {
+    const on = () => setAnswers(fromQuery(kind, location.search) ?? { ...DEFAULTS, cons: [] });
+    window.addEventListener('stackbook:answers', on);
+    return () => window.removeEventListener('stackbook:answers', on);
+  }, [kind]);
   const d = useMemo(() => decide(kind, answers), [kind, answers]);
   // The home page offers to pick up where the reader left off
   useEffect(() => {
@@ -117,7 +130,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
         }),
       );
     } catch {}
-  });
+  }, [kind, answers, d.title]);
   const [prof, setProf] = useState<Record<string, string>>({});
   const qs = questionsFor(kind);
   const look: Lookup = { caseRows: (c) => p.caseRows[c], choice: (at, role) => p.choices[`${at}|${role}`] };
@@ -308,21 +321,23 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
           </Sec>
         )}
 
-        <Sec n={5} id="m5" title="条件が違うとき">
-          <DiffList
-            items={diffs(kind, answers, look)}
-            p={p}
-            pick={(a) => {
-              setAnswers(a);
-              document.getElementById('memo-h')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }}
-            compare={(a) => {
-              setPinned(answers);
-              setAnswers(a);
-              document.getElementById('cmp')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }}
-          />
-        </Sec>
+        {qs.length > 0 && (
+          <Sec n={5} id="m5" title="条件が違うとき">
+            <DiffList
+              items={diffs(kind, answers, look)}
+              p={p}
+              pick={(a) => {
+                setAnswers(a);
+                document.getElementById('memo-h')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }}
+              compare={(a) => {
+                toCmp.current = true;
+                setPinned(answers);
+                setAnswers(a);
+              }}
+            />
+          </Sec>
+        )}
 
         <Sec n={6} id="m6" title="作り始める">
           <CommandList keys={[p.sec.commandsCommon, ...d.commands]} p={p} />
@@ -430,8 +445,8 @@ function PhoneBar({ copy }: { copy: () => string }) {
   return (
     <nav className="pbar" aria-label="判定メモの操作">
       <a href="#memo-conds">条件</a>
-      <button type="button" onClick={() => document.getElementById('q')?.focus()}>
-        引く
+      <button type="button" aria-haspopup="dialog" data-sheet-open>
+        一覧
       </button>
       <button type="button" disabled={!n} onClick={() => window.dispatchEvent(new Event('stackbook:reopen'))}>
         参照{n > 0 && <span className="pbar-n">{n}</span>}
@@ -462,15 +477,18 @@ function Conditions({
   answers: Answers;
   set: (q: keyof Answers, v: string, multi?: boolean) => void;
 }) {
-  if (!qs.length) return <p className="conds-none">この種類は、条件によって構成が変わらない。</p>;
+  if (!qs.length)
+    return (
+      <p className="conds-none" id="memo-conds">
+        この種類は、条件によって構成が変わらない。
+      </p>
+    );
   return (
     <form className="conds" id="memo-conds" aria-label="条件" onSubmit={(e) => e.preventDefault()}>
       {qs.map((q) =>
         q.multi ? (
-          <fieldset key={q.q} className="cf cf-multi" aria-labelledby={`cf-${q.q}`}>
-            <span className="cf-k" id={`cf-${q.q}`}>
-              {q.label}
-            </span>
+          <fieldset key={q.q} className="cf cf-multi">
+            <legend className="cf-k">{q.label}</legend>
             <div className="cf-opts">
               {q.opts.map(([v, l]) => (
                 <label key={v}>
@@ -608,7 +626,7 @@ function DiffList({
   pick: (a: Answers) => void;
   compare: (a: Answers) => void;
 }) {
-  if (!items.length) return <p className="conds-none">この種類は、条件によって構成が変わらない。</p>;
+  if (!items.length) return null;
   return (
     <ul className="diffs">
       {items.map((x) => (

@@ -71,7 +71,7 @@ export function makePayload(kind: Kind): MakePayload {
     if (b.t !== 'h3') continue;
     const blocks = subBlocks(SECS.commands, b.id);
     linkBlocks(blocks);
-    p.cmds[b.id] = { title: headText(b.text).replace(/（§19-\d+）$/, ''), blocks };
+    p.cmds[b.id] = { title: headText(b.text), blocks };
   }
   return p;
 }

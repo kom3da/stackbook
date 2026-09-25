@@ -31,8 +31,11 @@ function syncProf() {
       rows.filter((r) => (v === '' ? true : v === 'unset' ? !r.dataset.level : r.dataset.level === v)).length,
     );
   }
-  for (const n of document.querySelectorAll<HTMLElement>('[data-count="prof"]'))
-    n.textContent = `${Object.keys(p).length}/${n.dataset.total}`;
+  // Only the §27 tools count toward the table's total; other tools can carry a level too
+  for (const n of document.querySelectorAll<HTMLElement>('[data-count="prof"]')) {
+    const names = new Set<string>(JSON.parse(n.dataset.names || '[]'));
+    n.textContent = `${Object.keys(p).filter((k) => names.has(k)).length}/${n.dataset.total}`;
+  }
 }
 function syncChecks() {
   const c = load(CKEY);
@@ -189,9 +192,9 @@ async function showResults() {
             `<a href="${r.h}" id="qr-${i}" role="option" aria-selected="false" class="block rounded-lg px-3 py-2 no-underline hover:bg-accent-soft [&.on]:bg-accent-soft"><span class="block text-sm font-medium">${escHtml(r.t)}</span><span class="block text-xs text-mute">${escHtml(r.s)}</span></a>`,
         )
         .join('')
-    : '<p class="px-3 py-2 text-sm text-mute">見つからない</p>';
+    : '<p class="px-3 py-2 text-sm text-mute">該当なし</p>';
   const stat = document.getElementById('qstat');
-  if (stat) stat.textContent = res.length ? `${res.length}件の候補` : '見つからない';
+  if (stat) stat.textContent = res.length ? `${res.length}件の候補` : '該当なし';
   q.removeAttribute('aria-activedescendant');
   setOpen(true);
 }
@@ -224,7 +227,7 @@ document.addEventListener('keydown', (e) => {
 
 // ---- peek: tool and section links open beside the page instead of navigating ----
 // Wide screens keep the page usable next to it (a non-modal pane); narrower ones get a modal sheet.
-// The chain of opened references is kept in ?ref= so the browser's back button walks it.
+// The chain of opened references is kept in ?ref=, one history entry per step, so Back walks it step by step.
 const peek = document.getElementById('peek') as HTMLDialogElement | null;
 const peekBody = document.getElementById('peek-body');
 const crumbs = document.getElementById('peek-crumbs');
@@ -277,8 +280,15 @@ function writeUrl(push: boolean) {
   if (trail.length) u.searchParams.set('ref', encode(trail));
   else u.searchParams.delete('ref');
   const href = `${u.pathname}${u.search}${u.hash}`;
-  if (push) history.pushState({ ref: true }, '', href);
+  if (push) history.pushState({ ref: true, depth: depth() + 1 }, '', href);
   else history.replaceState(history.state, '', href);
+}
+/** How many history entries the pane has pushed on top of the page */
+const depth = (): number => (history.state?.ref ? (history.state.depth ?? 1) : 0);
+/** Go back `steps` references: through history when those entries are ours, else by redrawing */
+function stepBack(steps: number) {
+  if (steps > 0 && depth() > steps) history.go(-steps);
+  else showTrail(trail.slice(0, trail.length - steps), 'replace');
 }
 
 const button = (label: string, i: number, cls = '') => {
@@ -318,6 +328,9 @@ function drawCrumbs() {
     }),
   );
   if (back) back.hidden = trail.length < 2;
+  // Screen readers hear what opened, not the whole trail again
+  const live = document.getElementById('peek-live');
+  if (live) live.textContent = trail.length ? `参照を開いた：${trail.at(-1)?.label}（${trail.length}件目）` : '';
   window.dispatchEvent(
     new CustomEvent('stackbook:trail', { detail: { count: (trail.length ? trail : lastTrail).length } }),
   );
@@ -358,11 +371,10 @@ async function showTrail(t: Entry[], mode: 'push' | 'replace' | 'none') {
   trail = t;
   drawCrumbs();
   hydrate();
-  const wasOpen = peek.open;
   openPane();
   if (peekBody) peekBody.scrollTop = 0;
   peekBody?.querySelector<HTMLElement>('.peek-h h2')?.focus({ preventScroll: true });
-  if (mode !== 'none') writeUrl(mode === 'push' && !wasOpen);
+  if (mode !== 'none') writeUrl(mode === 'push');
   // Remembered for the home page's 前回たどった順
   try {
     const u = new URL(location.href);
@@ -386,18 +398,21 @@ peek?.addEventListener('close', () => {
   lastTrail = trail;
   trail = [];
   drawCrumbs();
-  // Leave the pane's history entry if we made one, so Back doesn't reopen it
-  if (history.state?.ref) history.back();
+  // Leave all of the pane's history entries, so Back doesn't reopen it
+  const d = depth();
+  if (d) history.go(-d);
   else writeUrl(false);
-  opener?.focus({ preventScroll: true });
+  // Back to what opened it; a search result is gone by now, so the search box instead
+  if (opener?.isConnected && !opener.closest('[hidden]')) opener.focus({ preventScroll: true });
+  else q?.focus({ preventScroll: true });
   opener = null;
 });
 for (const el of [crumbs, strips])
   el?.addEventListener('click', (e) => {
     const i = (e.target as HTMLElement).closest<HTMLElement>('[data-crumb]')?.dataset.crumb;
-    if (i !== undefined) showTrail(trail.slice(0, Number(i) + 1), 'replace');
+    if (i !== undefined) stepBack(trail.length - 1 - Number(i));
   });
-back?.addEventListener('click', () => showTrail(trail.slice(0, -1), 'replace'));
+back?.addEventListener('click', () => stepBack(1));
 // The phone bar reopens the references closed last
 window.addEventListener('stackbook:reopen', () => {
   if (lastTrail.length) showTrail(lastTrail, 'push');
@@ -437,6 +452,16 @@ document.addEventListener('click', async (e) => {
   }
   const a = t.closest<HTMLAnchorElement>('a[href]');
   if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  // A link to other conditions on the make page being read changes them in place, keeping the references open
+  const to = new URL(a.href, location.href);
+  if (to.origin === location.origin && to.pathname === location.pathname && to.pathname.startsWith('/make/')) {
+    e.preventDefault();
+    const ref = new URL(location.href).searchParams.get('ref');
+    if (ref) to.searchParams.set('ref', ref);
+    history.replaceState(history.state, '', `${to.pathname}${to.search}`);
+    window.dispatchEvent(new Event('stackbook:answers'));
+    return;
+  }
   // Moving between pages stays a page move
   if (a.closest('.peek-more, .pager, header nav, nav[aria-label="主要"]')) return;
   if (a.closest('.side-nav') && !a.closest('.backlinks')) return;
@@ -448,7 +473,7 @@ document.addEventListener('click', async (e) => {
   const inside = !!peek?.contains(a);
   if (!inside) opener = a;
   const entry = { urls: [frag], label: '' };
-  const ok = await showTrail(inside ? [...trail, entry] : [entry], peek?.open ? 'replace' : 'push');
+  const ok = await showTrail(inside ? [...trail, entry] : [entry], 'push');
   if (!ok) location.href = a.href;
   // A step reference (§N-M 手順K) scrolls the pane to that step
   const step = new URL(a.href).hash.slice(1);

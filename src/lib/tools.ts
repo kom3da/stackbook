@@ -133,7 +133,5 @@ export const dictionary = () =>
     .filter((t) => hasInfo(t) || t.stacks.length)
     .sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
 
-const byName = new Map([...TOOLS.values()].map((t) => [t.name, t]));
 /** Slug for a display name, for linking names that appear in text */
-export const slugOfName = (name: string) => byName.get(name)?.slug;
 export const namesOf = (ids: string[]) => ids.map((id) => get(id).name);

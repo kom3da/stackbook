@@ -9,6 +9,8 @@
   --mute: #4a453d;
   --faint: #6b655a;
   --rule: #e4e0d6;
+  /* Edges of controls (buttons, level switches, inputs): 3:1 against paper and white */
+  --line: #8f887b;
   --accent: #2b5aa8;
   --accent-soft: #e6edf7;
   --warn: #a3361a;
@@ -25,6 +27,7 @@
   --color-mute: var(--mute);
   --color-faint: var(--faint);
   --color-rule: var(--rule);
+  --color-line: var(--line);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-warn: var(--warn);
@@ -300,7 +303,7 @@
     @apply flex shrink-0 gap-1;
   }
   .ck-chip {
-    @apply rounded-full border border-rule px-2 py-0.5 text-xs no-underline hover:border-ink;
+    @apply inline-flex min-h-7 items-center rounded-full border border-line px-2.5 text-xs no-underline hover:border-ink;
   }
 
   .code {
@@ -318,7 +321,7 @@
     }
   }
   .copy {
-    @apply absolute top-2.5 right-2.5 cursor-pointer rounded-md border border-rule bg-bg px-2 py-0.5 text-xs text-mute hover:text-ink;
+    @apply absolute top-2.5 right-2.5 min-h-7 cursor-pointer rounded-md border border-line bg-bg px-2.5 text-xs text-mute hover:text-ink;
   }
 
   .diagram {
@@ -340,7 +343,7 @@
     width: auto;
   }
   .diagram-zoom {
-    @apply absolute top-2.5 right-2.5 z-[1] cursor-pointer rounded-md border border-rule bg-bg px-2 py-0.5 text-xs text-mute hover:text-ink;
+    @apply absolute top-2.5 right-2.5 z-[1] min-h-7 cursor-pointer rounded-md border border-line bg-bg px-2.5 text-xs text-mute hover:text-ink;
   }
   .zoom {
     @apply m-0 border-0 bg-surface p-0 text-ink;
@@ -392,10 +395,10 @@
   }
   /* Proficiency: three buttons, the chosen one filled */
   .seg {
-    @apply inline-flex shrink-0 overflow-hidden rounded-[5px] border border-rule bg-surface;
+    @apply inline-flex shrink-0 overflow-hidden rounded-[5px] border border-line bg-surface;
   }
   .seg button {
-    @apply min-h-8 cursor-pointer border-0 border-l border-rule bg-transparent px-2.5 text-xs whitespace-nowrap text-mute hover:text-ink;
+    @apply min-h-8 cursor-pointer border-0 border-l border-line bg-transparent px-2.5 text-xs whitespace-nowrap text-mute hover:text-ink;
   }
   .seg button:first-child {
     @apply border-l-0;
@@ -529,7 +532,7 @@
 
   /* ---- make page: memo on paper, marginalia beside it ---- */
   .btn {
-    @apply inline-flex min-h-8 shrink-0 cursor-pointer items-center rounded-[5px] border border-rule bg-surface px-3 text-[13px] text-ink hover:border-ink;
+    @apply inline-flex min-h-8 shrink-0 cursor-pointer items-center rounded-[5px] border border-line bg-surface px-3 text-[13px] text-ink hover:border-ink;
   }
   .btn-primary {
     @apply border-ink bg-ink text-surface hover:bg-mute;
@@ -583,9 +586,6 @@
   }
   .sec-h {
     @apply mt-4 text-[26px] leading-snug font-bold sm:text-[32px];
-  }
-  .sec-h-n {
-    @apply mr-3 font-normal text-mute;
   }
   .sec-grid {
     @apply grid gap-10;
@@ -754,6 +754,12 @@
   .np-az button {
     @apply rounded-[4px] px-0 font-mono;
   }
+  .case-row {
+    @apply mt-4 block;
+  }
+  .paper .case-row {
+    @apply max-w-sm;
+  }
   .case-pick {
     @apply min-h-10 w-full cursor-pointer rounded-[5px] border border-rule bg-surface px-2 text-sm font-semibold;
   }
@@ -826,10 +832,13 @@
     color: var(--accent);
   }
   .cf-multi {
-    @apply items-start;
+    @apply block py-2;
   }
-  .cf-multi .cf-k {
-    @apply pt-1.5;
+  .cf-multi legend {
+    @apply float-left w-[6.5rem] pt-1.5;
+  }
+  .cf-multi .cf-opts {
+    margin-left: calc(6.5rem + 0.75rem);
   }
   .cf-opts {
     @apply flex flex-wrap gap-x-5 gap-y-1 text-sm;
@@ -1167,6 +1176,12 @@
       width: auto;
     }
   }
+  @media (min-width: 768px) {
+    #side-sheet {
+      inset: 0 auto 0 0;
+      width: 22rem;
+    }
+  }
   .peek::backdrop {
     background: rgb(27 35 43 / 0.35);
   }
@@ -1194,7 +1209,7 @@
     @apply font-semibold text-ink;
   }
   .crumbs button {
-    @apply cursor-pointer text-mute underline underline-offset-2 hover:text-ink;
+    @apply min-h-7 cursor-pointer px-1 text-mute underline underline-offset-2 hover:text-ink;
   }
   .peek-btn {
     @apply inline-flex min-h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-[5px] border border-rule bg-surface px-2.5 text-xs text-ink hover:border-ink;
@@ -1356,9 +1371,6 @@
   .rail-l {
     @apply mt-4 text-xs tracking-[0.2em] text-mute;
     writing-mode: vertical-rl;
-  }
-  .side-btn {
-    @apply mt-1 shrink-0 cursor-pointer rounded-lg border border-rule bg-surface px-3 py-1.5 text-sm text-ink hover:border-accent hover:text-accent;
   }
 }
 

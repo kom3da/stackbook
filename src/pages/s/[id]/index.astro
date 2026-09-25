@@ -1,5 +1,6 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import CasePick from '../../../components/CasePick.astro';
 import KitMarg from '../../../components/KitMarg.astro';
 import NamePanel from '../../../components/NamePanel.astro';
 import SecNav from '../../../components/SecNav.astro';
@@ -39,6 +40,7 @@ const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : GR
       </span>
     </header>
     <h1 class="sec-h">{s.title}</h1>
+    {g === 'kit' && <CasePick />}
     {isStale(s) && <p class="warn">{STALE_MONTHS}か月以上見直していない。内容が古くなっている可能性がある。</p>}
     {
       h3.length >= 3 && (
@@ -62,7 +64,7 @@ const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : GR
         </div>
       )
     }
-    <nav class="mt-16 grid gap-3 border-t border-rule pt-6 sm:grid-cols-2">
+    <nav class="pager mt-16 grid gap-3 border-t border-rule pt-6 sm:grid-cols-2">
       {
         prev ? (
           <a href={`/s/${prev.id}/`} class="rounded-xl border border-rule p-4 no-underline hover:border-accent">

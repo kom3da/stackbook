@@ -18,5 +18,10 @@ export const kitCases = () => {
 const count = (id: string, f: (b: NonNullable<ReturnType<typeof SEC.get>>['blocks'][number]) => number) =>
   (SEC.get(id)?.blocks ?? []).reduce((n, b) => n + f(b), 0);
 export const checkTotal = () => count(SECS.checklist, (b) => (b.t === 'check' ? b.items.length : 0));
+/** The §27 names, so saved levels for other tools don't count toward the table */
+export const profNames = () =>
+  (SEC.get(SECS.prof)?.blocks ?? []).flatMap((b) =>
+    b.t === 'data' && b.d.kind === 'prof' ? b.d.rows.map((r) => r.name) : [],
+  );
 export const profTotal = () => count(SECS.prof, (b) => (b.t === 'data' && b.d.kind === 'prof' ? b.d.rows.length : 0));
 export const commandTotal = () => count(SECS.commands, (b) => (b.t === 'h3' ? 1 : 0));

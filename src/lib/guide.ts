@@ -201,7 +201,7 @@ export const groupOf = (id: string): Group =>
 // Screen labels go without the section sign, which many readers don't know; the Markdown keeps it
 export const secLabel = (s: Section) => s.title;
 /** A heading as screen text: no "N-M." prefix, no markup, no § before numbers */
-export const screenText = (t: string) => t.replace(/§(?=\d)/g, '');
+export const screenText = (t: string) => t.replace(/（§\d+(?:-\d+)?）/g, '').replace(/§(?=\d)/g, '');
 export const headText = (h: string) => screenText(stripNo(plain(h)));
 
 export const stripNo = (h: string) => h.replace(/^\d+-\d+\.\s*/, '');

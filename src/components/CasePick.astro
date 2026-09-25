@@ -1,0 +1,11 @@
+---
+// The §19 case whose starter commands and tool levels the kit marginalia shows (kept in this browser)
+import { kitCases } from '../lib/kit';
+---
+
+<label class="case-row">
+  <span class="side-g">対象のケース</span>
+  <select class="case-pick" data-case-pick>
+    {kitCases().map((c) => <option value={c.id}>{c.title}</option>)}
+  </select>
+</label>

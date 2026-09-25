@@ -1,0 +1,79 @@
+---
+// A tab's overview (考え方, 準備): every chapter with its opening line, subsections and review month
+import { headText, screenText, GROUP_LABEL, GROUPS, plain, SEC, SECS, secLabel, type Group } from '../lib/guide';
+import { checkTotal, commandTotal, profNames, profTotal } from '../lib/kit';
+import Base from '../layouts/Base.astro';
+import CasePick from './CasePick.astro';
+import KitMarg from './KitMarg.astro';
+import SecNav from './SecNav.astro';
+import SideNav from './SideNav.astro';
+
+interface Props {
+  group: Extract<Group, 'read' | 'kit'>;
+  lead: string;
+}
+const { group, lead } = Astro.props;
+const kit = group === 'kit';
+const chapters = GROUPS[group].flatMap((id) => {
+  const s = SEC.get(id);
+  if (!s) return [];
+  const p = s.blocks.find((b) => b.t === 'p');
+  // Chapters that open with a table or a checklist say how much they hold instead
+  const first = s.blocks.find((b) => b.t === 'table' || b.t === 'check');
+  const size = first?.t === 'table' ? `${first.rows.length}件の表` : first?.t === 'check' ? `${first.items.length}項目のチェックリスト` : '';
+  const subs = s.blocks.flatMap((b) => (b.t === 'h3' && /^\d+-\d+$/.test(b.id) ? [{ id: b.id, text: headText(b.text) }] : []));
+  return [{ s, lead: p?.t === 'p' ? screenText(plain(p.text)) : size, subs }];
+});
+// Progress saved in this browser, filled in by the page script
+const progress: Record<string, Record<string, string>> = kit
+  ? {
+      [SECS.checklist]: { 'data-count': 'check', 'data-sec': SECS.checklist, 'data-total': String(checkTotal()) },
+      [SECS.prof]: { 'data-count': 'prof', 'data-total': String(profTotal()), 'data-names': JSON.stringify(profNames()) },
+    }
+  : {};
+---
+
+
+<Base title={GROUP_LABEL[group]} tab={group} app>
+  <SideNav label={GROUP_LABEL[group]} rail={GROUP_LABEL[group]}>
+    <SecNav slot="nav" group={group} current="" />
+    <div class:list={['sec-grid', kit && 'has-marg']}>
+      <article class="paper">
+        <header class="sec-top">
+          <p class="sec-meta">{GROUP_LABEL[group]}　{chapters.length}章</p>
+          <span class="sec-acts pager">
+            <button type="button" class="btn lg:hidden" aria-haspopup="dialog" data-sheet-open>目次</button>
+          </span>
+        </header>
+        <h1 class="sec-h">{GROUP_LABEL[group]}</h1>
+        <p class="mt-3 text-mute">{lead}</p>
+        {kit && <CasePick />}
+        <ol class="ov">
+          {
+            chapters.map(({ s, lead, subs }) => (
+              <li>
+                <h2 class="ov-h pager">
+                  <a href={`/s/${s.id}/`}>{secLabel(s)}</a>
+                  {progress[s.id] && <span class="ov-p" {...progress[s.id]} />}
+                  {s.id === SECS.commands && <span class="ov-p">{commandTotal()}件</span>}
+                </h2>
+                {lead && <p class="ov-l">{lead}</p>}
+                {subs.length > 0 && (
+                  <p class="ov-s">
+                    {subs.map((x) => (
+                      <a class="ref" href={`/s/${s.id}/#${x.id}`}>
+                        {x.text}
+                      </a>
+                    ))}
+                  </p>
+                )}
+                {s.checked && <p class="ov-c">確認：{s.checked}</p>}
+              </li>
+            ))
+          }
+        </ol>
+      </article>
+      {kit && <KitMarg />}
+    </div>
+  </SideNav>
+</Base>

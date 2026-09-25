@@ -31,7 +31,7 @@ const letters = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '#'];
         </button>
       ))}
     </div>
-    <p class="side-note mt-4">名前を押すと、右の欄にツールが開く。分野の表は動かない。</p>
+    <p class="side-note mt-4">名前を押すと、参照の欄にツールが開く。分野の表は動かない。</p>
   </div>
 </section>
 
@@ -58,7 +58,7 @@ const letters = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '#'];
           (!kind || (kind === 'field' ? r.f.includes(field) : r.b === kind)),
       );
       const shown = hit.slice(0, 60);
-      count.textContent = `${hit.length}件${hit.length > shown.length ? `（先頭${shown.length}件を表示）` : ''}`;
+      count.textContent = `${hit.length}件${hit.length > shown.length ? `（先頭${shown.length}件。名前の一部か頭文字で絞り込む）` : ''}`;
       list.innerHTML = shown
         .map(
           (r) =>

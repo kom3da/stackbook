@@ -250,7 +250,7 @@ function BlockView({ b, secId, names }: { b: Block; secId: string; names: (ids: 
     case 'h3':
       return (
         <h3 id={b.id}>
-          <Inline text={b.text} />
+          <Inline text={b.text.replace(/^\d+-\d+\.\s*/, '')} />
         </h3>
       );
     case 'h4':
