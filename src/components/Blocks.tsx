@@ -1,19 +1,22 @@
 import type { CSSProperties, ReactNode } from 'react';
 import type { Block } from '../lib/guide';
 import { HEADS } from '../lib/heads';
+import { secHref, segments } from '../lib/inline';
 import type { Data } from '../lib/schema';
 import { Inline, type Links, LinksContext } from './Inline';
 
-const LEVELS = ['', '未経験', '検証済み', '実務'];
-export const ProfSelect = ({ name }: { name: string }) => (
-  <select className="prof" data-tool={name} aria-label={`${name}の習熟度`} defaultValue="">
+const LEVELS = ['未経験', '検証済み', '実務'];
+/** Three buttons for a tool's proficiency (pressing the chosen one again clears it); kept in localStorage */
+export const ProfSeg = ({ name }: { name: string }) => (
+  <fieldset className="seg" aria-label={`${name}の習熟度`}>
     {LEVELS.map((l) => (
-      <option key={l} value={l}>
-        {l || '—'}
-      </option>
+      <button key={l} type="button" data-prof={name} data-level={l} aria-pressed="false">
+        {l}
+      </button>
     ))}
-  </select>
+  </fieldset>
 );
+const FILTERS = [['', 'すべて'], ['unset', '未設定'], ...LEVELS.map((l) => [l, l])];
 
 type Alt = Extract<Data, { kind: 'choices' }>['rows'][number]['alts'][number];
 export const Alts = ({ alts, names }: { alts: Alt[]; names: (ids: string[]) => string }) =>
@@ -93,15 +96,32 @@ function DataBlock({ d, names }: { d: Data; names: (ids: string[]) => string }) 
       return <KV pairs={d.rows.map((r) => [r.layer, I(r.pick, r.tools)])} />;
     case 'prof':
       return (
-        <div className="prof-list">
-          {d.rows.map((r) => (
-            // biome-ignore lint/a11y/noLabelWithoutControl: the control is the <select> inside ProfSelect
-            <label className="pl" key={r.name}>
-              <span className="pl-n">{r.name}</span>
-              <span className="pl-k">{r.kind}</span>
-              <ProfSelect name={r.name} />
-            </label>
-          ))}
+        <div className="prof">
+          <fieldset className="prof-f" aria-label="習熟度で絞り込む">
+            {FILTERS.map(([v, l]) => (
+              <button key={v} type="button" data-pf={v} aria-pressed={v === '' ? 'true' : 'false'}>
+                {l}
+                <span className="pf-n" data-pf-n={v} />
+              </button>
+            ))}
+          </fieldset>
+          <div className="prof-grid">
+            {[...new Set(d.rows.map((r) => r.kind))].map((k) => (
+              <section className="pg" key={k}>
+                <h3 className="pg-k">{k}</h3>
+                <ul>
+                  {d.rows
+                    .filter((r) => r.kind === k)
+                    .map((r) => (
+                      <li className="pl" data-pl={r.name} key={r.name}>
+                        <span className="pl-n">{r.name}</span>
+                        <ProfSeg name={r.name} />
+                      </li>
+                    ))}
+                </ul>
+              </section>
+            ))}
+          </div>
         </div>
       );
     case 'uses':
@@ -260,18 +280,39 @@ function BlockView({ b, secId, names }: { b: Block; secId: string; names: (ids: 
     }
     case 'check':
       return (
-        <ul className="check">
-          {b.items.map((t) => (
-            <li key={t}>
-              <label>
-                <input type="checkbox" data-ck={`${secId}:${hash(t)}`} />
-                <span>
-                  <Inline text={t} />
+        <>
+          <div className="ck-prog" data-ck-prog={secId}>
+            <span className="ck-bar" aria-hidden="true">
+              {b.items.map((t) => (
+                <i key={t} data-ck-seg={`${secId}:${hash(t)}`} />
+              ))}
+            </span>
+            <span className="ck-n" aria-live="polite" />
+          </div>
+          <ol className="check">
+            {b.items.map((t) => (
+              <li key={t}>
+                <label>
+                  <input type="checkbox" data-ck={`${secId}:${hash(t)}`} />
+                  <span>
+                    <Inline text={t} />
+                  </span>
+                </label>
+                <span className="ck-refs">
+                  {segments(t).flatMap((x) =>
+                    x.t === 'ref'
+                      ? [
+                          <a key={x.v} className="ck-chip" href={secHref(x.sec, x.sub, x.step)}>
+                            {x.v}
+                          </a>,
+                        ]
+                      : [],
+                  )}
                 </span>
-              </label>
-            </li>
-          ))}
-        </ul>
+              </li>
+            ))}
+          </ol>
+        </>
       );
     case 'code':
       return (

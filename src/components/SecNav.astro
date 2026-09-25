@@ -1,5 +1,6 @@
 ---
-import { GROUP_LABEL, GROUPS, type Group, guide, plain, secLabel, stripNo } from '../lib/guide';
+import { checkTotal, commandTotal, kitCases, profTotal } from '../lib/kit';
+import { GROUP_LABEL, GROUPS, SECS, type Group, guide, plain, secLabel, stripNo } from '../lib/guide';
 
 interface Props {
   group: Group;
@@ -7,6 +8,12 @@ interface Props {
 }
 const { group, current } = Astro.props;
 const secs = GROUPS[group].flatMap((id) => guide.sections.filter((s) => s.id === id));
+// The kit shows progress beside each tool, filled in from this browser's saved state
+const counts: Record<string, { attrs: Record<string, string>; text: string }> = {
+  [SECS.checklist]: { attrs: { 'data-count': 'check', 'data-sec': SECS.checklist, 'data-total': String(checkTotal()) }, text: '' },
+  [SECS.commands]: { attrs: {}, text: String(commandTotal()) },
+  [SECS.prof]: { attrs: { 'data-count': 'prof', 'data-total': String(profTotal()) }, text: '' },
+};
 ---
 
 <p class="side-g">{GROUP_LABEL[group]}</p>
@@ -14,8 +21,9 @@ const secs = GROUPS[group].flatMap((id) => guide.sections.filter((s) => s.id ===
   {
     secs.map((s) => (
       <li>
-        <a href={`/s/${s.id}/`} data-astro-prefetch aria-current={s.id === current ? 'page' : undefined}>
+        <a href={`/s/${s.id}/`} data-astro-prefetch aria-current={s.id === current ? 'page' : undefined} class={group === 'kit' ? 'side-kind' : undefined}>
           <span class="side-n">{secLabel(s)}</span>
+          {group === 'kit' && counts[s.id] && <span class="side-d" {...counts[s.id].attrs}>{counts[s.id].text}</span>}
         </a>
         {s.id === current && (
           <ul class="side-sub">
@@ -32,3 +40,20 @@ const secs = GROUPS[group].flatMap((id) => guide.sections.filter((s) => s.id ===
     ))
   }
 </ul>
+{
+  group === 'kit' && (
+    <>
+      <p class="side-g mt-9">対象のケース（§19）</p>
+      <select class="case-pick" data-case-pick aria-label="対象のケース">
+        {kitCases().map((c) => (
+          <option value={c.id}>
+            {c.id} {c.title}
+          </option>
+        ))}
+      </select>
+      <p class="side-note">選ぶと、右の欄にこのケースの雛形コマンドと、使うツールの習熟度が出る。</p>
+      <p class="side-g mt-9">保存</p>
+      <p class="side-note">チェックと習熟度はこのブラウザに保存する。§27 は JSON で書き出し・読み込みができる。</p>
+    </>
+  )
+}

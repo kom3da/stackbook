@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { HEADS } from '../lib/heads';
 import { secHref } from '../lib/inline';
 import type { ToolView, Where } from '../lib/view';
-import { Alts, KV, ProfSelect } from './Blocks';
+import { Alts, KV, ProfSeg } from './Blocks';
 import { Inline, type Links, LinksContext } from './Inline';
 
 const Ref = ({ id, sub }: { id: string; sub?: string }) => (
@@ -157,7 +157,7 @@ export function ToolBody({ tool: t, links }: { tool: ToolView; links: Links }) {
       {t.prof.map((name) => (
         <div className="tb tb-prof" key={name}>
           <Head>習熟度</Head>
-          <ProfSelect name={name} />
+          <ProfSeg name={name} />
         </div>
       ))}
     </LinksContext.Provider>

@@ -20,11 +20,35 @@ export const loadProf = () => load(PKEY);
 
 function syncProf() {
   const p = loadProf();
-  for (const s of document.querySelectorAll<HTMLSelectElement>('select.prof')) s.value = p[s.dataset.tool ?? ''] ?? '';
+  for (const b of document.querySelectorAll<HTMLElement>('button[data-prof]'))
+    b.setAttribute('aria-pressed', String(p[b.dataset.prof ?? ''] === b.dataset.level));
+  for (const r of document.querySelectorAll<HTMLElement>('[data-pl]')) r.dataset.level = p[r.dataset.pl ?? ''] ?? '';
+  const rows = [...document.querySelectorAll<HTMLElement>('.prof-grid [data-pl]')];
+  // Counts beside the filters, and set/total in the kit index
+  for (const n of document.querySelectorAll<HTMLElement>('[data-pf-n]')) {
+    const v = n.dataset.pfN ?? '';
+    n.textContent = String(
+      rows.filter((r) => (v === '' ? true : v === 'unset' ? !r.dataset.level : r.dataset.level === v)).length,
+    );
+  }
+  for (const n of document.querySelectorAll<HTMLElement>('[data-count="prof"]'))
+    n.textContent = `${Object.keys(p).length}/${n.dataset.total}`;
 }
 function syncChecks() {
   const c = load(CKEY);
   for (const i of document.querySelectorAll<HTMLInputElement>('input[data-ck]')) i.checked = !!c[i.dataset.ck ?? ''];
+  for (const s of document.querySelectorAll<HTMLElement>('[data-ck-seg]'))
+    s.classList.toggle('on', !!c[s.dataset.ckSeg ?? '']);
+  for (const pr of document.querySelectorAll<HTMLElement>('[data-ck-prog]')) {
+    const segs = pr.querySelectorAll('[data-ck-seg]');
+    const done = pr.querySelectorAll('[data-ck-seg].on').length;
+    const n = pr.querySelector('.ck-n');
+    if (n) n.textContent = `${done}／${segs.length} 済み　残り ${segs.length - done}`;
+  }
+  for (const n of document.querySelectorAll<HTMLElement>('[data-count="check"]')) {
+    const sec = n.dataset.sec ?? '';
+    n.textContent = `${Object.keys(c).filter((k) => k.startsWith(`${sec}:`)).length}/${n.dataset.total}`;
+  }
 }
 export function hydrate() {
   syncProf();
@@ -33,18 +57,12 @@ export function hydrate() {
 
 document.addEventListener('change', (e) => {
   const t = e.target as HTMLElement;
-  if (t instanceof HTMLSelectElement && t.matches('select.prof')) {
-    const p = loadProf();
-    const k = t.dataset.tool ?? '';
-    if (t.value) p[k] = t.value;
-    else delete p[k];
-    save(PKEY, p);
-    syncProf();
-  } else if (t instanceof HTMLInputElement && t.dataset.ck) {
+  if (t instanceof HTMLInputElement && t.dataset.ck) {
     const c = load(CKEY);
     if (t.checked) c[t.dataset.ck] = '1';
     else delete c[t.dataset.ck];
     save(CKEY, c);
+    syncChecks();
   }
 });
 
@@ -59,6 +77,47 @@ document.addEventListener('click', (e) => {
         copy.textContent = 'コピー';
       }, 1500);
     });
+    return;
+  }
+  // Proficiency: press a level to set it, press it again to clear
+  const lv = t.closest<HTMLButtonElement>('button[data-prof]');
+  if (lv) {
+    const p = loadProf();
+    const k = lv.dataset.prof ?? '';
+    if (p[k] === lv.dataset.level) delete p[k];
+    else p[k] = lv.dataset.level ?? '';
+    save(PKEY, p);
+    syncProf();
+    return;
+  }
+  const pf = t.closest<HTMLButtonElement>('button[data-pf]');
+  if (pf) {
+    for (const b of pf.parentElement?.querySelectorAll('[data-pf]') ?? [])
+      b.setAttribute('aria-pressed', String(b === pf));
+    const grid = pf.closest('.prof')?.querySelector<HTMLElement>('.prof-grid');
+    if (grid) grid.dataset.f = pf.dataset.pf ?? '';
+    return;
+  }
+  const clr = t.closest<HTMLButtonElement>('[data-ck-clear]');
+  if (clr) {
+    const c = load(CKEY);
+    for (const k of Object.keys(c)) if (k.startsWith(`${clr.dataset.ckClear}:`)) delete c[k];
+    save(CKEY, c);
+    syncChecks();
+    return;
+  }
+  const md = t.closest<HTMLButtonElement>('[data-copy-md]');
+  if (md) {
+    fetch(md.dataset.copyMd ?? '')
+      .then((r) => r.text())
+      .then((text) => navigator.clipboard?.writeText(text))
+      .then(() => {
+        const was = md.textContent;
+        md.textContent = 'コピーしました';
+        setTimeout(() => {
+          md.textContent = was;
+        }, 1500);
+      });
     return;
   }
   const io = t.closest<HTMLButtonElement>('.prof-io button');
@@ -420,6 +479,29 @@ document.addEventListener('click', (e) => {
   if (z) zoomTo(z === 'in' ? zoomScale * 1.25 : z === 'out' ? zoomScale / 1.25 : (zoomBody.clientWidth - 32) / zoomW);
   if (t.closest('[data-zoom-close]') || t === zoom) zoom.close();
 });
+
+// ---- kit: the chosen §19 case decides what the marginalia shows ----
+const CASE = 'stackbook:case';
+function showCase(id: string) {
+  for (const c of document.querySelectorAll<HTMLElement>('[data-case]')) c.hidden = c.dataset.case !== id;
+  for (const s of document.querySelectorAll<HTMLSelectElement>('[data-case-pick]')) s.value = id;
+}
+const pick = document.querySelector<HTMLSelectElement>('[data-case-pick]');
+if (pick) {
+  let saved = '';
+  try {
+    saved = localStorage.getItem(CASE) ?? '';
+  } catch {}
+  showCase(saved && pick.querySelector(`option[value="${CSS.escape(saved)}"]`) ? saved : pick.value);
+  document.addEventListener('change', (e) => {
+    const t = e.target as HTMLElement;
+    if (!(t instanceof HTMLSelectElement) || !t.matches('[data-case-pick]')) return;
+    showCase(t.value);
+    try {
+      localStorage.setItem(CASE, t.value);
+    } catch {}
+  });
+}
 
 // The make island re-renders on its own; sync its controls after each render
 window.addEventListener('stackbook:render', hydrate);

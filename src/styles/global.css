@@ -259,18 +259,48 @@
     @apply block text-xs font-semibold text-mute;
   }
 
-  .check {
-    @apply space-y-2;
+  .ck-prog {
+    @apply mb-3 flex items-center gap-4;
+  }
+  .ck-bar {
+    @apply flex flex-1 gap-1;
+  }
+  .ck-bar i {
+    @apply h-2 flex-1 border border-ink;
+  }
+  .ck-bar i.on {
+    @apply bg-ink;
+  }
+  .ck-n {
+    @apply shrink-0 text-sm text-mute;
+  }
+  .doc .check {
+    @apply m-0 list-none border-t border-rule p-0;
+    counter-reset: ck;
+  }
+  .doc .check li {
+    @apply m-0 flex items-start gap-3 border-b border-rule py-2.5 pl-0;
+    counter-increment: ck;
+  }
+  .doc .check li::before {
+    content: counter(ck, decimal-leading-zero);
+    @apply w-6 shrink-0 pt-0.5 font-mono text-xs text-mute;
   }
   .check label {
-    @apply flex cursor-pointer items-start gap-3;
+    @apply flex flex-1 cursor-pointer items-start gap-3;
   }
   .check input {
-    @apply mt-1.5 size-4 shrink-0;
-    accent-color: var(--accent);
+    @apply mt-1 size-[18px] shrink-0;
+    accent-color: var(--ink);
   }
   .check input:checked + span {
-    @apply text-faint line-through;
+    @apply text-mute;
+  }
+  .ck-refs {
+    @apply flex shrink-0 gap-1;
+  }
+  .ck-chip {
+    @apply rounded-full border border-rule px-2 py-0.5 text-xs no-underline hover:border-ink;
   }
 
   .code {
@@ -360,23 +390,85 @@
     border-style: dashed;
     border-radius: 999px;
   }
-  select.prof {
-    @apply cursor-pointer rounded-full border border-rule bg-surface px-3 py-1 text-sm text-ink;
+  /* Proficiency: three buttons, the chosen one filled */
+  .seg {
+    @apply inline-flex shrink-0 overflow-hidden rounded-[5px] border border-rule bg-surface;
   }
-  select.prof:has(option[value="未経験"]:checked) {
-    @apply border-warn bg-warn-soft text-warn;
+  .seg button {
+    @apply min-h-8 cursor-pointer border-0 border-l border-rule bg-transparent px-2.5 text-xs whitespace-nowrap text-mute hover:text-ink;
   }
-  .prof-list {
-    @apply grid gap-2 sm:grid-cols-2 lg:grid-cols-3;
+  .seg button:first-child {
+    @apply border-l-0;
+  }
+  .seg button[aria-pressed="true"] {
+    @apply bg-ink font-semibold text-surface;
+  }
+  @media (max-width: 767px) {
+    .seg button {
+      @apply min-h-11 px-3;
+    }
+  }
+  .prof-f {
+    @apply mb-4 flex flex-wrap gap-1.5;
+  }
+  .prof-f button {
+    @apply inline-flex min-h-8 cursor-pointer items-center gap-1.5 rounded-full border border-rule bg-surface px-3 text-xs text-ink;
+  }
+  .prof-f button[data-pf="unset"] {
+    @apply border-dashed;
+  }
+  .prof-f button[aria-pressed="true"] {
+    @apply border-ink bg-ink text-surface;
+  }
+  .pf-n {
+    @apply font-mono opacity-70;
+  }
+  .prof-grid {
+    @apply grid gap-x-10;
+  }
+  @container memo (min-width: 580px) {
+    .prof-grid {
+      display: block;
+      columns: 2;
+      column-gap: 2.5rem;
+    }
+  }
+  .pg {
+    @apply mb-3 break-inside-avoid;
+  }
+  .doc .pg-k {
+    @apply mt-0 mb-1 border-b border-ink pb-1 text-xs font-semibold text-mute;
+  }
+  .doc .pg ul,
+  .kit-prof {
+    @apply m-0 list-none p-0;
+  }
+  .doc .pg li.pl {
+    @apply m-0 pl-0;
+  }
+  .doc .pg li.pl::before {
+    content: none;
   }
   .pl {
-    @apply flex items-center gap-3 rounded-lg border border-rule bg-surface px-3 py-2;
+    @apply flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-rule py-1.5;
   }
   .pl-n {
-    @apply font-medium;
+    @apply min-w-0 text-sm font-medium;
   }
-  .pl-k {
-    @apply flex-1 text-xs text-faint;
+  .pl[data-level="未経験"] {
+    background: var(--warn-soft);
+  }
+  .pl[data-level=""] .seg {
+    @apply border-dashed;
+  }
+  .prof-grid[data-f="unset"] .pl:not([data-level=""]),
+  .prof-grid[data-f="未経験"] .pl:not([data-level="未経験"]),
+  .prof-grid[data-f="検証済み"] .pl:not([data-level="検証済み"]),
+  .prof-grid[data-f="実務"] .pl:not([data-level="実務"]) {
+    display: none;
+  }
+  .kit-prof .pl {
+    @apply px-1;
   }
   .prof-io {
     @apply mt-8 flex flex-wrap gap-2;
@@ -476,6 +568,38 @@
   }
   .paper {
     @apply max-w-[880px];
+  }
+  .sec-top {
+    @apply flex flex-wrap items-center justify-between gap-3;
+  }
+  .sec-meta {
+    @apply text-xs tracking-[0.08em] text-mute;
+  }
+  .sec-acts {
+    @apply flex flex-wrap gap-2;
+  }
+  .sec-acts a.btn {
+    @apply text-ink no-underline;
+  }
+  .sec-h {
+    @apply mt-4 text-[26px] leading-snug font-bold sm:text-[32px];
+  }
+  .sec-h-n {
+    @apply mr-3 font-normal text-mute;
+  }
+  .sec-grid {
+    @apply grid gap-10;
+  }
+  @media (min-width: 1280px) {
+    .sec-grid.has-marg {
+      grid-template-columns: minmax(0, 880px) minmax(320px, 1fr);
+    }
+  }
+  .case-pick {
+    @apply min-h-10 w-full cursor-pointer rounded-[5px] border border-rule bg-surface px-2 text-sm font-semibold;
+  }
+  .side-note {
+    @apply mt-2 text-xs leading-relaxed text-mute;
   }
   .memo-top {
     @apply flex flex-wrap items-center justify-between gap-3;
