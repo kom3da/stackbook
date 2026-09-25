@@ -427,6 +427,54 @@
   .sh-n {
     @apply font-mono text-sm font-medium text-faint;
   }
+  .pin-bar {
+    @apply mt-2 flex justify-end;
+  }
+  /* Comparison of two condition sets */
+  .cmp-box {
+    @apply mt-6 rounded-xl border border-rule bg-surface p-4 sm:p-6;
+  }
+  .cmp {
+    @apply w-full border-collapse text-sm;
+  }
+  .cmp th,
+  .cmp td {
+    @apply border-t border-rule px-2 py-2 text-left align-top;
+  }
+  .cmp thead th {
+    @apply border-t-0 font-semibold;
+  }
+  .cmp-s {
+    @apply block text-xs font-normal text-mute;
+  }
+  .cmp tbody th {
+    @apply w-32 font-normal text-mute;
+  }
+  .cmp-d > * {
+    background: var(--diff-soft);
+  }
+  .cmp-ne {
+    @apply mr-1 font-semibold text-ink;
+  }
+  @media (max-width: 639px) {
+    .cmp thead {
+      @apply sr-only;
+    }
+    .cmp tr {
+      @apply block border-t border-rule py-1.5;
+    }
+    .cmp th,
+    .cmp td {
+      @apply block border-0 px-2 py-0.5;
+    }
+    .cmp tbody th {
+      @apply w-auto;
+    }
+    .cmp td::before {
+      content: attr(data-k) "\3000";
+      @apply font-mono text-xs text-faint;
+    }
+  }
   /* Conditions that would change the answer */
   .diffs > li {
     @apply border-t border-rule py-3.5;

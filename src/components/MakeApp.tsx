@@ -59,7 +59,7 @@ function fromQuery(kind: Kind, search: string): Answers | null {
   a.cons = (u.get('cons') ?? '').split(',').filter((v) => ok('cons', v));
   return a;
 }
-/** Only non-default answers go into the URL; other parameters (the open references) are kept */
+/** Only non-default answers go into the URL; other parameters (the open references, the pinned set) are kept */
 function toQuery(a: Answers, keep = '') {
   const u = new URLSearchParams(keep);
   for (const k of [...SINGLE, 'cons']) u.delete(k);
@@ -71,6 +71,8 @@ function toQuery(a: Answers, keep = '') {
 
 export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: MakePayload }) {
   const [answers, setAnswers] = useState<Answers>(DEFAULTS);
+  // A pinned set of conditions (A) to compare with the current one (B); kept in ?vs= as its own query string
+  const [pinned, setPinned] = useState<Answers | null>(null);
   const ready = useRef(false);
   // Conditions come from the URL (shareable); without one, from the last visit
   useEffect(() => {
@@ -81,15 +83,21 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
         if (saved) a = fromQuery(kind, saved);
       } catch {}
     if (a) setAnswers(a);
+    const vs = new URLSearchParams(location.search).get('vs');
+    if (vs !== null) setPinned(fromQuery(kind, vs) ?? { ...DEFAULTS, cons: [] });
     ready.current = true;
   }, [kind]);
   useEffect(() => {
     if (!ready.current) return;
-    history.replaceState(history.state, '', `${location.pathname}${toQuery(answers, location.search)}${location.hash}`);
+    const u = new URLSearchParams(toQuery(answers, location.search));
+    if (pinned) u.set('vs', toQuery(pinned).slice(1));
+    else u.delete('vs');
+    const q = u.toString();
+    history.replaceState(history.state, '', `${location.pathname}${q ? `?${q}` : ''}${location.hash}`);
     try {
       localStorage.setItem(lastKey(kind), toQuery(answers));
     } catch {}
-  }, [answers, kind]);
+  }, [answers, pinned, kind]);
   const [prof, setProf] = useState<Record<string, string>>({});
   const d = useMemo(() => decide(kind, answers), [kind, answers]);
   const qs = questionsFor(kind);
@@ -111,16 +119,18 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
       multi ? { ...a, cons: a.cons.includes(v) ? a.cons.filter((x) => x !== v) : [...a.cons, v] } : { ...a, [q]: v },
     );
 
-  const summary = qs
-    .map((q) =>
-      q.multi
-        ? q.opts
-            .filter(([v]) => answers.cons.includes(v))
-            .map((o) => o[2])
-            .join('・') || '制約なし'
-        : q.opts.find(([v]) => answers[q.q] === v)?.[2],
-    )
-    .join(' · ');
+  const summaryOf = (a: Answers) =>
+    qs
+      .map((q) =>
+        q.multi
+          ? q.opts
+              .filter(([v]) => a.cons.includes(v))
+              .map((o) => o[2])
+              .join('・') || '制約なし'
+          : q.opts.find(([v]) => a[q.q] === v)?.[2],
+      )
+      .join(' · ');
+  const summary = summaryOf(answers);
 
   // The §19 diagrams show each case as written; say so when the table above differs from it
   const diagramNote = (c: string) => {
@@ -144,6 +154,25 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
   return (
     <>
       <Conditions qs={qs} answers={answers} set={set} />
+      {qs.length > 0 && !pinned && (
+        <p className="pin-bar">
+          <button type="button" className="cond-btn text-xs" onClick={() => setPinned(answers)}>
+            今の条件を A に固定して比べる
+          </button>
+        </p>
+      )}
+      {pinned && (
+        <Compare
+          kind={kind}
+          a={pinned}
+          b={answers}
+          look={look}
+          p={p}
+          summaryOf={summaryOf}
+          restore={() => setAnswers(pinned)}
+          unpin={() => setPinned(null)}
+        />
+      )}
       <p className="sr-only" aria-live="polite">
         推奨：{d.title}
       </p>
@@ -266,6 +295,11 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
             setAnswers(a);
             document.getElementById('memo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }}
+          compare={(a) => {
+            setPinned(answers);
+            setAnswers(a);
+            document.getElementById('cmp')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }}
         />
 
         {d.cases.map((c) => {
@@ -372,8 +406,117 @@ function Conditions({
   );
 }
 
+/** Two condition sets side by side: A (pinned) and B (current), differing rows marked */
+function Compare({
+  kind,
+  a,
+  b,
+  look,
+  p,
+  summaryOf,
+  restore,
+  unpin,
+}: {
+  kind: Kind;
+  a: Answers;
+  b: Answers;
+  look: Lookup;
+  p: MakePayload;
+  summaryOf: (a: Answers) => string;
+  restore: () => void;
+  unpin: () => void;
+}) {
+  const da = decide(kind, a);
+  const db = decide(kind, b);
+  const rows = (d: Decision) => new Map(d.tables.flatMap((t) => resolve(t, look)).map((r) => [r.layer, r]));
+  const ra = rows(da);
+  const rb = rows(db);
+  const layers = [...new Set([...ra.keys(), ...rb.keys()])];
+  const lines = [
+    { k: '推奨', a: da.title, b: db.title },
+    ...layers.map((l) => ({ k: l, a: ra.get(l)?.text ?? '', b: rb.get(l)?.text ?? '' })),
+  ];
+  const md = () =>
+    [
+      `# ${KINDS.find((k) => k[0] === kind)?.[1] ?? kind}：条件の比較`,
+      '',
+      `- A：${summaryOf(a)}`,
+      `- B：${summaryOf(b)}`,
+      '',
+      '| | A | B |',
+      '|---|---|---|',
+      ...lines.map((x) => `| ${x.k}${x.a === x.b ? '' : '（違う）'} | ${x.a || '—'} | ${x.b || '—'} |`),
+      '',
+    ].join('\n');
+  const cell = (t: string, side: string) => (
+    <td data-k={side}>{t ? <Inline text={t} /> : <span className="text-faint">—</span>}</td>
+  );
+  return (
+    <section className="blk cmp-box" id="cmp" aria-labelledby="cmp-h">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <h2 className="sh" id="cmp-h">
+          比較<span className="sh-d">A を固定し、今の条件（B）と並べている。違う行に ≠ を付けている</span>
+        </h2>
+        <span className="flex flex-wrap gap-1.5">
+          <CopyButton text={md} />
+          <button type="button" className="cond-btn text-xs" onClick={restore}>
+            条件を A に戻す
+          </button>
+          <button type="button" className="cond-btn text-xs" onClick={unpin}>
+            比較をやめる
+          </button>
+        </span>
+      </div>
+      <LinksContext.Provider value={p.links}>
+        <table className="cmp">
+          <thead>
+            <tr>
+              <td />
+              <th scope="col">
+                A（固定）<span className="cmp-s">{summaryOf(a)}</span>
+              </th>
+              <th scope="col">
+                B（今の条件）<span className="cmp-s">{summaryOf(b)}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {lines.map((x) => {
+              const same = x.a === x.b;
+              return (
+                <tr key={x.k} className={same ? undefined : 'cmp-d'}>
+                  <th scope="row">
+                    {!same && (
+                      <span className="cmp-ne" role="img" aria-label="違う">
+                        ≠
+                      </span>
+                    )}
+                    {x.k}
+                  </th>
+                  {cell(x.a, 'A')}
+                  {cell(x.b, 'B')}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </LinksContext.Provider>
+    </section>
+  );
+}
+
 /** What changes if one condition were different, with a button to switch to it */
-function DiffList({ items, p, pick }: { items: Diff[]; p: MakePayload; pick: (a: Answers) => void }) {
+function DiffList({
+  items,
+  p,
+  pick,
+  compare,
+}: {
+  items: Diff[];
+  p: MakePayload;
+  pick: (a: Answers) => void;
+  compare: (a: Answers) => void;
+}) {
   if (!items.length) return null;
   return (
     <section className="blk">
@@ -385,9 +528,14 @@ function DiffList({ items, p, pick }: { items: Diff[]; p: MakePayload; pick: (a:
           <li key={`${x.q}:${x.v}`}>
             <div className="df-h">
               <span className="df-k">{x.label}</span>
-              <button type="button" className="cond-btn text-xs" onClick={() => pick(x.answers)}>
-                この条件にする
-              </button>
+              <span className="flex shrink-0 gap-1.5">
+                <button type="button" className="cond-btn text-xs" onClick={() => compare(x.answers)}>
+                  並べて比べる
+                </button>
+                <button type="button" className="cond-btn text-xs" onClick={() => pick(x.answers)}>
+                  この条件にする
+                </button>
+              </span>
             </div>
             <ul className="df-c">
               {x.title && (

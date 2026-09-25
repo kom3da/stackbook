@@ -2,6 +2,7 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { Inline, LinksContext } from '../components/Inline';
+import { diffs } from './diff';
 import { guide, monthsSince, parseGuide, rawSection, rawSub, SEC, SECS } from './guide';
 import { findName, segments } from './inline';
 import { CASE_ROWS, LOOKUP } from './lookup';
@@ -225,6 +226,27 @@ describe('decide (§2-9, §2-10, §19)', () => {
       }
     }
   });
+  it('lists exactly the one-step changes that alter the answer', () => {
+    const view = (k: Kind, a: Answers) => {
+      const d = decide(k, a);
+      return JSON.stringify([d.title, d.tables.map((t) => [t.base, resolve(t, LOOKUP)])]);
+    };
+    for (const [k] of KINDS) {
+      const got = diffs(k, DEFAULTS, LOOKUP).map((x) => `${x.q}:${x.v}`);
+      const want = questionsFor(k).flatMap((q) =>
+        q.opts
+          .filter(([v]) => q.multi || DEFAULTS[q.q] !== v)
+          .filter(([v]) => view(k, { ...DEFAULTS, ...(q.multi ? { cons: [v] } : { [q.q]: v }) }) !== view(k, DEFAULTS))
+          .map(([v]) => `${q.q}:${v}`),
+      );
+      expect(got, k).toEqual(want);
+    }
+    // Removing a constraint that is set is listed too, and leads back to the defaults
+    const on = diffs('saas', { ...DEFAULTS, cons: ['java'] }, LOOKUP).find((x) => x.q === 'cons' && x.v === 'java');
+    expect(on?.label).toBe('既存のJava資産と連携を外す');
+    expect(on?.answers.cons).toEqual([]);
+  });
+
   it('shows commands that exist in §26 and match the language', () => {
     const ids = new Set(SEC.get(SECS.commands)?.blocks.flatMap((b) => (b.t === 'h3' ? [b.id] : [])));
     for (const [k] of KINDS)
