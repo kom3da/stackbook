@@ -46,45 +46,46 @@ export const KINDS: [Kind, string, string][] = [
   ['desktop', 'デスクトップアプリ', 'Mac・Windowsのアプリ'],
   ['embedded', '組み込み・IoT', 'ファームウェア、マイコン'],
 ];
-export const QUESTIONS: { q: keyof Answers; label: string; multi?: true; opts: [string, string][] }[] = [
+/** opts: [value, label, short label for the summary line] */
+export const QUESTIONS: { q: keyof Answers; label: string; multi?: true; opts: [string, string, string][] }[] = [
   {
     q: 'load',
     label: '一番重い負荷',
     opts: [
-      ['db', 'DBの読み書き・業務ロジック'],
-      ['io', '外部APIの待ち時間'],
-      ['conn', '大量の常時接続'],
-      ['cpu', 'CPU負荷の高い計算'],
-      ['p99', '厳しいレイテンシ（p99）'],
-      ['domain', '複雑な業務ルール'],
-      ['batch', '大規模バッチ・ストリーム'],
+      ['db', 'DBの読み書き・業務ロジック', 'DB中心'],
+      ['io', '外部APIの待ち時間', '外部API待ち'],
+      ['conn', '大量の常時接続', '常時接続'],
+      ['cpu', 'CPU負荷の高い計算', 'CPU負荷'],
+      ['p99', '厳しいレイテンシ（p99）', '低レイテンシ'],
+      ['domain', '複雑な業務ルール', '複雑な業務'],
+      ['batch', '大規模バッチ・ストリーム', 'バッチ'],
     ],
   },
   {
     q: 'env',
     label: '実行環境',
     opts: [
-      ['paas', '指定なし（PaaS可）'],
-      ['aws', 'AWS'],
-      ['onprem', 'オンプレ・VPS'],
-      ['edge', 'エッジ'],
+      ['paas', '指定なし（PaaS可）', 'PaaS'],
+      ['aws', 'AWS', 'AWS'],
+      ['onprem', 'オンプレ・VPS', 'オンプレ'],
+      ['edge', 'エッジ', 'エッジ'],
     ],
   },
   {
     q: 'team',
     label: '開発者の人数',
     opts: [
-      ['solo', '1〜2人'],
-      ['small', '3〜9人'],
-      ['large', '10人以上'],
+      ['solo', '1〜2人', '1〜2人'],
+      ['small', '3〜9人', '3〜9人'],
+      ['large', '10人以上', '10人以上'],
     ],
   },
   {
     q: 'stage',
     label: '段階',
     opts: [
-      ['mvp', '試作・MVP'],
-      ['prod', '本番・長期運用'],
+      ['mvp', '試作・MVP', 'MVP'],
+      ['prod', '本番・長期運用', '本番'],
     ],
   },
   {
@@ -92,10 +93,10 @@ export const QUESTIONS: { q: keyof Answers; label: string; multi?: true; opts: [
     label: '外部の制約',
     multi: true,
     opts: [
-      ['ml', '機械学習ライブラリが必須'],
-      ['java', '既存のJava資産と連携'],
-      ['unity', 'Unityとコード共有'],
-      ['ms', 'Microsoft／Azure中心'],
+      ['ml', '機械学習ライブラリが必須', 'ML必須'],
+      ['java', '既存のJava資産と連携', 'Java資産'],
+      ['unity', 'Unityとコード共有', 'Unity'],
+      ['ms', 'Microsoft／Azure中心', 'Microsoft'],
     ],
   },
 ];

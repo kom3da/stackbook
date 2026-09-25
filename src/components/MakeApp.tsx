@@ -5,6 +5,15 @@ import { type Answers, DEFAULTS, decide, type Kind, QUESTIONS, SHOW } from '../l
 import { Blocks } from './Blocks';
 import { Inline, type Links } from './Inline';
 import { ToolBody } from './ToolBody';
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from './ui/drawer';
 
 export type MakePayload = {
   tools: Record<string, ToolView>;
@@ -48,6 +57,19 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
       multi ? { ...a, cons: a.cons.includes(v) ? a.cons.filter((x) => x !== v) : [...a.cons, v] } : { ...a, [q]: v },
     );
 
+  const [open, setOpen] = useState(false);
+  const wide = useWide();
+  const summary = qs
+    .map((q) =>
+      q.multi
+        ? q.opts
+            .filter(([v]) => answers.cons.includes(v))
+            .map((o) => o[2])
+            .join('・') || '制約なし'
+        : q.opts.find(([v]) => answers[q.q] === v)?.[2],
+    )
+    .join(' · ');
+
   const unknown = new Set<string>();
   const rows = d.rows.map((r) => {
     const tools = r.tools.map((id) => p.tools[id]).filter(Boolean);
@@ -59,33 +81,48 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
   return (
     <>
       {qs.length > 0 && (
-        <form className="conds mt-8" onSubmit={(e) => e.preventDefault()}>
-          {qs.map((q) => (
-            <fieldset key={q.q}>
-              <legend>{q.label}</legend>
-              <div className="chips">
-                {q.opts.map(([v, l]) => (
-                  <label key={v}>
-                    <input
-                      type={q.multi ? 'checkbox' : 'radio'}
-                      name={q.q}
-                      value={v}
-                      checked={q.multi ? answers.cons.includes(v) : answers[q.q] === v}
-                      onChange={() => set(q.q, v, q.multi)}
-                    />
-                    <span>{l}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-          ))}
-        </form>
+        <div className="cond-bar mt-6">
+          <p className="cond-sum">
+            <span className="cond-k">条件</span>
+            {summary}
+          </p>
+          <button
+            type="button"
+            className="cond-btn"
+            aria-expanded={open}
+            aria-controls={wide ? 'conds' : undefined}
+            onClick={() => setOpen((o) => !o)}
+          >
+            {open && wide ? '閉じる' : '変更'}
+          </button>
+        </div>
+      )}
+      {qs.length > 0 && wide && open && (
+        <div id="conds" className="cond-panel">
+          <Conditions qs={qs} answers={answers} set={set} />
+        </div>
+      )}
+      {qs.length > 0 && !wide && (
+        <Drawer open={open} onOpenChange={setOpen}>
+          <DrawerContent className="bg-surface">
+            <DrawerHeader>
+              <DrawerTitle>条件</DrawerTitle>
+              <DrawerDescription>選ぶと推奨がすぐ変わる</DrawerDescription>
+            </DrawerHeader>
+            <div className="max-h-[60vh] overflow-y-auto px-4">
+              <Conditions qs={qs} answers={answers} set={set} />
+            </div>
+            <DrawerFooter>
+              <DrawerClose className="cond-btn w-full">閉じる</DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
       )}
 
       <p className="sr-only" aria-live="polite">
         推奨：{d.title}
       </p>
-      <div className="mt-8">
+      <div className="mt-4">
         <section className="answer">
           <p className="eyebrow">推奨</p>
           <p className="ans">{d.title}</p>
@@ -216,4 +253,52 @@ function CommandList({ keys, p }: { keys: string[]; p: MakePayload }) {
       ))}
     </section>
   );
+}
+
+type Q = (typeof QUESTIONS)[number];
+function Conditions({
+  qs,
+  answers,
+  set,
+}: {
+  qs: Q[];
+  answers: Answers;
+  set: (q: keyof Answers, v: string, multi?: boolean) => void;
+}) {
+  return (
+    <form className="conds" onSubmit={(e) => e.preventDefault()}>
+      {qs.map((q) => (
+        <fieldset key={q.q}>
+          <legend>{q.label}</legend>
+          <div className="chips">
+            {q.opts.map(([v, l]) => (
+              <label key={v}>
+                <input
+                  type={q.multi ? 'checkbox' : 'radio'}
+                  name={q.q}
+                  value={v}
+                  checked={q.multi ? answers.cons.includes(v) : answers[q.q] === v}
+                  onChange={() => set(q.q, v, q.multi)}
+                />
+                <span>{l}</span>
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ))}
+    </form>
+  );
+}
+
+// Desktop shows the conditions inline; phones use a bottom sheet
+function useWide() {
+  const [wide, setWide] = useState(true);
+  useEffect(() => {
+    const m = matchMedia('(min-width: 768px)');
+    const on = () => setWide(m.matches);
+    on();
+    m.addEventListener('change', on);
+    return () => m.removeEventListener('change', on);
+  }, []);
+  return wide;
 }
