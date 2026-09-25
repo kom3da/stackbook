@@ -368,7 +368,7 @@ function BlockView({ b, secId, names }: { b: Block; secId: string; names: (ids: 
             </span>
             <span>
               <span className="om om-none" />
-              灰色の地：分類なし
+              灰色の地：運用の区分なし
             </span>
           </figcaption>
         </figure>

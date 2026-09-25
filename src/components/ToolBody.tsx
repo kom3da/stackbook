@@ -29,8 +29,20 @@ export function ToolBody({ tool: t, links }: { tool: ToolView; links: Links }) {
     <LinksContext.Provider value={links}>
       {t.url && (
         <p className="tb-url">
-          <a className="ref" href={t.url} rel="noopener">
-            公式サイト ↗
+          <a className="ref inline-flex items-center gap-1" href={t.url} rel="noopener">
+            公式サイト
+            {/* Drawn, since the ↗ glyph renders as a thin slash in some fonts */}
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 12 12"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              aria-hidden="true"
+            >
+              <path d="M4 2h6v6M10 2L2.5 9.5" />
+            </svg>
           </a>
         </p>
       )}

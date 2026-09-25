@@ -460,7 +460,9 @@ const BACKEND: Record<Backend, BackendSpec> = {
       edit('共同編集', C('19-9', '共同編集')),
       edit('片方向の配信', C('19-9', '片方向で足りる')),
     ],
-    cases: () => ['19-9'],
+    // §19-9's diagram is the Elixir build; other languages would contradict the table above it
+    cases: (lang) => (lang === 'ex' ? ['19-9'] : []),
+    commands: () => ['26-9'],
   },
 };
 

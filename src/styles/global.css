@@ -81,6 +81,11 @@
   strong {
     font-weight: 600;
   }
+  mark {
+    background: var(--accent-soft);
+    color: inherit;
+    border-radius: 2px;
+  }
 }
 
 @layer components {
@@ -339,18 +344,19 @@
   .code .ln:empty::before {
     content: " ";
   }
-  /* Phones and the marginalia are narrow: wrap commands rather than hide their ends behind a sideways scroll.
+  /* Wrap long commands rather than hide their ends behind a sideways scroll.
      A wrapped line hangs under its start, so it doesn't read as the next command */
+  .code pre {
+    @apply pr-4 leading-normal whitespace-pre-wrap wrap-break-word;
+  }
+  .code .ln {
+    @apply pl-[2ch] -indent-[2ch];
+  }
+  /* The first line leaves room for the copy button */
+  .code .ln:first-child {
+    @apply pr-20;
+  }
   @media (max-width: 639px) {
-    .code pre {
-      @apply pr-4 leading-normal whitespace-pre-wrap wrap-break-word;
-    }
-    .code .ln {
-      @apply block pl-[2ch] -indent-[2ch];
-    }
-    .code .ln:first-child {
-      @apply pr-20;
-    }
     .copy,
     .diagram-zoom {
       @apply min-h-9 px-3;
@@ -358,15 +364,6 @@
     .diffs .btn {
       @apply min-h-10;
     }
-  }
-  .marg .code pre {
-    @apply pr-4 leading-normal whitespace-pre-wrap wrap-break-word;
-  }
-  .marg .code .ln {
-    @apply block pl-[2ch] -indent-[2ch];
-  }
-  .marg .code .ln:first-child {
-    @apply pr-16;
   }
   .copy {
     @apply absolute top-2.5 right-2.5 min-h-7 cursor-pointer rounded-md border border-line bg-bg px-2.5 text-xs text-mute hover:text-ink;
@@ -465,7 +462,7 @@
   .om-managed {
     border: 0;
     background:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='5.1' fill='none' stroke='%231b232b' stroke-width='1.5' stroke-dasharray='2.4 1.6'/%3E%3C/svg%3E")
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Ccircle cx='6' cy='6' r='5.1' fill='none' stroke='%231d1b18' stroke-width='1.5' stroke-dasharray='2.4 1.6'/%3E%3C/svg%3E")
       center / contain no-repeat;
   }
   /* Proficiency: three buttons, the chosen one filled */
@@ -508,7 +505,7 @@
     }
   }
   .pf-n {
-    @apply font-mono opacity-70;
+    @apply tabular-nums opacity-70;
   }
   .prof-grid {
     @apply grid gap-x-10;
@@ -699,13 +696,17 @@
     @apply text-lg font-bold text-ink no-underline hover:text-accent;
   }
   .ov-p {
-    @apply shrink-0 font-mono text-sm text-mute;
+    @apply shrink-0 text-sm text-mute tabular-nums;
   }
   .ov-l {
     @apply mt-2 text-sm leading-relaxed text-mute;
   }
+  /* Section links: the same underlined style as a chapter's own heading links, spaced for a finger */
   .ov-s {
-    @apply mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs;
+    @apply mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm max-sm:gap-y-2.5;
+  }
+  .ov-s a {
+    @apply underline decoration-1 underline-offset-[3px];
   }
   .ov-c {
     @apply mt-2 text-xs text-faint;
@@ -735,6 +736,16 @@
   .home-kinds a {
     @apply block h-full border-b border-rule px-2 py-3 text-ink no-underline hover:bg-bg;
   }
+  /* One column: a chevron says each row opens */
+  @container memo (max-width: 559px) {
+    .home-kinds a {
+      @apply relative pr-8;
+    }
+    .home-kinds a::after {
+      content: "";
+      @apply absolute top-1/2 right-3 size-2 -translate-y-1/2 rotate-45 border-t-[1.5px] border-r-[1.5px] border-faint;
+    }
+  }
   .home-kinds a[aria-current="true"] {
     @apply bg-accent-soft shadow-[inset_0_-2px_0_var(--accent)];
   }
@@ -762,7 +773,7 @@
     @apply font-semibold text-ink no-underline hover:text-accent;
   }
   .home-doors ul {
-    @apply mt-2 grid list-none gap-1 p-0 text-sm;
+    @apply mt-2 grid list-none gap-1 p-0 text-sm max-sm:gap-2.5;
   }
   .home-pv {
     @apply mt-4 bg-surface p-5;
@@ -829,7 +840,7 @@
     @apply border-ink bg-ink text-surface;
   }
   .np-n {
-    @apply mt-3 border-b border-ink pb-1.5 text-xs text-mute;
+    @apply mt-4 border-b border-ink pb-1.5 text-xs text-mute;
   }
   .np-list {
     @apply m-0 list-none p-0;
@@ -862,7 +873,7 @@
     @apply grid grid-cols-7 gap-1;
   }
   .np-az button {
-    @apply rounded-[4px] px-0 font-mono;
+    @apply rounded-[4px] px-0 tabular-nums;
   }
   .case-row {
     @apply mt-4 block;
@@ -870,8 +881,13 @@
   .paper .case-row {
     @apply max-w-sm;
   }
+  /* A control, not a heading: regular weight, the button border, and a drawn chevron in every browser */
   .case-pick {
-    @apply min-h-10 w-full cursor-pointer rounded-[5px] border border-rule bg-surface px-2 text-sm font-semibold;
+    @apply min-h-10 w-full cursor-pointer appearance-none rounded-[5px] border border-line bg-surface pr-9 pl-3 text-sm text-ink;
+    background:
+      var(--surface)
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' fill='none' stroke='%231d1b18' stroke-width='1.5'/%3E%3C/svg%3E")
+      right 0.75rem center / 12px no-repeat;
   }
   .side-note {
     @apply mt-2 text-xs leading-relaxed text-mute;
@@ -1091,7 +1107,7 @@
     @apply flex items-baseline border-b border-ink pb-1.5 text-sm font-semibold;
   }
   .ops3-n {
-    @apply ml-2.5 font-mono;
+    @apply ml-2.5 tabular-nums;
   }
   .ops3-v {
     @apply mt-2 text-sm leading-relaxed;
@@ -1234,8 +1250,9 @@
     @apply size-1.5 rotate-45 border-r-[1.5px] border-b-[1.5px] border-ink;
     translate: 0 -2px;
   }
+  /* rotate-45 sets \`rotate\`, so the open state names the whole turn */
   .heads[open] summary::after {
-    rotate: 180deg;
+    rotate: 225deg;
     translate: 0 1px;
   }
   .nx {
@@ -1270,6 +1287,16 @@
   .case-fig > figure + * {
     @apply mt-3;
   }
+  .st-key {
+    @apply mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-mute;
+  }
+  .st-key li {
+    @apply flex items-center;
+  }
+  /* A chapter of diagrams explains the marks once, under the first */
+  .doc > .diagram ~ .diagram .legend {
+    display: none;
+  }
   .legend-list {
     @apply grid gap-1.5;
   }
@@ -1278,13 +1305,13 @@
   }
   /* Phone: the memo's bar replaces the site tabs */
   .pbar {
-    @apply fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t border-rule bg-bg pb-[env(safe-area-inset-bottom)] md:hidden;
+    @apply fixed inset-x-0 bottom-0 z-20 grid auto-cols-fr grid-flow-col border-t border-rule bg-bg pb-[env(safe-area-inset-bottom)] md:hidden;
   }
   .pbar > * {
-    @apply flex min-h-14 cursor-pointer items-center justify-center gap-1 border-0 bg-transparent text-sm text-ink no-underline disabled:text-faint;
+    @apply flex min-h-14 cursor-pointer items-center justify-center gap-1 border-0 bg-transparent text-sm text-ink no-underline;
   }
   .pbar-n {
-    @apply rounded-full bg-ink px-1.5 font-mono text-[11px] text-surface;
+    @apply rounded-full bg-ink px-1.5 text-[11px] text-surface tabular-nums;
   }
 }
 
@@ -1336,6 +1363,9 @@
       width: 22rem;
     }
   }
+  .peek:focus {
+    outline: none;
+  }
   .peek::backdrop {
     background: rgb(27 35 43 / 0.35);
   }
@@ -1384,7 +1414,7 @@
     @apply border-b-2 border-ink;
   }
   .ps-n {
-    @apply font-mono text-xs text-mute;
+    @apply text-xs text-mute tabular-nums;
   }
   .ps-l {
     @apply truncate font-medium;
@@ -1420,8 +1450,9 @@
     .crumbs button {
       @apply min-h-9 border border-rule px-3 no-underline;
     }
+    /* A long title shortens rather than pushing 閉じる and the trail off screen */
     .crumbs li[aria-current] {
-      @apply bg-ink px-3 text-surface;
+      @apply block max-w-[55vw] truncate bg-ink px-3 leading-9 text-surface;
     }
     .peek-strips {
       @apply hidden;

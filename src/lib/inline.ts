@@ -1,13 +1,14 @@
-// Tokenizer for the inline markdown used in the guide: `code`, **bold**, §N / §N-M / §N-M 手順K, bare URLs
+// Tokenizer for the inline markdown used in the guide: `code`, **bold**, §N / §N-M / §N-M 手順K, [text](url), bare URLs
 
 export type Seg =
   | { t: 'text'; v: string }
   | { t: 'code'; v: string }
   | { t: 'bold'; v: string }
   | { t: 'ref'; v: string; sec: string; sub?: string; step?: string }
-  | { t: 'url'; v: string };
+  | { t: 'url'; v: string; label?: string };
 
-const RE = /`([^`]+)`|\*\*([^*]+)\*\*|§(\d+)(?:-(\d+)(?: ?手順(\d+))?)?|(https?:\/\/[^\s<）)、。]+)/g;
+const RE =
+  /`([^`]+)`|\*\*([^*]+)\*\*|§(\d+)(?:-(\d+)(?: ?手順(\d+))?)?|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<）)、。]+)/g;
 
 export function segments(text: string): Seg[] {
   const out: Seg[] = [];
@@ -18,6 +19,7 @@ export function segments(text: string): Seg[] {
     if (m[1] !== undefined) out.push({ t: 'code', v: m[1] });
     else if (m[2] !== undefined) out.push({ t: 'bold', v: m[2] });
     else if (m[3] !== undefined) out.push({ t: 'ref', v: m[0], sec: m[3], sub: m[4] && `${m[3]}-${m[4]}`, step: m[5] });
+    else if (m[6] !== undefined) out.push({ t: 'url', v: m[7], label: m[6] });
     else out.push({ t: 'url', v: m[0] });
     last = i + m[0].length;
   }

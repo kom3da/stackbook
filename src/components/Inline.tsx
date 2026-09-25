@@ -46,7 +46,7 @@ export function Inline({ text, tools = [] }: Props) {
       case 'url':
         return (
           <a key={i} className="ref" href={s.v} rel="noopener">
-            {s.v}
+            {s.label ?? s.v}
           </a>
         );
       default:

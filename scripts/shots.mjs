@@ -89,36 +89,39 @@ const browsers = { webkit: await webkit.launch(), chromium: await chromium.launc
 // A filtered run only replaces its own shots
 if (!filter) rmSync(out, { recursive: true, force: true });
 try {
-  for (const v of WIDTHS) {
-    const dir = join(out, String(v.w));
-    mkdirSync(dir, { recursive: true });
-    const ctx = await browsers[v.phone ? 'webkit' : 'chromium'].newContext({
-      viewport: { width: v.w, height: v.h },
-      // Sharp, but every side under 2000px so the images can be read back by review tools
-      deviceScaleFactor: Math.min(2, 1990 / Math.max(v.w, v.h)),
-      isMobile: v.phone,
-      hasTouch: v.phone,
-    });
-    const page = await ctx.newPage();
-    for (const [name, path] of PAGES) {
-      if (!name.includes(filter)) continue;
-      await page.goto(base + path, { waitUntil: 'networkidle' });
-      await tiles(page, dir, name);
-    }
-    for (const [name, path, act, target] of v.phone ? ACTIONS : []) {
-      if (!name.includes(filter)) continue;
-      await page.goto(base + path, { waitUntil: 'networkidle' });
-      try {
-        await act(page);
-        await page.waitForTimeout(500);
-        if (target) await page.locator(target).evaluate((el) => el.scrollIntoView({ block: 'start' }));
-        await page.screenshot({ path: join(dir, `act-${name}.png`) });
-      } catch (e) {
-        console.error(`${v.w} ${name}: ${e.message.split('\n')[0]}`);
+  // Each width in its own context, all at once
+  await Promise.all(
+    WIDTHS.map(async (v) => {
+      const dir = join(out, String(v.w));
+      mkdirSync(dir, { recursive: true });
+      const ctx = await browsers[v.phone ? 'webkit' : 'chromium'].newContext({
+        viewport: { width: v.w, height: v.h },
+        // Sharp, but every side under 2000px so the images can be read back by review tools
+        deviceScaleFactor: Math.min(2, 1990 / Math.max(v.w, v.h)),
+        isMobile: v.phone,
+        hasTouch: v.phone,
+      });
+      const page = await ctx.newPage();
+      for (const [name, path] of PAGES) {
+        if (!name.includes(filter)) continue;
+        await page.goto(base + path, { waitUntil: 'networkidle' });
+        await tiles(page, dir, name);
       }
-    }
-    await ctx.close();
-  }
+      for (const [name, path, act, target] of v.phone ? ACTIONS : []) {
+        if (!name.includes(filter)) continue;
+        await page.goto(base + path, { waitUntil: 'networkidle' });
+        try {
+          await act(page);
+          await page.waitForTimeout(500);
+          if (target) await page.locator(target).evaluate((el) => el.scrollIntoView({ block: 'start' }));
+          await page.screenshot({ path: join(dir, `act-${name}.png`) });
+        } catch (e) {
+          console.error(`${v.w} ${name}: ${e.message.split('\n')[0]}`);
+        }
+      }
+      await ctx.close();
+    }),
+  );
 } finally {
   await Promise.all(Object.values(browsers).map((b) => b.close()));
   server.close();

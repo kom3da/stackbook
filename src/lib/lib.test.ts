@@ -114,6 +114,11 @@ describe('inline markdown', () => {
       'text',
     ]);
   });
+  it('reads [text](url) as a link labelled with its text', () => {
+    expect(segments('の[Octoverse](https://e.com/)で').filter((x) => x.t === 'url')).toEqual([
+      { t: 'url', v: 'https://e.com/', label: 'Octoverse' },
+    ]);
+  });
   it('points step references at the step heading', () => {
     const [ref] = segments('§2-10 手順3').filter((x) => x.t === 'ref');
     expect(ref).toMatchObject({ v: '§2-10 手順3', sec: '2', sub: '2-10', step: '3' });

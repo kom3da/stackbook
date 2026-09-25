@@ -1,6 +1,5 @@
 ---
 // 名前で引く: a filterable name list beside the dictionary; names open in the reference pane
-import { dictionary } from '../lib/tools';
 
 interface Props {
   /** The field being read, offered as a filter */
@@ -11,7 +10,7 @@ const letters = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '#'];
 ---
 
 <section class="np" aria-labelledby="np-h" data-field={field}>
-  <p class="np-top"><span id="np-h" class="marg-k">名前で引く</span><span class="text-xs text-mute">{dictionary().length}件</span></p>
+  <p class="np-top"><span id="np-h" class="marg-k">名前で引く</span></p>
   <div class="np-box">
     <label class="marg-k" for="np-q">絞り込む</label>
     <input id="np-q" type="search" class="np-q" placeholder="名前の一部（例：pg）" autocomplete="off" />
@@ -21,8 +20,6 @@ const letters = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '#'];
       <button type="button" data-nf="代替" aria-pressed="false">代替</button>
       {field && <button type="button" data-nf="field" aria-pressed="false">この分野</button>}
     </fieldset>
-    <p class="np-n" aria-live="polite"></p>
-    <ul class="np-list"></ul>
     <p class="marg-k mt-4">頭文字</p>
     <div class="np-az">
       {letters.map((l) => (
@@ -31,6 +28,9 @@ const letters = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '#'];
         </button>
       ))}
     </div>
+    {/* The count (with how many are shown) sits right above the list it describes */}
+    <p class="np-n" aria-live="polite"></p>
+    <ul class="np-list"></ul>
     <p class="side-note mt-4">名前を押すと、<span class="max-xl:hidden">参照の欄に</span><span class="xl:hidden">画面の下から</span>ツールが開く。いま読んでいるページは動かない。</p>
   </div>
 </section>

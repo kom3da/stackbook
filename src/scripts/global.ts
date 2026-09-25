@@ -178,6 +178,13 @@ async function results(term: string) {
 }
 const escHtml = (s: string) =>
   s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string);
+/** The name with the typed part marked */
+const markHit = (name: string, term: string) => {
+  const i = name.toLowerCase().indexOf(term.toLowerCase().trim());
+  if (i < 0 || !term.trim()) return escHtml(name);
+  const n = term.trim().length;
+  return `${escHtml(name.slice(0, i))}<mark>${escHtml(name.slice(i, i + n))}</mark>${escHtml(name.slice(i + n))}`;
+};
 async function showResults() {
   if (!q || !qres) return;
   if (!q.value.trim()) {
@@ -190,7 +197,7 @@ async function showResults() {
     ? res
         .map(
           (r, i) =>
-            `<a href="${r.h}" id="qr-${i}" role="option" aria-selected="false" class="block rounded-lg px-3 py-2 no-underline hover:bg-accent-soft [&.on]:bg-accent-soft"><span class="block text-sm font-medium">${escHtml(r.t)}</span><span class="block text-xs text-mute">${escHtml(r.s)}</span></a>`,
+            `<a href="${r.h}" id="qr-${i}" role="option" aria-selected="false" class="block rounded-lg px-3 py-2 no-underline hover:bg-accent-soft [&.on]:bg-accent-soft"><span class="block text-sm font-medium">${markHit(r.t, q.value)}</span><span class="block text-xs text-mute">${escHtml(r.s)}</span></a>`,
         )
         .join('')
     : '<p class="px-3 py-2 text-sm text-mute">該当なし</p>';
@@ -583,9 +590,19 @@ function fitDiagrams() {
 addEventListener('resize', fitDiagrams, { passive: true });
 
 // The make island re-renders on its own; sync its controls after each render
+// The memo's contents list only the sections this answer has (a stack with no diagram has no 構成図)
+function syncToc() {
+  for (const a of document.querySelectorAll<HTMLAnchorElement>('.side-toc a')) {
+    const li = a.closest('li');
+    if (li) li.hidden = !document.getElementById(a.hash.slice(1));
+  }
+}
+
 window.addEventListener('stackbook:render', () => {
   hydrate();
   fitDiagrams();
+  syncToc();
 });
 hydrate();
 fitDiagrams();
+syncToc();

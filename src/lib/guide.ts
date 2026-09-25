@@ -204,7 +204,7 @@ export const secLabel = (s: Section) => s.title;
 /** Plain text for the screen: "（§N-M）" asides go, and other references show their target's name, as Inline shows them */
 export const screenText = (t: string) =>
   screenSegments(t.replace(/（§\d+(?:-\d+)?）/g, ''))
-    .map((x) => (x.t === 'ref' ? refText(x) : x.v))
+    .map((x) => (x.t === 'ref' ? refText(x) : x.t === 'url' ? (x.label ?? x.v) : x.v))
     .join('');
 export const headText = (h: string) => screenText(stripNo(plain(h)));
 

@@ -22,7 +22,7 @@ const nav = await Astro.slots.render('nav');
   </aside>
   <div class="app-body"><slot /></div>
 </div>
-<dialog id="side-sheet" class="peek" aria-label={label}>
+<dialog id="side-sheet" class="peek" aria-label={label} tabindex="-1">
   <div class="peek-top">
     <span class="flex-1 text-sm font-semibold">{label}</span>
     <button type="button" class="peek-btn" data-sheet-close>閉じる</button>
@@ -34,7 +34,11 @@ const nav = await Astro.slots.render('nav');
   const d = document.getElementById('side-sheet') as HTMLDialogElement;
   document.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
-    if (t.closest('[data-sheet-open]')) d.showModal();
+    if (t.closest('[data-sheet-open]')) {
+      d.showModal();
+      // Focus the sheet itself, not its close button, so the first thing seen isn't a focus ring on 閉じる
+      d.focus();
+    }
     // Close on the backdrop, the close button and in-page anchors
     else if (d.open && (t === d || t.closest('[data-sheet-close]') || t.closest('#side-sheet a[href^="#"]'))) d.close();
   });

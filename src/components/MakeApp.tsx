@@ -295,26 +295,30 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
               </div>
             ))}
           </LinksContext.Provider>
+          {/* Below the wide layout the sidenote's key would land at the page's end; it belongs beside the table */}
+          <Legend className="st-key xl:hidden" />
         </Sec>
 
-        <Sec id="m3" title="構成図">
-          {d.cases.map((c) => {
-            const x = p.cases[c];
-            return (
-              x && (
-                <div className="case-fig" key={c}>
-                  <p className="sheet-h">
-                    <a className="ref" href={x.href}>
-                      {x.title}
-                    </a>
-                  </p>
-                  {diagramNote(c) && <p className="sheet-src">{diagramNote(c)}</p>}
-                  <Blocks blocks={x.blocks} secId={p.sec.cases} links={p.links} />
-                </div>
-              )
-            );
-          })}
-        </Sec>
+        {d.cases.length > 0 && (
+          <Sec id="m3" title="構成図">
+            {d.cases.map((c) => {
+              const x = p.cases[c];
+              return (
+                x && (
+                  <div className="case-fig" key={c}>
+                    <p className="sheet-h">
+                      <a className="ref" href={x.href}>
+                        {x.title}
+                      </a>
+                    </p>
+                    {diagramNote(c) && <p className="sheet-src">{diagramNote(c)}</p>}
+                    <Blocks blocks={x.blocks} secId={p.sec.cases} links={p.links} />
+                  </div>
+                )
+              );
+            })}
+          </Sec>
+        )}
 
         {bandTools.length > 0 && (
           <Sec id="m4" title="運用の内訳">
@@ -360,7 +364,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
         </Sec>
       </article>
 
-      <aside className="marg" aria-label="傍注">
+      <aside className={unknown.size ? 'marg' : 'marg max-xl:hidden'} aria-label="傍注">
         {grounds.length > 0 && (
           <div className="marg-b max-xl:hidden">
             <p className="marg-k">根拠</p>
@@ -374,19 +378,9 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
             ))}
           </div>
         )}
-        <div className="marg-b">
+        <div className="marg-b max-xl:hidden">
           <p className="marg-k">記号</p>
-          <ul className="legend-list">
-            <li>
-              <span className="ed-badge">差替</span>条件で既定から差し替えた行
-            </li>
-            {BANDS.map((b) => (
-              <li key={b.ops}>
-                <span className={`om om-${b.ops}`} aria-hidden="true" />
-                {b.label}
-              </li>
-            ))}
-          </ul>
+          <Legend className="legend-list" />
         </div>
         {unknown.size > 0 && (
           <div className="marg-b">
@@ -444,11 +438,31 @@ function PhoneBar({ copy }: { copy: () => string }) {
       <button type="button" aria-haspopup="dialog" data-sheet-open>
         一覧
       </button>
-      <button type="button" disabled={!n} onClick={() => window.dispatchEvent(new Event('stackbook:reopen'))}>
-        参照{n > 0 && <span className="pbar-n">{n}</span>}
-      </button>
+      {/* Only once something has been looked up: until then there is nothing to reopen */}
+      {n > 0 && (
+        <button type="button" onClick={() => window.dispatchEvent(new Event('stackbook:reopen'))}>
+          参照<span className="pbar-n">{n}</span>
+        </button>
+      )}
       <CopyButton text={copy} short />
     </nav>
+  );
+}
+
+/** What the 差替 badge and the ops marks in the stack table mean */
+function Legend({ className }: { className: string }) {
+  return (
+    <ul className={className}>
+      <li>
+        <span className="ed-badge">差替</span>条件で既定から差し替えた行
+      </li>
+      {BANDS.map((b) => (
+        <li key={b.ops}>
+          <span className={`om om-${b.ops}`} aria-hidden="true" />
+          {b.label}
+        </li>
+      ))}
+    </ul>
   );
 }
 

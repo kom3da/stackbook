@@ -27,8 +27,8 @@ const previews = KIND_GROUPS.flatMap(([, ids]) => ids).map((k) => {
 });
 const doors = [
   { href: '/dict/', name: '辞書', note: `${dictionary().length}件・${GROUPS.tools.length}分野`, text: '名前から、既定・代替・根拠・費用を引く。', ids: ['3', '4', '6'] },
-  { href: '/read/', name: '考え方', note: `${GROUPS.read.length}章`, text: '', ids: ['20', '22', '23'] },
-  { href: '/kit/', name: '準備', note: `${GROUPS.kit.length}章`, text: '', ids: ['21', '26', '27'] },
+  { href: '/read/', name: '考え方', note: `${GROUPS.read.length}章`, text: '選び方の根拠、成長したときの移り方、費用の見方を読む。', ids: ['20', '22', '23'] },
+  { href: '/kit/', name: '準備', note: `${GROUPS.kit.length}章`, text: '案件を始めるときのチェックリスト、雛形のコマンド、習熟度の記録。', ids: ['21', '26', '27'] },
 ];
 const OPS = { code: '自分で書く', self: '自分で運用する', managed: 'マネージドに任せる' } as Record<string, string>;
 ---
@@ -80,7 +80,7 @@ const OPS = { code: '自分で書く', self: '自分で運用する', managed: '
                   <a href={d.href}>{d.name}</a>
                   <span class="text-xs font-normal text-mute">{d.note}</span>
                 </h2>
-                {d.text && <p class="text-sm text-mute">{d.text}</p>}
+                {d.text && <p class="mt-2 text-sm text-mute">{d.text}</p>}
                 <ul>
                   {d.ids.map((id) => {
                     const s = SEC.get(id);
