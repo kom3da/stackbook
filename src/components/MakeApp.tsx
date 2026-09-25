@@ -1,7 +1,17 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Block } from '../lib/guide';
 import type { ToolView } from '../lib/view';
-import { type Answers, DEFAULTS, decide, type Kind, type Lookup, questionsFor, resolve } from '../lib/wizard';
+import {
+  type Answers,
+  DEFAULTS,
+  type Decision,
+  decide,
+  KINDS,
+  type Kind,
+  type Lookup,
+  questionsFor,
+  resolve,
+} from '../lib/wizard';
 import { Blocks } from './Blocks';
 import { Inline, type Links } from './Inline';
 import { ToolBody } from './ToolBody';
@@ -38,8 +48,54 @@ const readProf = (): Record<string, string> => {
   }
 };
 
+const SINGLE = ['load', 'env', 'team', 'stage'] as const;
+const lastKey = (kind: Kind) => `stackbook:make:${kind}`;
+
+/** Answers from the URL query, keeping only values this kind offers */
+function fromQuery(kind: Kind, search: string): Answers | null {
+  const u = new URLSearchParams(search);
+  if (![...SINGLE, 'cons'].some((k) => u.has(k))) return null;
+  const qs = questionsFor(kind);
+  const ok = (q: string, v: string | null) => !!v && !!qs.find((x) => x.q === q)?.opts.some((o) => o[0] === v);
+  const a: Answers = { ...DEFAULTS, cons: [] };
+  for (const k of SINGLE) {
+    const v = u.get(k);
+    if (ok(k, v)) a[k] = v as string;
+  }
+  a.cons = (u.get('cons') ?? '').split(',').filter((v) => ok('cons', v));
+  return a;
+}
+/** Only non-default answers go into the URL */
+function toQuery(a: Answers) {
+  const u = new URLSearchParams();
+  for (const k of SINGLE) if (a[k] !== DEFAULTS[k]) u.set(k, a[k]);
+  if (a.cons.length) u.set('cons', a.cons.join(','));
+  const s = u.toString();
+  return s ? `?${s}` : '';
+}
+
 export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: MakePayload }) {
   const [answers, setAnswers] = useState<Answers>(DEFAULTS);
+  const ready = useRef(false);
+  // Conditions come from the URL (shareable); without one, from the last visit
+  useEffect(() => {
+    let a = fromQuery(kind, location.search);
+    if (!a)
+      try {
+        const saved = localStorage.getItem(lastKey(kind));
+        if (saved) a = fromQuery(kind, saved);
+      } catch {}
+    if (a) setAnswers(a);
+    ready.current = true;
+  }, [kind]);
+  useEffect(() => {
+    if (!ready.current) return;
+    const q = toQuery(answers);
+    history.replaceState(history.state, '', `${location.pathname}${q}${location.hash}`);
+    try {
+      localStorage.setItem(lastKey(kind), q);
+    } catch {}
+  }, [answers, kind]);
   const [prof, setProf] = useState<Record<string, string>>({});
   const d = useMemo(() => decide(kind, answers), [kind, answers]);
   const qs = questionsFor(kind);
@@ -137,7 +193,10 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
       </p>
       <div className="mt-4">
         <section className="answer">
-          <p className="eyebrow">推奨</p>
+          <div className="flex items-start justify-between gap-3">
+            <p className="eyebrow">推奨</p>
+            <CopyButton text={() => stackMarkdown(kind, d, tables, summary)} />
+          </div>
           <p className="ans">{d.title}</p>
           <ul className="why">
             {d.why.map((w) => (
@@ -329,4 +388,49 @@ function useWide() {
     return () => m.removeEventListener('change', on);
   }, []);
   return wide;
+}
+
+/** The current answer as Markdown, to paste into an AI agent or a README */
+function stackMarkdown(
+  kind: Kind,
+  d: Decision,
+  tables: { title?: string; rows: { layer: string; text: string }[] }[],
+  summary: string,
+) {
+  const name = KINDS.find((k) => k[0] === kind)?.[1] ?? kind;
+  return [
+    `# ${name}：${d.title}`,
+    '',
+    ...(summary ? [`条件：${summary}`, ''] : []),
+    ...d.why.map((w) => `- ${w}`),
+    ...d.notes.map((n) => `- ${n}`),
+    ...tables.flatMap((t) => [
+      '',
+      ...(t.title ? [`## ${t.title}`, ''] : []),
+      '| レイヤー | 採用 |',
+      '|---|---|',
+      ...t.rows.map((r) => `| ${r.layer} | ${r.text} |`),
+    ]),
+    '',
+    `出典：${location.href}（バージョンは書いていないので、各ツールの最新安定版を確認する）`,
+    '',
+  ].join('\n');
+}
+
+function CopyButton({ text }: { text: () => string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <button
+      type="button"
+      className="cond-btn text-xs"
+      onClick={() =>
+        navigator.clipboard?.writeText(text()).then(() => {
+          setDone(true);
+          setTimeout(() => setDone(false), 1500);
+        })
+      }
+    >
+      {done ? 'コピーしました' : 'Markdownでコピー'}
+    </button>
+  );
 }
