@@ -1,0 +1,71 @@
+---
+import Base from '../../layouts/Base.astro';
+import { GROUP_LABEL, GROUPS, SECS, groupOf, guide, plain, type Section, secLabel, stripNo } from '../../lib/guide';
+import { blocks } from '../../lib/render';
+
+export function getStaticPaths() {
+  return guide.sections.map((s) => ({ params: { id: s.id }, props: { s } }));
+}
+const { s } = Astro.props as { s: Section };
+const g = groupOf(s.id);
+const list = GROUPS[g] as readonly string[];
+const i = list.indexOf(s.id);
+const bySec = (id?: string) => guide.sections.find((x) => x.id === id);
+const prev = bySec(list[i - 1]);
+const next = bySec(list[i + 1]);
+const h3 = s.blocks.filter((b) => b.t === 'h3');
+const tab = g === 'tools' ? 'fields' : g;
+const hub = g === 'tools' ? '/fields/' : `/${g}/`;
+---
+
+<Base title={secLabel(s)} tab={tab} md={`/s/${s.id}.md`} wide={g === 'tools'}>
+  <div class:list={[g === 'tools' && 'mx-auto max-w-4xl']}>
+    <p class="text-sm"><a href={hub} class="text-mute no-underline hover:text-ink">← {GROUP_LABEL[g]}</a></p>
+    <header class="mt-4">
+      {s.num && <p class="eyebrow">§{s.num}</p>}
+      <h1 class="mt-1 text-3xl font-bold tracking-tight">{s.title}</h1>
+    </header>
+    {
+      h3.length >= 3 && (
+        <nav aria-label="このページの見出し" class="mt-6 flex flex-wrap gap-1.5">
+          {h3.map((b) => (
+            <a href={`#${b.t === 'h3' ? b.id : ''}`} class="nx">
+              {b.t === 'h3' && stripNo(plain(b.text))}
+            </a>
+          ))}
+        </nav>
+      )
+    }
+    <div class="doc mt-10" set:html={blocks(s.blocks, s)} />
+    {
+      s.id === SECS.prof && (
+        <div class="prof-io">
+          <button type="button" data-a="exp">JSONに書き出し</button>
+          <button type="button" data-a="imp">JSONを読み込み</button>
+          <button type="button" data-a="clr">すべてクリア</button>
+          <textarea aria-label="習熟度のJSON" placeholder="書き出したJSONがここに表示される。読み込むときはここに貼り付ける" />
+        </div>
+      )
+    }
+    <nav class="mt-16 grid gap-3 border-t border-rule pt-6 sm:grid-cols-2">
+      {
+        prev ? (
+          <a href={`/s/${prev.id}/`} class="rounded-xl border border-rule p-4 no-underline hover:border-accent">
+            <span class="block text-xs text-mute">前</span>
+            {secLabel(prev)}
+          </a>
+        ) : (
+          <span />
+        )
+      }
+      {
+        next && (
+          <a href={`/s/${next.id}/`} class="rounded-xl border border-rule p-4 text-right no-underline hover:border-accent">
+            <span class="block text-xs text-mute">次</span>
+            {secLabel(next)}
+          </a>
+        )
+      }
+    </nav>
+  </div>
+</Base>

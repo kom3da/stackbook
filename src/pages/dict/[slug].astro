@@ -1,0 +1,19 @@
+---
+import Base from '../../layouts/Base.astro';
+import { toolBody } from '../../lib/render';
+import { category, dictionary, type Tool, toolInfo } from '../../lib/tools';
+
+export function getStaticPaths() {
+  return dictionary().map((t) => ({ params: { slug: t.slug }, props: { t } }));
+}
+const { t } = Astro.props as { t: Tool };
+---
+
+<Base title={t.name} tab="dict" md={`/dict/${t.slug}.md`}>
+  <p class="text-sm"><a href="/dict/" class="text-mute no-underline hover:text-ink">← 辞書</a></p>
+  <header class="mt-4">
+    <p class="eyebrow">{category(t)}</p>
+    <h1 class="mt-1 text-3xl font-bold tracking-tight">{t.name}</h1>
+  </header>
+  <div class="mt-8" set:html={toolBody(toolInfo(t.name))} />
+</Base>

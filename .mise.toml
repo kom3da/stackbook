@@ -1,0 +1,5 @@
+[tools]
+node = "lts"
+pnpm = "12"
+gitleaks = "latest"
+actionlint = "latest"

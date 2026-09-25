@@ -1,0 +1,35 @@
+---
+import { GROUPS, type Group, SEC } from '../lib/guide';
+
+interface Props {
+  group: Group;
+  title: string;
+  lead: string;
+  preview: (id: string) => string;
+}
+const { group, title, lead, preview } = Astro.props;
+---
+
+<header class="max-w-2xl">
+  <h1 class="text-3xl font-bold tracking-tight">{title}</h1>
+  <p class="lead mt-2">{lead}</p>
+</header>
+<div class="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+  {
+    GROUPS[group].map((id) => {
+      const s = SEC.get(id);
+      return (
+        s && (
+          <a
+            href={`/s/${id}/`}
+            class="group flex flex-col rounded-xl border border-rule bg-surface p-5 no-underline transition hover:-translate-y-px hover:border-accent"
+          >
+            {s.num && <span class="font-mono text-xs text-accent">§{s.num}</span>}
+            <span class="mt-0.5 font-semibold group-hover:text-accent">{s.title}</span>
+            <span class="mt-2 line-clamp-2 text-sm text-mute">{preview(id)}</span>
+          </a>
+        )
+      );
+    })
+  }
+</div>

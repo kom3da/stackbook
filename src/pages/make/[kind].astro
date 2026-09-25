@@ -1,0 +1,81 @@
+---
+import Base from '../../layouts/Base.astro';
+import { renderMake } from '../../lib/make';
+import { makePayload } from '../../lib/make-data';
+import { DEFAULTS, decide, KINDS, type Kind, QUESTIONS, SHOW } from '../../lib/wizard';
+
+export function getStaticPaths() {
+  return KINDS.map(([kind, name, desc]) => ({ params: { kind }, props: { name, desc } }));
+}
+const kind = Astro.params.kind as Kind;
+const { name, desc } = Astro.props;
+const payload = makePayload(kind);
+const qs = QUESTIONS.filter((q) => SHOW[q.q].includes(kind));
+const html = renderMake(decide(kind, DEFAULTS), payload, {});
+---
+
+<Base title={name} tab="make" md={`/make/${kind}.md`}>
+  <p class="text-sm"><a href="/" class="text-mute no-underline hover:text-ink">← 作るもの</a></p>
+  <header class="mt-4">
+    <h1 class="text-3xl font-bold tracking-tight">{name}</h1>
+    <p class="lead mt-1">{desc}</p>
+  </header>
+
+  {
+    qs.length > 0 && (
+      <form id="conds" class="conds mt-8" data-kind={kind}>
+        {qs.map((q) => (
+          <fieldset>
+            <legend>{q.label}</legend>
+            <div class="chips">
+              {q.opts.map(([v, l]) => (
+                <label>
+                  <input
+                    type={q.multi ? 'checkbox' : 'radio'}
+                    name={q.q}
+                    value={v}
+                    checked={q.multi ? DEFAULTS.cons.includes(v) : DEFAULTS[q.q] === v}
+                  />
+                  <span>{l}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ))}
+      </form>
+    )
+  }
+
+  <div id="result" class="mt-8" aria-live="polite" set:html={html} />
+  <script type="application/json" id="payload" set:html={JSON.stringify(payload).replace(/</g, '\\u003c')} />
+</Base>
+
+<script>
+  import { renderMake, type MakePayload } from '../../lib/make';
+  import { decide, DEFAULTS, type Answers, type Kind } from '../../lib/wizard';
+  import { hydrate, loadProf } from '../../scripts/global';
+
+  const form = document.getElementById('conds') as HTMLFormElement | null;
+  const out = document.getElementById('result') as HTMLElement;
+  const payload = JSON.parse(document.getElementById('payload')?.textContent ?? '{}') as MakePayload;
+  const kind = (form?.dataset.kind ?? location.pathname.split('/')[2]) as Kind;
+
+  function answers(): Answers {
+    const a: Answers = { ...DEFAULTS, cons: [] };
+    if (!form) return a;
+    const fd = new FormData(form);
+    for (const k of ['load', 'env', 'team', 'stage'] as const) a[k] = (fd.get(k) as string) ?? DEFAULTS[k];
+    a.cons = fd.getAll('cons') as string[];
+    return a;
+  }
+  function update() {
+    const open = [...out.querySelectorAll('details[open] .s-layer')].map((e) => e.textContent ?? '');
+    out.innerHTML = renderMake(decide(kind, answers()), payload, loadProf());
+    for (const d of out.querySelectorAll('details'))
+      if (open.includes(d.querySelector('.s-layer')?.textContent ?? '')) d.open = true;
+    hydrate();
+  }
+  form?.addEventListener('change', update);
+  window.addEventListener('stackbook:prof', update);
+  update();
+</script>

@@ -1,0 +1,98 @@
+---
+import '../styles/global.css';
+import { guide } from '../lib/guide';
+
+interface Props {
+  title?: string;
+  tab?: 'make' | 'dict' | 'fields' | 'read' | 'kit';
+  /** Markdown version of this page for AI agents */
+  md?: string;
+  wide?: boolean;
+}
+const { title, tab, md, wide = false } = Astro.props;
+const tabs = [
+  ['make', '/', '作る'],
+  ['dict', '/dict/', '辞書'],
+  ['fields', '/fields/', '分野'],
+  ['read', '/read/', '考え方'],
+  ['kit', '/kit/', '手元'],
+] as const;
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title ? `${title} – ${guide.title}` : guide.title}</title>
+    <meta name="description" content="ケース別の技術スタック・周辺ツール選定ガイド" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {md && <link rel="alternate" type="text/markdown" href={md} />}
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="min-h-dvh pb-20 md:pb-0">
+    <header class="sticky top-0 z-20 border-b border-rule bg-bg/85 backdrop-blur-md">
+      <div class="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4 sm:px-6">
+        <a href="/" class="shrink-0 font-mono text-[0.95rem] font-medium tracking-tight no-underline">stackbook</a>
+        <nav aria-label="主要" class="hidden gap-1 md:flex">
+          {
+            tabs.map(([k, href, label]) => (
+              <a
+                href={href}
+                aria-current={tab === k ? 'page' : undefined}
+                class="rounded-md px-3 py-1.5 text-sm text-mute no-underline hover:text-ink aria-[current]:bg-accent-soft aria-[current]:font-semibold aria-[current]:text-accent"
+              >
+                {label}
+              </a>
+            ))
+          }
+        </nav>
+        <div class="search relative ml-auto w-full max-w-64">
+          <input
+            id="q"
+            type="search"
+            placeholder="ツール・言語を検索"
+            aria-label="ツール・言語を検索"
+            autocomplete="off"
+            class="w-full rounded-lg border border-rule bg-surface px-3 py-1.5 text-sm placeholder:text-faint"
+          />
+          <kbd class="pointer-events-none absolute top-1/2 right-2 hidden -translate-y-1/2 rounded border border-rule px-1.5 font-mono text-[0.7rem] text-faint sm:block">/</kbd>
+          <div
+            id="qres"
+            hidden
+            class="absolute top-full right-0 mt-2 max-h-[70vh] w-[min(24rem,calc(100vw-2rem))] overflow-y-auto rounded-xl border border-rule bg-surface p-1.5 shadow-lg"
+          >
+          </div>
+        </div>
+      </div>
+    </header>
+    <nav
+      aria-label="主要"
+      class="fixed inset-x-0 bottom-0 z-20 flex border-t border-rule bg-bg pb-[env(safe-area-inset-bottom)] md:hidden"
+    >
+      {
+        tabs.map(([k, href, label]) => (
+          <a
+            href={href}
+            aria-current={tab === k ? 'page' : undefined}
+            class="flex-1 py-3 text-center text-sm text-mute no-underline aria-[current]:font-semibold aria-[current]:text-accent"
+          >
+            {label}
+          </a>
+        ))
+      }
+    </nav>
+    <main id="main" class:list={['mx-auto px-4 py-8 sm:px-6 sm:py-12', wide ? 'max-w-6xl' : 'max-w-3xl']}>
+      <slot />
+    </main>
+    <script>
+      import '../scripts/global';
+    </script>
+  </body>
+</html>

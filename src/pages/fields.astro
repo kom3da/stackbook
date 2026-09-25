@@ -1,0 +1,21 @@
+---
+import Hub from '../components/Hub.astro';
+import Base from '../layouts/Base.astro';
+import { plain, SEC, stripNo } from '../lib/guide';
+import { ROWS } from '../lib/tools';
+
+const preview = (id: string) => {
+  const s = SEC.get(id);
+  if (!s) return '';
+  if (id === '2' || id === '19')
+    return s.blocks
+      .flatMap((b) => (b.t === 'h3' ? [stripNo(plain(b.text)).replace(/（.*$/, '')] : []))
+      .slice(0, 8)
+      .join(' · ');
+  return [...new Set(ROWS.filter((r) => r.sec === s).flatMap((r) => r.names))].slice(0, 6).join(' · ');
+};
+---
+
+<Base title="分野" tab="fields" wide>
+  <Hub group="tools" title="分野" lead="分野ごとに、迷ったら使う「既定」と、乗り換える条件。" preview={preview} />
+</Base>
