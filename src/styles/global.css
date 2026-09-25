@@ -1324,6 +1324,9 @@
   .side-nav .side-toc a {
     @apply py-0;
   }
+  .side-nav a.side-trail {
+    @apply rounded-[5px] border border-rule px-2.5 py-1.5;
+  }
   .side-toc-n {
     @apply inline-block w-6 font-mono text-mute;
   }

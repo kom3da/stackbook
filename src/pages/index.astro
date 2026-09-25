@@ -149,6 +149,35 @@ const OPS = { code: '自分で書く', self: '自分で運用する', managed: '
     for (const x of document.querySelectorAll('a[data-kind]')) x.setAttribute('aria-current', String(x === a));
     for (const p of document.querySelectorAll<HTMLElement>('[data-preview]')) p.hidden = p.dataset.preview !== a.dataset.kind;
   });
+  // 前回たどった順: the last chain of references, reopened as it was
+  try {
+    const t = JSON.parse(localStorage.getItem('stackbook:trail') || 'null');
+    if (t?.url && t.labels?.length)
+      for (const nav of document.querySelectorAll('.side-nav')) {
+        const box = document.createElement('div');
+        box.className = 'mt-9';
+        const head = document.createElement('p');
+        head.className = 'side-g';
+        head.textContent = '前回たどった順';
+        const a = document.createElement('a');
+        a.href = t.url;
+        a.className = 'side-trail';
+        const ol = document.createElement('ol');
+        ol.className = 'side-toc';
+        for (const [i, l] of [t.page, ...t.labels].entries()) {
+          const li = document.createElement('li');
+          li.innerHTML = `<span class="side-toc-n">${i + 1}</span>`;
+          li.append(String(l));
+          ol.append(li);
+        }
+        a.append(ol);
+        const note = document.createElement('p');
+        note.className = 'side-note';
+        note.textContent = '押すと、その状態のまま開く（このブラウザに保存）。';
+        box.append(head, a, note);
+        nav.append(box);
+      }
+  } catch {}
   // 前回の続き: the make page records where the reader left off
   try {
     const last = JSON.parse(localStorage.getItem('stackbook:last') || 'null');

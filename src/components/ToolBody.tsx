@@ -154,6 +154,33 @@ export function ToolBody({ tool: t, links }: { tool: ToolView; links: Links }) {
           </ul>
         </div>
       )}
+      {t.make.length > 0 && (
+        <div className="tb">
+          <Head>「作る」での使われ方</Head>
+          <ul className="uses">
+            {t.make.map((u) => (
+              <li key={u.href + u.layer}>
+                <strong>
+                  <a className="ref" href={u.href}>
+                    {u.kind}
+                  </a>
+                </strong>
+                <span>
+                  {u.layer}
+                  {u.when ? `（${u.when}のとき）` : '（既定の条件）'}
+                  {u.edited && <span className="ed-badge ml-1.5">差替</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {t.rules.map((r) => (
+        <div className="tb" key={r.sub + r.cells[0]?.[1]}>
+          <Head right={<Ref id={r.sub.split('-')[0]} sub={r.sub.includes('-') ? r.sub : undefined} />}>判断の目安</Head>
+          <KV className="kv sm" pairs={r.cells.map(([h, c]) => [h, <Inline key={h} text={c} />])} />
+        </div>
+      ))}
       {t.prof.map((name) => (
         <div className="tb tb-prof" key={name}>
           <Head>習熟度</Head>

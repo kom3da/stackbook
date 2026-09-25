@@ -2,6 +2,7 @@
 import { plain, SECS, stripNo } from './guide';
 import { secHref } from './inline';
 import { type ChoiceRow, category, dictionary, hrefOf, type Tool } from './tools';
+import { MAKE_USES, type MakeUse, RULES, type Rule } from './usage';
 
 type Alt = ChoiceRow['alts'][number];
 export type Where = { href: string; label: string };
@@ -23,8 +24,11 @@ export type ToolView = {
   cost: { axis: string; grows: string; action: string }[];
   growth: { to: string; to_tools: string[]; trigger: string; prepare: string }[];
   stacks: { label: string; layer: string; pick: string; tools: string[] }[];
-  /** Proficiency keys (§27 names) that cover this tool */
+  /** Proficiency keys: the §27 names that cover this tool, else the tool's own name */
   prof: string[];
+  /** The make pages' answers that use it, and §23 rules of thumb that name it */
+  make: MakeUse[];
+  rules: Rule[];
   refs: { why: string; whySub: string; cost: string; growth: string };
 };
 
@@ -62,7 +66,9 @@ export const toolView = (t: Tool): ToolView => ({
     pick: s.pick,
     tools: s.tools,
   })),
-  prof: t.prof.map((p) => p.name),
+  prof: t.prof.length ? t.prof.map((p) => p.name) : [t.name],
+  make: MAKE_USES.get(t.id) ?? [],
+  rules: RULES.get(t.id) ?? [],
   refs: { why: SECS.why, whySub: SECS.whyTools, cost: SECS.cost, growth: SECS.growth },
 });
 

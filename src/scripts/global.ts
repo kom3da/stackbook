@@ -363,6 +363,16 @@ async function showTrail(t: Entry[], mode: 'push' | 'replace' | 'none') {
   if (peekBody) peekBody.scrollTop = 0;
   peekBody?.querySelector<HTMLElement>('.peek-h h2')?.focus({ preventScroll: true });
   if (mode !== 'none') writeUrl(mode === 'push' && !wasOpen);
+  // Remembered for the home page's 前回たどった順
+  try {
+    const u = new URL(location.href);
+    u.searchParams.set('ref', encode(trail));
+    const page = document.querySelector('h1')?.textContent?.trim() ?? document.title;
+    localStorage.setItem(
+      'stackbook:trail',
+      JSON.stringify({ url: `${u.pathname}${u.search}`, page, labels: trail.map((e) => e.label) }),
+    );
+  } catch {}
   return true;
 }
 
