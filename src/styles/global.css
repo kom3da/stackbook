@@ -515,46 +515,35 @@
     @apply border-b border-rule;
   }
   .s-head {
-    @apply grid list-none items-baseline gap-x-6 py-3.5;
+    @apply grid items-start gap-x-6 py-3.5;
     grid-template-columns: 7rem 1fr auto;
+  }
+  .s-btn {
+    @apply w-full cursor-pointer border-0 bg-transparent px-0 text-left font-[inherit] text-ink;
+  }
+  .s-btn:hover .s-val {
+    @apply text-accent;
+  }
+  .chev-r {
+    @apply mt-2.5 size-2 rotate-[-45deg] border-r-[1.5px] border-b-[1.5px] border-faint;
   }
   @media (max-width: 639px) {
     .s-head {
       grid-template-columns: 1fr auto;
     }
-    .s-btn {
-      @apply w-full cursor-pointer border-0 bg-transparent p-0 py-3.5 text-left font-[inherit] text-ink;
-    }
-    .s-btn > * {
-      text-align: left;
-    }
-    .s-btn:hover .s-val {
-      @apply text-accent;
-    }
-    .chev-r {
-      @apply size-2 rotate-[-45deg] border-r-[1.5px] border-b-[1.5px] border-faint;
-    }
     .s-layer {
       grid-column: 1 / -1;
     }
   }
-  .s-head::-webkit-details-marker {
-    display: none;
-  }
-  details.srow > summary {
-    @apply cursor-pointer;
-  }
-  details.srow > summary:hover .s-val {
-    @apply text-accent;
-  }
   .s-layer {
-    @apply text-sm text-mute;
+    @apply pt-0.5 text-sm text-mute;
+  }
+  /* Fixed-width icon slot so every row's text starts at the same x */
+  .s-val {
+    @apply flex items-start gap-2.5 font-medium;
   }
   .s-icons {
-    @apply mr-2 inline-flex translate-y-[2px] gap-1 text-faint;
-  }
-  .s-val {
-    @apply font-medium;
+    @apply inline-flex h-[1.75em] w-[3.25rem] shrink-0 items-center justify-end gap-1 text-faint;
   }
   .chev {
     @apply size-2 rotate-45 border-r-[1.5px] border-b-[1.5px] border-faint transition-transform;

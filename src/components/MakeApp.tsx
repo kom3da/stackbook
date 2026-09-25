@@ -235,13 +235,15 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
                       <span className="s-layer">{r.layer}</span>
                       <span className="s-val">
                         <RowIcons tools={r.cards} />
-                        <Inline text={r.text} linkTools={false} />
-                        {r.edited && <span className="tag">差し替え</span>}
-                        {r.warn.map((n) => (
-                          <span key={n} className="badge">
-                            未経験：{n}
-                          </span>
-                        ))}
+                        <span>
+                          <Inline text={r.text} linkTools={false} />
+                          {r.edited && <span className="tag">差し替え</span>}
+                          {r.warn.map((n) => (
+                            <span key={n} className="badge">
+                              未経験：{n}
+                            </span>
+                          ))}
+                        </span>
                       </span>
                     </>
                   );
@@ -479,7 +481,6 @@ function RowIcons({ tools }: { tools: MakeTool[] }) {
     0,
     3,
   );
-  if (!icons.length) return null;
   return (
     <span className="s-icons" aria-hidden="true">
       {icons.map((i) => (
