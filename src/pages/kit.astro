@@ -1,16 +1,69 @@
 ---
-// Old hub page: the chapters now list each other, so this forwards to the first one
+import KitMarg from '../components/KitMarg.astro';
+import SecNav from '../components/SecNav.astro';
+import SideNav from '../components/SideNav.astro';
+import Base from '../layouts/Base.astro';
+import { GROUP_LABEL, GROUPS, plain, SEC, SECS, secLabel, stripNo } from '../lib/guide';
+import { checkTotal, commandTotal, profTotal } from '../lib/kit';
+
+// 準備: every chapter with its opening line and subsections, so the tab shows the whole before diving in
+const group = 'kit' as const;
+const chapters = GROUPS[group].flatMap((id) => {
+  const s = SEC.get(id);
+  if (!s) return [];
+  const p = s.blocks.find((b) => b.t === 'p');
+  // Chapters that open with a table or a checklist say how much they hold instead
+  const first = s.blocks.find((b) => b.t === 'table' || b.t === 'check');
+  const size = first?.t === 'table' ? `${first.rows.length}件の表` : first?.t === 'check' ? `${first.items.length}項目のチェックリスト` : '';
+  const subs = s.blocks.flatMap((b) => (b.t === 'h3' && /^\d+-\d+$/.test(b.id) ? [{ id: b.id, text: stripNo(plain(b.text)) }] : []));
+  return [{ s, lead: p?.t === 'p' ? plain(p.text) : size, subs }];
+});
+// Progress saved in this browser, filled in by the page script
+const progress: Record<string, Record<string, string>> = {
+  [SECS.checklist]: { 'data-count': 'check', 'data-sec': SECS.checklist, 'data-total': String(checkTotal()) },
+  [SECS.prof]: { 'data-count': 'prof', 'data-total': String(profTotal()) },
+};
 ---
 
-<!doctype html>
-<html lang="ja">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="refresh" content="0; url=/s/21/" />
-    <link rel="canonical" href="/s/21/" />
-    <title>移動しました</title>
-  </head>
-  <body>
-    <p><a href="/s/21/">/s/21/</a> に移動しました。</p>
-  </body>
-</html>
+<Base title={GROUP_LABEL[group]} tab={group} app>
+  <SideNav label={GROUP_LABEL[group]} rail={GROUP_LABEL[group]}>
+    <SecNav slot="nav" group={group} current="" />
+    <div class:list={['sec-grid', 'has-marg']}>
+      <article class="paper">
+        <header class="sec-top">
+          <p class="sec-meta">{GROUP_LABEL[group]}　{chapters.length}章</p>
+          <span class="sec-acts pager">
+            <button type="button" class="btn lg:hidden" aria-haspopup="dialog" data-sheet-open>目次</button>
+          </span>
+        </header>
+        <h1 class="sec-h">{GROUP_LABEL[group]}</h1>
+        <p class="mt-3 text-mute">案件開始時のチェックリスト、雛形を作るコマンド、習熟度の記録。チェックと習熟度はこのブラウザに保存する。対象のケース（§19）を選ぶと、そのケースの雛形コマンドと、使うツールの習熟度が並ぶ。</p>
+        <ol class="ov">
+          {
+            chapters.map(({ s, lead, subs }) => (
+              <li>
+                <h2 class="ov-h pager">
+                  <a href={`/s/${s.id}/`}>{secLabel(s)}</a>
+                  {progress[s.id] && <span class="ov-p" {...progress[s.id]} />}
+                  {s.id === SECS.commands && <span class="ov-p">{commandTotal()}件</span>}
+                </h2>
+                {lead && <p class="ov-l">{lead}</p>}
+                {subs.length > 0 && (
+                  <p class="ov-s">
+                    {subs.map((x) => (
+                      <a class="ref" href={`/s/${s.id}/#${x.id}`}>
+                        {x.id} {x.text}
+                      </a>
+                    ))}
+                  </p>
+                )}
+                {s.checked && <p class="ov-c">確認：{s.checked}</p>}
+              </li>
+            ))
+          }
+        </ol>
+      </article>
+      <KitMarg />
+    </div>
+  </SideNav>
+</Base>

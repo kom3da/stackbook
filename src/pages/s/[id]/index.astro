@@ -1,11 +1,11 @@
 ---
 import Base from '../../../layouts/Base.astro';
+import KitMarg from '../../../components/KitMarg.astro';
 import NamePanel from '../../../components/NamePanel.astro';
 import SecNav from '../../../components/SecNav.astro';
 import SideNav from '../../../components/SideNav.astro';
-import { GROUP_LABEL, GROUPS, isStale, STALE_MONTHS, SECS, groupOf, guide, plain, type Section, secLabel, stripNo, subBlocks } from '../../../lib/guide';
-import { Blocks, ProfSeg } from '../../../components/Blocks';
-import { kitCases } from '../../../lib/kit';
+import { GROUP_LABEL, GROUPS, isStale, STALE_MONTHS, SECS, groupOf, guide, plain, type Section, secLabel, stripNo } from '../../../lib/guide';
+import { Blocks } from '../../../components/Blocks';
 import { LINKS } from '../../../lib/view';
 
 export function getStaticPaths() {
@@ -20,7 +20,6 @@ const prev = bySec(list[i - 1]);
 const next = bySec(list[i + 1]);
 const h3 = s.blocks.filter((b) => b.t === 'h3');
 const tab = g === 'tools' ? 'dict' : g;
-const cases = g === 'kit' ? kitCases() : [];
 const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : s.num ? `§${s.num}` : GROUP_LABEL[g];
 ---
 
@@ -85,36 +84,7 @@ const meta = g === 'read' ? `${GROUP_LABEL[g]}　${i + 1} / ${list.length}` : s.
     </nav>
     </article>
     {g === 'tools' && <aside class="marg"><NamePanel field={s.id} /></aside>}
-    {
-      g === 'kit' && (
-        <aside class="marg" aria-label="このケースの雛形と習熟度">
-          <p class="marg-h">傍注 — 選んだケースの雛形と習熟度</p>
-          {cases.map((c) => (
-            <section class="kit-case" data-case={c.id} hidden>
-              {[SECS.commandsCommon, ...c.commands].map((id) => (
-                <div class="marg-b">
-                  <p class="marg-k">§{id} {id === SECS.commandsCommon ? '共通の準備' : 'このケースの雛形'}</p>
-                  <Blocks blocks={subBlocks(SECS.commands, id)} secId={SECS.commands} links={LINKS} />
-                </div>
-              ))}
-              {c.prof.length > 0 && (
-                <div class="marg-b">
-                  <p class="marg-k">§{SECS.prof} このケースの習熟度</p>
-                  <ul class="kit-prof">
-                    {c.prof.map((n) => (
-                      <li class="pl" data-pl={n}>
-                        <span class="pl-n">{n}</span>
-                        <ProfSeg name={n} />
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </section>
-          ))}
-        </aside>
-      )
-    }
+    {g === 'kit' && <KitMarg />}
     </div>
   </SideNav>
 </Base>

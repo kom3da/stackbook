@@ -1,0 +1,38 @@
+---
+// Kit marginalia: the chosen §19 case's starter commands and the levels of the tools it uses
+import { SECS, subBlocks } from '../lib/guide';
+import { kitCases } from '../lib/kit';
+import { LINKS } from '../lib/view';
+import { Blocks, ProfSeg } from './Blocks';
+---
+
+<aside class="marg" aria-label="このケースの雛形と習熟度">
+  <p class="marg-h">傍注 — 選んだケースの雛形と習熟度</p>
+  {
+    kitCases().map((c) => (
+      <section class="kit-case" data-case={c.id} hidden>
+        {[SECS.commandsCommon, ...c.commands].map((id) => (
+          <div class="marg-b">
+            <p class="marg-k">
+              §{id} {id === SECS.commandsCommon ? '共通の準備' : 'このケースの雛形'}
+            </p>
+            <Blocks blocks={subBlocks(SECS.commands, id)} secId={SECS.commands} links={LINKS} />
+          </div>
+        ))}
+        {c.prof.length > 0 && (
+          <div class="marg-b">
+            <p class="marg-k">§{SECS.prof} このケースの習熟度</p>
+            <ul class="kit-prof">
+              {c.prof.map((n) => (
+                <li class="pl" data-pl={n}>
+                  <span class="pl-n">{n}</span>
+                  <ProfSeg name={n} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+    ))
+  }
+</aside>
