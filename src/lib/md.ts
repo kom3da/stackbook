@@ -155,7 +155,7 @@ const tablesMd = (d: Decision) =>
     `### ${t.title ?? '構成'}${t.base ? `（§${t.base} をもとに${t.edits.length ? '条件に合わせて差し替え' : '作成'}）` : ''}`,
     '| レイヤー | 採用 |',
     '|---|---|',
-    ...resolve(t, LOOKUP).map((r) => `| ${r.layer} | ${r.text} |`),
+    ...resolve(t, LOOKUP).map((r) => `| ${r.layer} | ${r.text}${r.edited ? '（差し替え）' : ''} |`),
   ]);
 
 // For each single-condition change from the defaults, what changes (compactly)
@@ -209,10 +209,8 @@ export function makeMd(kind: Kind) {
       .join('\n\n');
     if (body) out.push('', `## §${c} ${stripNo(plain(h3Text(SECS.cases, c)))}`, '', body);
   }
-  const cmd = guide.sections
-    .find((s) => s.id === SECS.commands)
-    ?.blocks.find((b) => b.t === 'h3' && d.cases.some((c) => b.text.includes(`§${c}`)));
-  if (cmd?.t === 'h3') out.push('', toMarkdown(rawSub(cmd.id)).replace(/^### (\d+-\d+)\. /, '## §$1 '));
+  for (const id of [SECS.commandsCommon, ...d.commands])
+    out.push('', toMarkdown(rawSub(id)).replace(/^### (\d+-\d+)\. /, '## §$1 '));
   out.push(
     '',
     '## 次に読む',

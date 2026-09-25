@@ -377,6 +377,9 @@
   .uses span {
     @apply text-sm text-mute;
   }
+  .tag {
+    @apply ml-2 inline-block rounded border border-rule px-1.5 align-middle text-[0.7rem] font-normal whitespace-nowrap text-mute;
+  }
   .badge {
     @apply ml-1 inline-block rounded-full bg-warn-soft px-2 py-px align-middle text-xs font-medium whitespace-nowrap text-warn;
   }

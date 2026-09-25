@@ -18,7 +18,7 @@ export function makePayload(kind: Kind): MakePayload {
     refs: {},
     caseRows: {},
     choices: {},
-    sec: { prof: SECS.prof, cases: SECS.cases, commands: SECS.commands },
+    sec: { prof: SECS.prof, cases: SECS.cases, commands: SECS.commands, commandsCommon: SECS.commandsCommon },
   };
   const addLink = (id: string) => {
     const t = listed.get(id);
@@ -73,14 +73,12 @@ export function makePayload(kind: Kind): MakePayload {
         };
     }
   }
-  // Commands: common setup plus the blocks whose heading references a §19 case
+  // Commands: every §26 subsection by id; the wizard picks which ones to show
   for (const b of SEC.get(SECS.commands)?.blocks ?? []) {
     if (b.t !== 'h3') continue;
-    const key = b.id === SECS.commandsCommon ? '' : (b.text.match(/§(19-\d+)/)?.[1] ?? null);
-    if (key === null) continue;
     const blocks = subBlocks(SECS.commands, b.id);
     linkBlocks(blocks);
-    p.cmds[key] = { title: stripNo(plain(b.text)), blocks };
+    p.cmds[b.id] = { title: stripNo(plain(b.text)).replace(/（§19-\d+）$/, ''), blocks };
   }
   return p;
 }

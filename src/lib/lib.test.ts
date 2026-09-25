@@ -224,6 +224,14 @@ describe('decide (§2-9, §2-10, §19)', () => {
       }
     }
   });
+  it('shows commands that exist in §26 and match the language', () => {
+    const ids = new Set(SEC.get(SECS.commands)?.blocks.flatMap((b) => (b.t === 'h3' ? [b.id] : [])));
+    for (const [k] of KINDS)
+      for (const ans of allAnswers(k))
+        for (const c of decide(k, ans).commands) expect(ids.has(c), `${k}: ${c}`).toBe(true);
+    expect(run('saas').commands).toEqual(['26-5']);
+    expect(run('saas', { team: 'small', stage: 'prod' }).commands).toEqual(['26-6']);
+  });
   it('points every case at an existing §19 subsection', () => {
     for (const [k] of KINDS)
       for (const c of run(k).cases) expect(SEC.get('19')?.blocks.some((b) => b.t === 'h3' && b.id === c)).toBe(true);

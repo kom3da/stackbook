@@ -148,6 +148,8 @@ export type Decision = {
   refs: string[];
   /** §19 subsections whose diagrams and commands apply */
   cases: string[];
+  /** §26 subsections with starter commands (the common setup §26-1 is always shown) */
+  commands: string[];
 };
 
 const R = (at: string, role: string): Src => ({ at, role });
@@ -332,6 +334,18 @@ const LOADS: Rule[] = [
   },
 ];
 
+/** §26 starter commands per language */
+const LANG_CMD: Record<Lang, string> = {
+  ts: '26-5',
+  go: '26-6',
+  rails: '26-4',
+  py: '26-8',
+  ex: '26-9',
+  kt: '26-11',
+  cs: '26-11',
+  rust: '26-11',
+};
+
 /** Languages a team of one or two should not add (手順3) */
 const SOLO_TO_TS: Lang[] = ['go', 'kt', 'ex'];
 /** Languages that are slower to prototype in (手順3) */
@@ -384,6 +398,8 @@ type BackendSpec = {
   extra?: (lang: Lang, env: string) => Edit[];
   /** §19 cases whose diagrams and commands apply */
   cases: (lang: Lang) => string[];
+  /** §26 commands; defaults to the language's starter commands */
+  commands?: (lang: Lang) => string[];
 };
 
 const BACKEND: Record<Backend, BackendSpec> = {
@@ -407,6 +423,7 @@ const BACKEND: Record<Backend, BackendSpec> = {
     swap: (l) => [edit('バックエンド', l.fw)],
     env: { layer: 'インフラ', keep: ['paas'] },
     cases: () => ['19-7'],
+    commands: (lang) => ['26-7', ...(lang === 'ts' ? [] : [LANG_CMD[lang]])],
   },
   ai: {
     base: () => '19-8',
@@ -475,6 +492,7 @@ function backend(kind: Backend, a: Input): Decision {
     notes,
     refs: ['2-10', l.ref, ...COMMON_REFS],
     cases: spec.cases(p.lang),
+    commands: spec.commands?.(p.lang) ?? [LANG_CMD[p.lang]],
   };
 }
 
@@ -490,6 +508,7 @@ const OTHER: Record<Exclude<Kind, Backend>, (a: Input) => Other> = {
     why: ['静的出力でサーバー保守がほぼ不要、非エンジニアの更新はCMSで賄える（§19-1）'],
     refs: ['11'],
     cases: ['19-1'],
+    commands: ['26-2'],
   }),
   ec: (a) => ({
     title: 'Shopify または Medusa',
@@ -502,6 +521,7 @@ const OTHER: Record<Exclude<Kind, Backend>, (a: Input) => Other> = {
     ],
     refs: ['7', '19-12'],
     cases: ['19-2', '19-3'],
+    commands: ['26-3'],
   }),
   cli: (a) => {
     const fast = a.load === 'cpu';
@@ -535,6 +555,7 @@ const OTHER: Record<Exclude<Kind, Backend>, (a: Input) => Other> = {
       ],
       refs: ['2-9', fast ? '2-5' : '2-2'],
       cases: ['19-10'],
+      commands: [fast ? '26-11' : '26-10'],
     };
   },
   devtool: () => ({
@@ -555,6 +576,7 @@ const OTHER: Record<Exclude<Kind, Backend>, (a: Input) => Other> = {
     why: ['近年の高速な開発ツールの主流で、WebAssemblyやネイティブ拡張として他言語に組み込める（§2-9）'],
     refs: ['2-9', '2-5'],
     cases: [],
+    commands: ['26-11'],
   }),
   desktop: (a) => {
     const ms = a.cons.has('ms');
@@ -581,6 +603,7 @@ const OTHER: Record<Exclude<Kind, Backend>, (a: Input) => Other> = {
       ],
       refs: ['2-9', ms ? '2-8' : '2-5'],
       cases: [],
+      commands: ['26-11'],
     };
   },
   embedded: () => ({
@@ -597,6 +620,7 @@ const OTHER: Record<Exclude<Kind, Backend>, (a: Input) => Other> = {
     why: ['メモリ安全性とC並みの性能を両立できる（§2-9）'],
     refs: ['2-9', '2-5'],
     cases: [],
+    commands: ['26-11'],
   }),
   data: (a) => {
     const kt = a.load === 'batch' || a.cons.has('java');
@@ -617,6 +641,7 @@ const OTHER: Record<Exclude<Kind, Backend>, (a: Input) => Other> = {
       ],
       refs: ['2-9', '2-10'],
       cases: ['19-13'],
+      commands: kt ? ['26-11'] : [],
     };
   },
 };
@@ -627,11 +652,20 @@ export function decide(kind: Kind, answers: Answers): Decision {
   const a: Input = { ...answers, kind, cons: new Set(answers.cons) };
   if (isBackend(kind)) return backend(kind, a);
   const o = OTHER[kind](a);
-  return { title: o.title, tables: o.tables, why: o.why, notes: [], refs: [...o.refs, ...COMMON_REFS], cases: o.cases };
+  return {
+    title: o.title,
+    tables: o.tables,
+    why: o.why,
+    notes: [],
+    refs: [...o.refs, ...COMMON_REFS],
+    cases: o.cases,
+    commands: o.commands,
+  };
 }
 
 /** A resolved row, ready to render */
-export type Row = { layer: string; text: string; tools: string[]; ref?: string };
+/** edited: replaced or added on top of the §19 base for the chosen conditions */
+export type Row = { layer: string; text: string; tools: string[]; ref?: string; edited?: boolean };
 export type Lookup = {
   caseRows: (c: string) => { layer: string; text: string; tools: string[] }[] | undefined;
   choice: (at: string, role: string) => { text: string; tools: string[] } | undefined;
@@ -659,7 +693,7 @@ export function resolve(t: Table, look: Lookup): Row[] {
       if (i >= 0) rows.splice(i, 1);
       continue;
     }
-    const row = { ...value(e.src, look), layer: e.layer };
+    const row = { ...value(e.src, look), layer: e.layer, edited: !!t.base };
     if (i >= 0) rows[i] = row;
     else rows.push(row);
   }

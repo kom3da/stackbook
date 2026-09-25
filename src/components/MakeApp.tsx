@@ -19,14 +19,14 @@ export type MakePayload = {
   tools: Record<string, ToolView>;
   links: Links;
   cases: Record<string, { title: string; href: string; blocks: Block[] }>;
-  /** Command blocks keyed by §19 case id; "" holds the common setup */
+  /** Command blocks keyed by §26 subsection id */
   cmds: Record<string, { title: string; blocks: Block[] }>;
   refs: Record<string, { href: string; label: string }>;
   /** §19 stack rows and choice defaults the wizard can reference, keyed like srcKey() */
   caseRows: Record<string, { layer: string; text: string; tools: string[] }[]>;
   choices: Record<string, { layer: string; text: string; tools: string[] }>;
   /** Section ids used in messages */
-  sec: { prof: string; cases: string; commands: string };
+  sec: { prof: string; cases: string; commands: string; commandsCommon: string };
 };
 
 const PKEY = 'stackbook:prof';
@@ -74,6 +74,12 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
     )
     .join(' · ');
 
+  // The §19 diagrams show each case as written; say so when the table above differs from it
+  const diagramNote = (c: string) => {
+    const t = d.tables.find((x) => x.base === c);
+    if (!t) return '参考として載せている。言語や構成は上の表と異なる場合がある。';
+    return t.edits.length ? '§19 の既定の構成の図。「差し替え」の付いた行は図に反映していない。' : '';
+  };
   const unknown = new Set<string>();
   const tables = d.tables.map((t) => ({
     ...t,
@@ -165,6 +171,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
                       <span className="s-layer">{r.layer}</span>
                       <span className="s-val">
                         <Inline text={r.text} linkTools={false} />
+                        {r.edited && <span className="tag">差し替え</span>}
                         {r.warn.map((n) => (
                           <span key={n} className="badge">
                             未経験：{n}
@@ -231,13 +238,14 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
                     {x.title}
                   </a>
                 </h2>
+                {diagramNote(c) && <p className="sheet-src">{diagramNote(c)}</p>}
                 <Blocks blocks={x.blocks} secId={p.sec.cases} links={p.links} />
               </section>
             )
           );
         })}
 
-        <CommandList keys={['', ...d.cases]} p={p} />
+        <CommandList keys={[p.sec.commandsCommon, ...d.commands]} p={p} />
 
         <section className="blk">
           <h2 className="sh">次に読む</h2>
