@@ -230,7 +230,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
           推奨：{d.title}
         </p>
 
-        <Sec n={1} id="m1" title="推奨言語">
+        <Sec id="m1" title="推奨言語">
           <p className="ans">{d.title}</p>
           {d.why.map((w) => (
             <p className="ans-why" key={w}>
@@ -248,7 +248,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
           )}
         </Sec>
 
-        <Sec n={2} id="m2" title="構成">
+        <Sec id="m2" title="構成">
           <LinksContext.Provider value={p.links}>
             {tables.map((t) => (
               <div key={t.title ?? t.base ?? 'composed'} className="st-wrap">
@@ -296,7 +296,7 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
           </LinksContext.Provider>
         </Sec>
 
-        <Sec n={3} id="m3" title="構成図">
+        <Sec id="m3" title="構成図">
           {d.cases.map((c) => {
             const x = p.cases[c];
             return (
@@ -316,13 +316,13 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
         </Sec>
 
         {bandTools.length > 0 && (
-          <Sec n={4} id="m4" title="運用の内訳">
+          <Sec id="m4" title="運用の内訳">
             <OpsList tools={bandTools} />
           </Sec>
         )}
 
         {qs.length > 0 && (
-          <Sec n={5} id="m5" title="条件が違うとき">
+          <Sec id="m5" title="条件が違うとき">
             <DiffList
               items={diffs(kind, answers, look)}
               p={p}
@@ -339,11 +339,11 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
           </Sec>
         )}
 
-        <Sec n={6} id="m6" title="作り始める">
+        <Sec id="m6" title="作り始める">
           <CommandList keys={[p.sec.commandsCommon, ...d.commands]} p={p} />
         </Sec>
 
-        <Sec n={7} id="m7" title="次に読む">
+        <Sec id="m7" title="次に読む">
           <div className="nxs">
             {[...new Set(d.refs)].map((r) => {
               const x = p.refs[r];
@@ -360,7 +360,6 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
       </article>
 
       <aside className="marg" aria-label="傍注">
-        <p className="marg-h">傍注 — ツールや章の名前を押すと、ここに開く</p>
         {grounds.length > 0 && (
           <div className="marg-b">
             <p className="marg-k">根拠</p>
@@ -407,17 +406,13 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
 }
 
 /** A numbered part of the memo: number in the gutter, small heading, content */
-function Sec({ n, id, title, children }: { n: number; id: string; title: string; children: ReactNode }) {
+function Sec({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <section className="ms" id={id} aria-labelledby={`${id}-h`}>
-      <div className="ms-n">{n}</div>
-      <div className="min-w-0">
-        <h2 className="ms-h" id={`${id}-h`}>
-          <span className="ms-hn">{n}</span>
-          {title}
-        </h2>
-        {children}
-      </div>
+      <h2 className="ms-h" id={`${id}-h`}>
+        {title}
+      </h2>
+      {children}
     </section>
   );
 }
@@ -564,7 +559,7 @@ function Compare({
     <section className="blk cmp-box" id="cmp" aria-labelledby="cmp-h">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h2 className="sh" id="cmp-h">
-          比較<span className="sh-d">A を固定し、今の条件（B）と並べている。違う行に ≠ を付けている</span>
+          比較<span className="sh-d">違う行に ≠</span>
         </h2>
         <span className="flex flex-wrap gap-1.5">
           <CopyButton text={md} />

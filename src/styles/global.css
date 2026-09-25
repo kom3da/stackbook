@@ -33,6 +33,8 @@
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
   --font-sans: "IBM Plex Sans JP", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  /* Headings: the logo's face for Latin, the body face for Japanese */
+  --font-display: "Schibsted Grotesk", "IBM Plex Sans JP", "Hiragino Sans", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
@@ -559,7 +561,7 @@
   }
   .memo,
   .paper {
-    @apply min-w-0 rounded-[4px] border border-rule bg-surface px-5 py-8 sm:px-16 sm:pt-11 sm:pb-16;
+    @apply min-w-0 rounded-[2px] bg-surface px-5 py-8 sm:px-16 sm:pt-11 sm:pb-16;
     container: memo / inline-size;
   }
   /* Phones: the paper is the page */
@@ -582,7 +584,7 @@
     @apply flex flex-wrap items-center justify-between gap-3;
   }
   .sec-meta {
-    @apply text-xs tracking-[0.08em] text-mute;
+    @apply text-[13px] text-mute;
   }
   .sec-acts {
     @apply flex flex-wrap gap-2;
@@ -591,7 +593,7 @@
     @apply text-ink no-underline;
   }
   .sec-h {
-    @apply mt-4 text-[26px] leading-snug font-bold sm:text-[32px];
+    @apply mt-4 font-display text-[26px] leading-snug font-bold tracking-[-0.01em] sm:text-[32px];
   }
   .sec-grid {
     @apply grid gap-10;
@@ -677,7 +679,7 @@
     @apply mt-2 grid list-none gap-1 p-0 text-sm;
   }
   .home-pv {
-    @apply mt-4 rounded-[4px] border border-rule bg-surface p-4;
+    @apply mt-4 bg-surface p-5;
   }
   .home-pv-t {
     @apply mt-1 text-2xl font-bold;
@@ -716,7 +718,7 @@
     @apply flex items-baseline justify-between;
   }
   .np-box {
-    @apply mt-2 rounded-[4px] border border-rule bg-surface p-4;
+    @apply mt-2 bg-surface p-5;
   }
   .np-q {
     @apply h-10 w-full rounded-[5px] border border-ink bg-surface px-3 text-sm;
@@ -776,10 +778,10 @@
     @apply flex flex-wrap items-center justify-between gap-3;
   }
   .memo-k {
-    @apply text-xs tracking-[0.08em] text-mute;
+    @apply text-[13px] font-semibold text-ink;
   }
   .memo-h {
-    @apply mt-4 text-[34px] leading-snug font-bold;
+    @apply mt-4 font-display text-[34px] leading-snug font-bold tracking-[-0.01em];
   }
   /* Phones: the kind picker is the title, and copying lives in the bottom bar */
   @media (max-width: 1023px) {
@@ -796,7 +798,7 @@
     @apply mt-5 flex w-full cursor-pointer flex-col items-start border-0 border-b-2 border-ink bg-transparent px-0 pb-2 text-left;
   }
   .kind-pick-k {
-    @apply text-xs font-semibold tracking-[0.12em] text-mute;
+    @apply text-xs font-semibold text-mute;
   }
   .kind-pick-v {
     @apply mt-1 flex w-full items-center justify-between text-2xl font-bold text-ink;
@@ -863,31 +865,18 @@
   }
   /* Numbered parts: number in the gutter */
   .ms {
-    @apply mt-8 grid;
-    grid-template-columns: 2.5rem minmax(0, 1fr);
-  }
-  .ms-n {
-    @apply pt-0.5 font-mono text-[13px] text-mute;
+    @apply mt-10;
   }
   .ms-h {
-    @apply mb-2.5 text-[13px] font-semibold tracking-[0.12em] text-mute;
-  }
-  .ms-hn {
-    @apply mr-2 hidden font-mono font-normal;
+    @apply mb-3 font-display text-xl font-bold text-ink;
   }
   @container memo (max-width: 560px) {
     .ms {
       grid-template-columns: minmax(0, 1fr);
     }
-    .ms-n {
-      @apply hidden;
-    }
-    .ms-hn {
-      @apply inline;
-    }
   }
   .ans {
-    @apply text-3xl leading-tight font-bold;
+    @apply font-display text-[44px] leading-none font-bold tracking-[-0.02em];
   }
   .ans-why {
     @apply mt-1.5 text-base leading-loose;
@@ -1098,10 +1087,10 @@
     @apply mt-4 rounded-lg bg-warn-soft px-4 py-3 text-sm text-warn;
   }
   .nxs {
-    @apply flex flex-wrap gap-2;
+    @apply flex flex-col items-start gap-1.5;
   }
   .nx {
-    @apply rounded-full border border-rule bg-surface px-3.5 py-1.5 text-sm no-underline hover:border-accent hover:text-accent;
+    @apply text-sm text-accent underline decoration-1 underline-offset-[3px] hover:decoration-2;
   }
   /* Marginalia: grounds, the §19 diagram, the legend, warnings */
   .marg {
@@ -1113,7 +1102,7 @@
     }
   }
   .marg-h {
-    @apply hidden text-xs font-semibold tracking-[0.08em] text-mute xl:block;
+    @apply hidden;
   }
   .marg-b {
     @apply mt-6 border-t border-rule pt-4 leading-relaxed;
@@ -1318,7 +1307,7 @@
     @apply hidden;
   }
   .side-g {
-    @apply mb-3 text-xs font-semibold tracking-[0.12em] text-mute;
+    @apply mb-2 text-[13px] font-bold text-ink;
   }
   .side-nav ul {
     @apply grid gap-0.5 text-sm;
@@ -1375,7 +1364,7 @@
     @apply flex size-10 cursor-pointer items-center justify-center rounded-md border border-rule bg-surface text-ink;
   }
   .rail-l {
-    @apply mt-4 text-xs tracking-[0.2em] text-mute;
+    @apply mt-4 text-xs text-mute;
     writing-mode: vertical-rl;
   }
 }

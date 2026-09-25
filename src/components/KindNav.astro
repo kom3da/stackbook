@@ -47,10 +47,7 @@ const TOC = ['推奨言語', '構成', '構成図', '運用の内訳', '条件�
   {
     TOC.map((t, i) => (
       <li>
-        <a href={`#m${i + 1}`}>
-          <span class="side-toc-n">{i + 1}</span>
-          {t}
-        </a>
+        <a href={`#m${i + 1}`}>{t}</a>
       </li>
     ))
   }

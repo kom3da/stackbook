@@ -54,7 +54,7 @@ const OPS = { code: '自分で書く', self: '自分で運用する', managed: '
           <p class="mt-3 flex flex-wrap gap-2 pager"><a class="btn btn-primary" data-last="url" href="/">続きから開く</a></p>
         </section>
 
-        <h2 class="home-h">作るもの　{KINDS.length}<span class="sh-d">既定の推奨つき<span class="hidden xl:inline">。押すとプレビュー、もう一度押すと開く</span></span></h2>
+        <h2 class="home-h">作るもの　{KINDS.length}</h2>
         <ul class="home-kinds">
           {
             previews.map((p) => {
@@ -95,7 +95,6 @@ const OPS = { code: '自分で書く', self: '自分で運用する', managed: '
       </article>
 
       <aside class="marg" aria-label="下見">
-        <p class="marg-h">傍注 — プレビュー。ページは移らない</p>
         <LinksContext.Provider value={LINKS}>
           {
             previews.map((p) => (
