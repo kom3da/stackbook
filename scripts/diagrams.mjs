@@ -1,10 +1,10 @@
 // Renders every ```mermaid block in content/guide/*.md to src/diagrams/<hash>.svg with a local Chrome.
-// The SVGs are committed, so neither the build nor CI needs a browser. Run: pnpm diagrams
-import { execFileSync } from 'node:child_process';
+// Text is measured in the site's typeface and colours become the site's CSS variables, so the SVGs look native.
+// The SVGs are committed, so neither the build nor CI needs a browser. Run: pnpm diagrams (--force re-renders all)
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import puppeteer from 'puppeteer-core';
 import YAML from 'yaml';
 
 const root = new URL('..', import.meta.url).pathname;
@@ -32,40 +32,35 @@ for (const f of readdirSync(join(root, 'content/guide')).sort()) {
   }
 }
 
-const tmp = mkdtempSync(join(tmpdir(), 'stackbook-diagrams-'));
-const config = join(tmp, 'config.json');
-const puppeteer = join(tmp, 'puppeteer.json');
-writeFileSync(
-  config,
-  JSON.stringify({
-    theme: 'base',
-    securityLevel: 'strict',
-    themeVariables: {
-      background: 'transparent',
-      fontFamily: '"Hiragino Sans","Noto Sans JP","IBM Plex Sans JP",sans-serif',
-      fontSize: '14px',
-      primaryColor: '#E6EEF6',
-      primaryBorderColor: '#1F4E79',
-      primaryTextColor: '#1B232B',
-      lineColor: '#5B6770',
-      secondaryColor: '#F7F7F4',
-      tertiaryColor: '#FFFFFF',
-      edgeLabelBackground: '#FFFFFF',
-    },
-    flowchart: { htmlLabels: false, padding: 16, nodeSpacing: 36, rankSpacing: 44, useMaxWidth: true, curve: 'basis' },
-    // Flat, rounded nodes and softer edges to match the site
-    themeCSS: [
-      '.node rect, .node polygon, .node path, .node circle { filter: none !important; stroke-width: 1.5px; }',
-      '.node rect { rx: 8px; ry: 8px; }',
-      '.flowchart-link { stroke: #86919a !important; stroke-width: 1.5px !important; }',
-      '.marker { fill: #86919a !important; stroke: #86919a !important; }',
-      '.edgeLabel rect { fill: #f7f7f4 !important; }',
-      '.edgeLabel text, .edgeLabel tspan { fill: #5b6770 !important; font-size: 12px; }',
-      '.node .label text, .node .label tspan { font-weight: 500; }',
-    ].join(' '),
-  }),
-);
-writeFileSync(puppeteer, JSON.stringify({ executablePath: chrome, args: ['--no-sandbox'] }));
+const FONT = '"IBM Plex Sans JP","Hiragino Sans",sans-serif';
+const CONFIG = {
+  startOnLoad: false,
+  theme: 'base',
+  securityLevel: 'strict',
+  themeVariables: {
+    background: 'transparent',
+    fontFamily: FONT,
+    fontSize: '14px',
+    primaryColor: '#E6EEF6',
+    primaryBorderColor: '#1F4E79',
+    primaryTextColor: '#1B232B',
+    lineColor: '#5B6770',
+    secondaryColor: '#F7F7F4',
+    tertiaryColor: '#FFFFFF',
+    edgeLabelBackground: '#FFFFFF',
+  },
+  flowchart: { htmlLabels: false, padding: 16, nodeSpacing: 36, rankSpacing: 44, useMaxWidth: true, curve: 'basis' },
+  // Flat, rounded nodes and softer edges to match the site
+  themeCSS: [
+    '.node rect, .node polygon, .node path, .node circle { filter: none !important; stroke-width: 1.5px; }',
+    '.node rect { rx: 8px; ry: 8px; }',
+    '.flowchart-link { stroke: #86919a !important; stroke-width: 1.5px !important; }',
+    '.marker { fill: #86919a !important; stroke: #86919a !important; }',
+    '.edgeLabel rect { fill: #f7f7f4 !important; }',
+    '.edgeLabel text, .edgeLabel tspan { fill: #5b6770 !important; font-size: 12px; }',
+    '.node .label text, .node .label tspan { font-weight: 500; }',
+  ].join(' '),
+};
 mkdirSync(out, { recursive: true });
 
 // Colour each node by who runs the tool its label names (content/tools.yaml `ops`), like the answer bands
@@ -103,20 +98,47 @@ function styled(code) {
   return [code, ...CLASSES.map((c) => `  ${c}`), ...lines].join('\n');
 }
 
+// Site colours as CSS variables (defined in src/styles/global.css); only style values accept var()
+const VARS = {
+  '#1f4e79': 'var(--band-code)',
+  '#3d6b99': 'var(--band-self)',
+  '#dce8f3': 'var(--band-managed)',
+  '#b9cfe4': 'var(--band-managed-line)',
+  '#86919a': 'var(--faint)',
+  '#5b6770': 'var(--mute)',
+  '#1b232b': 'var(--ink)',
+  '#f7f7f4': 'var(--bg)',
+};
+const themed = (svg) =>
+  svg.replace(/(style="[^"]*"|<style>[\s\S]*?<\/style>)/g, (m) =>
+    m.replace(/#[0-9a-fA-F]{6}\b/g, (hex) => VARS[hex.toLowerCase()] ?? hex),
+  );
+
 const force = process.argv.includes('--force');
-const mmdc = join(root, 'node_modules/.bin/mmdc');
-let made = 0;
-for (const [hash, code] of sources) {
-  const svg = join(out, `${hash}.svg`);
-  if (existsSync(svg) && !force) continue;
-  const input = join(tmp, `${hash}.mmd`);
-  writeFileSync(input, styled(code));
-  // A unique svg id keeps each diagram's scoped styles from clashing on one page
-  execFileSync(mmdc, ['-i', input, '-o', svg, '-c', config, '-p', puppeteer, '-b', 'transparent', '-I', `mm-${hash}`], {
-    stdio: 'inherit',
-  });
-  made++;
+const todo = [...sources].filter(([hash]) => force || !existsSync(join(out, `${hash}.svg`)));
+if (todo.length) {
+  const browser = await puppeteer.launch({ executablePath: chrome, args: ['--no-sandbox'] });
+  const page = await browser.newPage();
+  await page.setContent(
+    '<!doctype html><html><head><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@400;500;600&display=block"></head><body><div id="c"></div></body></html>',
+    { waitUntil: 'networkidle0' },
+  );
+  await page.addScriptTag({ path: join(root, 'node_modules/mermaid/dist/mermaid.min.js') });
+  for (const [hash, code] of todo) {
+    const svg = await page.evaluate(
+      async ({ id, code, config, font }) => {
+        // Load the font subsets this diagram's text needs before Mermaid measures it
+        await Promise.all(['400', '500', '600'].map((w) => document.fonts.load(`${w} 14px ${font}`, code)));
+        window.mermaid.initialize(config);
+        return (await window.mermaid.render(id, code, document.getElementById('c'))).svg;
+      },
+      { id: `mm-${hash}`, code: styled(code), config: CONFIG, font: '"IBM Plex Sans JP"' },
+    );
+    writeFileSync(join(out, `${hash}.svg`), themed(svg));
+  }
+  await browser.close();
 }
+const made = todo.length;
 // Remove SVGs no longer referenced by the guide
 let removed = 0;
 for (const f of readdirSync(out))
@@ -124,5 +146,4 @@ for (const f of readdirSync(out))
     rmSync(join(out, f));
     removed++;
   }
-rmSync(tmp, { recursive: true, force: true });
 console.log(`diagrams: ${sources.size} total, ${made} rendered, ${removed} removed`);
