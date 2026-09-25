@@ -27,7 +27,7 @@ const nav = await Astro.slots.render('nav');
     <span class="flex-1 text-sm font-semibold">{label}</span>
     <button type="button" class="peek-btn" data-sheet-close>閉じる</button>
   </div>
-  <nav aria-label={label} class="side-nav overflow-y-auto px-6 pt-5 pb-8" set:html={nav} />
+  <nav aria-label={label} class="side-nav min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 pt-5 pb-8" set:html={nav} />
 </dialog>
 
 <script>
