@@ -1,0 +1,30 @@
+---
+// A list beside the content on desktop and a bottom sheet on phones, so readers switch pages without going back.
+// Open the sheet with any button carrying data-sheet-open.
+interface Props {
+  label: string;
+}
+const { label } = Astro.props;
+const nav = await Astro.slots.render('nav');
+---
+
+<div class="lg:grid lg:grid-cols-[14rem_minmax(0,48rem)] lg:gap-12">
+  <aside class="hidden lg:block">
+    <nav aria-label={label} class="side-nav sticky top-20 max-h-[calc(100dvh-6rem)] overflow-y-auto pb-6" set:html={nav} />
+  </aside>
+  <div class="min-w-0"><slot /></div>
+</div>
+<dialog id="side-sheet" class="peek" aria-label={label}>
+  <button type="button" class="peek-x" aria-label="閉じる" data-sheet-close>×</button>
+  <nav aria-label={label} class="side-nav overflow-y-auto px-6 pt-5 pb-8" set:html={nav} />
+</dialog>
+
+<script>
+  const d = document.getElementById('side-sheet') as HTMLDialogElement;
+  for (const b of document.querySelectorAll('[data-sheet-open]')) b.addEventListener('click', () => d.showModal());
+  d.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    // Close on the backdrop, the × and in-page anchors
+    if (t === d || t.closest('[data-sheet-close]') || t.closest('a[href^="#"]')) d.close();
+  });
+</script>

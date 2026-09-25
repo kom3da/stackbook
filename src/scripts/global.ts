@@ -226,7 +226,7 @@ document.addEventListener('click', async (e) => {
   const a = t.closest<HTMLAnchorElement>('a[href]');
   if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   // Moving between pages stays a page move
-  if (a.closest('.peek-more, .pager, header nav, nav[aria-label="主要"]')) return;
+  if (a.closest('.peek-more, .pager, .side-nav, header nav, nav[aria-label="主要"]')) return;
   const frag = fragmentOf(a.getAttribute('href') ?? '');
   if (!frag) return;
   e.preventDefault();

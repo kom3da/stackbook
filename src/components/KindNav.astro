@@ -7,25 +7,23 @@ interface Props {
 const { current } = Astro.props;
 ---
 
-<nav aria-label="作るもの" class="kinds">
-  {
-    KIND_GROUPS.map(([label, ids]) => (
-      <section>
-        <h2 class="kinds-g">{label}</h2>
-        <ul>
-          {ids.map((k) => {
-            const [, name] = KINDS.find((x) => x[0] === k) as (typeof KINDS)[number];
-            return (
-              <li>
-                <a href={`/make/${k}/`} data-astro-prefetch aria-current={k === current ? 'page' : undefined}>
-                  <span class="kinds-n">{name}</span>
-                  <span class="kinds-d">{decide(k, DEFAULTS).title}</span>
-                </a>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-    ))
-  }
-</nav>
+{
+  KIND_GROUPS.map(([label, ids]) => (
+    <section>
+      <h2 class="side-g">{label}</h2>
+      <ul>
+        {ids.map((k) => {
+          const [, name] = KINDS.find((x) => x[0] === k) as (typeof KINDS)[number];
+          return (
+            <li>
+              <a href={`/make/${k}/`} data-astro-prefetch aria-current={k === current ? 'page' : undefined}>
+                <span class="side-n">{name}</span>
+                <span class="side-d">{decide(k, DEFAULTS).title}</span>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  ))
+}

@@ -630,30 +630,36 @@
   }
 }
 
-/* ---- kind switcher on the make page: a sidebar on desktop, a sheet on phones ---- */
+/* ---- side list (make kinds, guide sections): a sidebar on desktop, a sheet on phones ---- */
 @layer components {
-  .kinds section + section {
+  .side-nav section + section {
     @apply mt-6;
   }
-  .kinds-g {
+  .side-g {
     @apply mb-1.5 text-xs font-semibold tracking-wider text-faint;
   }
-  .kinds a {
+  .side-nav a {
     @apply block rounded-lg px-3 py-2 no-underline hover:bg-sunk;
   }
-  .kinds a[aria-current] {
+  .side-nav a[aria-current] {
     @apply bg-accent-soft;
   }
-  .kinds-n {
+  .side-n {
     @apply block text-sm font-medium text-ink;
   }
-  .kinds a[aria-current] .kinds-n {
+  .side-nav a[aria-current] .side-n {
     @apply font-semibold text-accent;
   }
-  .kinds-d {
+  .side-d {
     @apply block text-xs text-mute;
   }
-  .kinds-btn {
+  .side-sub {
+    @apply mt-1 mb-2 ml-3 border-l border-rule;
+  }
+  .side-nav .side-sub a {
+    @apply rounded-none rounded-r-lg py-1 pl-3 text-[0.8rem] text-mute hover:text-ink;
+  }
+  .side-btn {
     @apply mt-1 shrink-0 cursor-pointer rounded-lg border border-rule bg-surface px-3 py-1.5 text-sm text-ink hover:border-accent hover:text-accent;
   }
 }

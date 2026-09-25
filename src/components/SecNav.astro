@@ -1,0 +1,33 @@
+---
+import { GROUPS, type Group, guide, plain, secLabel, stripNo } from '../lib/guide';
+
+interface Props {
+  group: Group;
+  current: string;
+}
+const { group, current } = Astro.props;
+const secs = GROUPS[group].flatMap((id) => guide.sections.filter((s) => s.id === id));
+---
+
+<ul>
+  {
+    secs.map((s) => (
+      <li>
+        <a href={`/s/${s.id}/`} data-astro-prefetch aria-current={s.id === current ? 'page' : undefined}>
+          <span class="side-n">{secLabel(s)}</span>
+        </a>
+        {s.id === current && (
+          <ul class="side-sub">
+            {s.blocks.flatMap((b) =>
+              b.t === 'h3' ? [
+                <li>
+                  <a href={`#${b.id}`}>{stripNo(plain(b.text))}</a>
+                </li>,
+              ] : [],
+            )}
+          </ul>
+        )}
+      </li>
+    ))
+  }
+</ul>
