@@ -286,9 +286,9 @@ function BlockView({ b, secId, names }: { b: Block; secId: string; names: (ids: 
       );
     case 'mermaid':
       return (
-        <figure className="diagram">
-          <pre className="mermaid">{b.text}</pre>
-        </figure>
+        // Pre-rendered at build time from our own guide content (scripts/diagrams.mjs)
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: trusted SVG generated from the guide
+        <figure className="diagram" dangerouslySetInnerHTML={{ __html: b.svg }} />
       );
     case 'table':
       return <Table head={b.head} rows={b.rows} />;

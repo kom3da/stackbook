@@ -1,4 +1,4 @@
-// Behaviour shared by every page: proficiency, checklists, copy buttons, search, diagrams
+// Behaviour shared by every page: proficiency, checklists, copy buttons, search
 
 const PKEY = 'stackbook:prof';
 const CKEY = 'stackbook:check';
@@ -29,7 +29,6 @@ function syncChecks() {
 export function hydrate() {
   syncProf();
   syncChecks();
-  drawDiagrams();
 }
 
 document.addEventListener('change', (e) => {
@@ -164,47 +163,6 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// ---- diagrams: Mermaid is loaded only on pages that have one ----
-// Runs are serialized and pick up nodes at run time, since pages may re-render between calls
-let drawing = Promise.resolve();
-function drawDiagrams() {
-  drawing = drawing.then(draw);
-}
-async function draw() {
-  // Skip islands React has not hydrated yet; they fire stackbook:render once they have
-  const pending = () =>
-    [...document.querySelectorAll<HTMLElement>('pre.mermaid:not([data-processed])')].filter(
-      (n) => !n.closest('astro-island[ssr]'),
-    );
-  if (!pending().length) return;
-  const { default: mermaid } = await import('mermaid');
-  const nodes = pending();
-  if (!nodes.length) return;
-  const base = {
-    background: 'transparent',
-    fontFamily: '"IBM Plex Sans JP","Hiragino Sans",sans-serif',
-    fontSize: '14px',
-  };
-  const themeVariables = {
-    ...base,
-    primaryColor: '#E6EEF6',
-    primaryBorderColor: '#1F4E79',
-    primaryTextColor: '#1B232B',
-    lineColor: '#5B6770',
-    secondaryColor: '#F7F7F4',
-    tertiaryColor: '#FFFFFF',
-    edgeLabelBackground: '#FFFFFF',
-  };
-  mermaid.initialize({
-    startOnLoad: false,
-    theme: 'base',
-    themeVariables,
-    securityLevel: 'strict',
-    flowchart: { htmlLabels: false, padding: 14, nodeSpacing: 28, rankSpacing: 36, useMaxWidth: true },
-  });
-  await mermaid.run({ nodes }).catch((e: unknown) => console.error(e));
-}
-
-// The make island re-renders on its own; sync controls and diagrams after each render
+// The make island re-renders on its own; sync its controls after each render
 window.addEventListener('stackbook:render', hydrate);
 hydrate();

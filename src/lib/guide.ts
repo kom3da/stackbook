@@ -1,7 +1,18 @@
+import { createHash } from 'node:crypto';
 import YAML from 'yaml';
 import toolsYaml from '../../content/tools.yaml?raw';
 import { type Data, isDataKind, type Ops, parseData, TOOLS_FILE, toolIds } from './schema';
 import { plain } from './text';
+
+// Diagrams are rendered ahead of time (scripts/diagrams.mjs) and looked up by the hash of their source
+const svgs = import.meta.glob<string>('../diagrams/*.svg', { query: '?raw', import: 'default', eager: true });
+const SVG = new Map(Object.entries(svgs).map(([k, v]) => [k.replace(/^.*\/|\.svg$/g, ''), v]));
+function diagram(code: string) {
+  const hash = createHash('sha256').update(code).digest('hex').slice(0, 12);
+  const svg = SVG.get(hash);
+  if (!svg) throw new Error(`Diagram ${hash} is not rendered. Run: pnpm diagrams`);
+  return svg;
+}
 
 // Sections live in content/guide/NN.md; files are read in name order and joined
 const files = import.meta.glob<string>('../../content/guide/*.md', { query: '?raw', import: 'default', eager: true });
@@ -17,7 +28,9 @@ export type Block =
   | { t: 'h4'; text: string }
   | { t: 'p'; text: string }
   | { t: 'ul' | 'ol' | 'check'; items: string[] }
-  | { t: 'code' | 'mermaid'; text: string }
+  | { t: 'code'; text: string }
+  /** svg: pre-rendered by `pnpm diagrams` (src/diagrams/<hash>.svg) */
+  | { t: 'mermaid'; text: string; svg: string }
   | { t: 'table'; head: string[]; rows: string[][] }
   | { t: 'data'; d: Data };
 
@@ -33,7 +46,7 @@ const cells = (line: string) =>
     .map((c) => c.trim());
 
 // Parses guide.md into structured data. Section ids: "2" for "## 2. …", "intro", "memo".
-export function parseGuide(src: string): Guide {
+export function parseGuide(src: string, svgOf: (code: string) => string = diagram): Guide {
   const lines = src.split('\n');
   const sections: Section[] = [];
   let title = '';
@@ -107,7 +120,8 @@ export function parseGuide(src: string): Guide {
         } catch (e) {
           throw new Error(`Invalid \`${info}\` block (${at}): ${(e as Error).message}`);
         }
-      } else push({ t: info === 'mermaid' ? 'mermaid' : 'code', text });
+      } else if (info === 'mermaid') push({ t: 'mermaid', text, svg: svgOf(text) });
+      else push({ t: 'code', text });
     } else if (L.startsWith('|')) {
       flush();
       const [head, , ...rows] = collect(/^\|/, cells);

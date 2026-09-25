@@ -57,6 +57,7 @@ describe('parseGuide', () => {
         'para',
         'cont',
       ].join('\n'),
+      () => '<svg/>',
     );
     expect(g.title).toBe('T');
     expect(g.meta).toEqual(['作成：a', 'b']);
@@ -64,7 +65,7 @@ describe('parseGuide', () => {
       { t: 'h3', id: '1-1', text: '1-1. Sub' },
       { t: 'table', head: ['a', 'b'], rows: [['x', '**y**']] },
       { t: 'check', items: ['todo'] },
-      { t: 'mermaid', text: 'flowchart TB' },
+      { t: 'mermaid', text: 'flowchart TB', svg: '<svg/>' },
       { t: 'p', text: 'para cont' },
     ]);
   });

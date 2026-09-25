@@ -4,6 +4,9 @@ pre-commit:
     - name: biome
       glob: "*.{js,ts,mjs,json,css}"
       run: pnpm exec biome check --no-errors-on-unmatched {staged_files}
+    - name: diagrams
+      glob: "content/guide/*.md"
+      run: pnpm diagrams && git add src/diagrams
     - name: gitleaks
       run: gitleaks git --staged --no-banner --redact
 
