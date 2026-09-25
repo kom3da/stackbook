@@ -282,6 +282,11 @@
   .code pre code {
     @apply bg-transparent p-0 text-[inherit];
   }
+  @media (max-width: 639px) {
+    .code pre {
+      @apply pt-11 pr-4;
+    }
+  }
   .copy {
     @apply absolute top-2.5 right-2.5 cursor-pointer rounded-md border border-rule bg-bg px-2 py-0.5 text-xs text-mute hover:text-ink;
   }
@@ -303,7 +308,7 @@
   }
   /* Who runs a tool, told by shape: ■ you write it, □ you run it, dashed ○ managed */
   .om {
-    @apply mr-1.5 inline-block size-[0.6em] shrink-0 align-[0.05em];
+    @apply mr-1.5 inline-block size-[11px] shrink-0 align-[-1px];
     border: 1.5px solid var(--ink);
   }
   .om-code {
@@ -412,6 +417,20 @@
   .memo,
   .paper {
     @apply min-w-0 rounded-[4px] border border-rule bg-surface px-5 py-8 sm:px-16 sm:pt-11 sm:pb-16;
+    container: memo / inline-size;
+  }
+  /* Phones: the paper is the page */
+  @media (max-width: 639px) {
+    body.app {
+      background: var(--surface);
+    }
+    .app-body {
+      @apply px-4 py-2;
+    }
+    .memo,
+    .paper {
+      @apply border-0 px-0 py-4;
+    }
   }
   .paper {
     @apply max-w-[880px];
@@ -452,7 +471,15 @@
   }
   /* Conditions: "label  value" rows */
   .conds {
-    @apply mt-5 grid gap-x-10 sm:grid-cols-2;
+    @apply mt-5 grid gap-x-10;
+  }
+  @container memo (min-width: 700px) {
+    .conds {
+      grid-template-columns: 1fr 1fr;
+    }
+    .cf-multi {
+      grid-column: span 2;
+    }
   }
   .cf {
     @apply grid items-center gap-x-3 border-b border-rule py-2;
@@ -474,7 +501,7 @@
     color: var(--accent);
   }
   .cf-multi {
-    @apply items-start sm:col-span-2;
+    @apply items-start;
   }
   .cf-multi .cf-k {
     @apply pt-1.5;
@@ -504,6 +531,20 @@
   }
   .ms-h {
     @apply mb-2.5 text-[13px] font-semibold tracking-[0.12em] text-mute;
+  }
+  .ms-hn {
+    @apply mr-2 hidden font-mono font-normal;
+  }
+  @container memo (max-width: 560px) {
+    .ms {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .ms-n {
+      @apply hidden;
+    }
+    .ms-hn {
+      @apply inline;
+    }
   }
   .ans {
     @apply text-3xl leading-tight font-bold;
@@ -538,13 +579,13 @@
     @apply w-11 pl-1;
   }
   .st th {
-    @apply w-28 pr-3 text-left font-medium text-mute;
+    @apply w-32 pr-3 text-left font-medium text-mute;
   }
   .st-t {
-    @apply w-60 pr-3;
+    @apply pr-4;
   }
   .st-n {
-    @apply text-mute;
+    @apply w-[38%] text-mute;
   }
   .st-m {
     @apply w-9 pr-1 text-right whitespace-nowrap;
@@ -552,15 +593,20 @@
   .st-m .om {
     @apply mr-0 ml-1;
   }
+  .st a.tl {
+    @apply whitespace-nowrap;
+  }
   .st a.tl,
   .ans-why a.tl,
   .df-c a.tl {
     @apply text-accent underline decoration-1 underline-offset-[3px];
   }
-  @media (max-width: 639px) {
+  @container memo (max-width: 600px) {
     .st tr {
       @apply grid;
-      grid-template-columns: 6rem minmax(0, 1fr) 1.5rem;
+      grid-template-columns: 6rem minmax(0, 1fr) auto;
+      /* A tall layer cell leaves its extra height below the note, not between tool and note */
+      grid-template-rows: auto 1fr;
     }
     .st-b {
       @apply hidden;
@@ -569,15 +615,15 @@
       @apply w-auto;
       grid-row: span 2;
     }
-    .st-t,
-    .st-n {
-      @apply w-auto p-0;
+    .st .st-t,
+    .st .st-n {
+      @apply w-auto py-0;
     }
-    .st-t {
+    .st .st-t {
       @apply pt-2.5;
     }
-    .st-n {
-      @apply col-start-2 pb-2.5 text-xs;
+    .st .st-n {
+      @apply col-start-2 self-start pt-0.5 pb-2.5 text-xs;
     }
     .st-m {
       @apply col-start-3 row-start-1 w-auto pt-2.5;
@@ -598,7 +644,15 @@
   }
   /* Operations: one column each */
   .ops3 {
-    @apply grid gap-5 sm:grid-cols-3;
+    @apply grid gap-5;
+  }
+  @container memo (min-width: 560px) {
+    .ops3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .ops3-v span {
+    @apply whitespace-nowrap;
   }
   .ops3-h {
     @apply flex items-baseline border-b border-ink pb-1.5 text-sm font-semibold;
@@ -611,11 +665,21 @@
   }
   /* Conditions that would change the answer */
   .diffs > li {
-    @apply grid gap-x-4 gap-y-1 border-t border-rule py-3 text-sm;
+    @apply grid gap-x-6 gap-y-1 border-t border-rule py-3 text-sm;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
-  @media (min-width: 640px) {
+  .diffs .df-b {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+  }
+  @container memo (max-width: 560px) {
     .diffs > li {
-      grid-template-columns: 10rem minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .diffs .df-b {
+      grid-column: 1;
+      grid-row: auto;
+      @apply mt-1 flex-row;
     }
   }
   .diffs > li:last-child {
@@ -628,7 +692,7 @@
     @apply grid gap-0.5 text-mute;
   }
   .df-b {
-    @apply flex flex-wrap items-start gap-1 sm:flex-col sm:items-end;
+    @apply flex flex-col flex-wrap items-end gap-1;
   }
   .cmds h3 {
     @apply mt-5 mb-2 text-sm font-semibold text-mute;
@@ -719,6 +783,9 @@
   }
   .marg-card {
     @apply mt-6 rounded-[4px] border border-rule bg-surface p-4;
+  }
+  .marg-fig {
+    @apply block cursor-zoom-in no-underline;
   }
   .marg-card .diagram {
     @apply m-0 border-0 bg-transparent p-0;
@@ -988,7 +1055,7 @@
   body.ref-open .memo,
   body.ref-open .paper {
     max-width: 640px;
-    padding-inline: 2.75rem;
+    padding-inline: 2.5rem;
   }
   body.ref-open .marg {
     display: none;

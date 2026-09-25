@@ -334,7 +334,11 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
                   </a>
                 </p>
                 {diagramNote(c) && <p className="marg-note">{diagramNote(c)}</p>}
-                <Blocks blocks={x.blocks} secId={p.sec.cases} links={p.links} />
+                {/* A preview: the §19 subsection opens large in the reference pane */}
+                <a className="marg-fig" href={x.href} aria-label={`構成図 ${x.title} を大きく開く`}>
+                  <Blocks blocks={x.blocks.filter((b) => b.t === 'mermaid')} secId={p.sec.cases} links={p.links} />
+                </a>
+                <Blocks blocks={x.blocks.filter((b) => b.t !== 'mermaid')} secId={p.sec.cases} links={p.links} />
               </div>
             )
           );
@@ -378,6 +382,7 @@ function Sec({ n, id, title, children }: { n: number; id: string; title: string;
       <div className="ms-n">{n}</div>
       <div className="min-w-0">
         <h2 className="ms-h" id={`${id}-h`}>
+          <span className="ms-hn">{n}</span>
           {title}
         </h2>
         {children}
@@ -711,7 +716,14 @@ function OpsList({ tools }: { tools: MakeTool[] }) {
             {g.label}
             <span className="ops3-n">{g.names.length}</span>
           </p>
-          <p className="ops3-v">{g.names.join('、')}</p>
+          <p className="ops3-v">
+            {g.names.map((n, i) => (
+              <span key={n}>
+                {n}
+                {i < g.names.length - 1 && '、'}
+              </span>
+            ))}
+          </p>
         </div>
       ))}
     </div>
