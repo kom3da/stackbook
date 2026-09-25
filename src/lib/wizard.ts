@@ -13,6 +13,7 @@ export type Kind =
   | 'cli'
   | 'devtool'
   | 'desktop'
+  | 'mobile'
   | 'embedded';
 export type Answers = {
   load: string;
@@ -34,12 +35,13 @@ export const KINDS: [Kind, string, string][] = [
   ['cli', 'CLI・インフラツール', '単一バイナリで配るツール'],
   ['devtool', '開発者ツール・ライブラリ', 'Linter、パーサ、Wasm'],
   ['desktop', 'デスクトップアプリ', 'Mac・Windowsのアプリ'],
+  ['mobile', 'モバイルアプリ', 'iOS・Androidのアプリだけを作る'],
   ['embedded', '組み込み・IoT', 'ファームウェア、マイコン'],
 ];
 /** Kinds grouped so a reader can skip straight to their kind of product */
 export const KIND_GROUPS: [string, Kind[]][] = [
   ['Webサービス', ['web', 'saas', 'toc', 'ai', 'rt', 'ec', 'site']],
-  ['ソフトウェア・ツール', ['cli', 'devtool', 'desktop', 'embedded']],
+  ['ソフトウェア・ツール', ['cli', 'devtool', 'desktop', 'mobile', 'embedded']],
   ['データ', ['data']],
 ];
 /** opts: [value, label, short label for the summary line] */
@@ -612,6 +614,16 @@ const OTHER: Record<Exclude<Kind, Backend>, (a: Input) => Other> = {
       commands: ['26-11'],
     };
   },
+  mobile: () => ({
+    title: 'React Native＋Expo',
+    tables: [{ base: '19-14', edits: [] }],
+    why: [
+      'iOSとAndroidを1つのコードで作れるReact Native＋Expoが既定（§2-9）。Webの画面も要るなら一般向けサービス（§19-7）の構成にする',
+    ],
+    refs: ['2-9', '19-7', '24'],
+    cases: ['19-14'],
+    commands: ['26-13'],
+  }),
   embedded: () => ({
     title: 'Rust',
     tables: [
