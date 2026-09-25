@@ -2,9 +2,11 @@
 import { DEFAULTS, decide, KIND_GROUPS, KINDS, type Kind } from '../lib/wizard';
 
 interface Props {
-  current: Kind;
+  current?: Kind;
+  /** The make page's own contents; the home page has none */
+  toc?: boolean;
 }
-const { current } = Astro.props;
+const { current, toc = true } = Astro.props;
 // Short forms of the default picks, to fit beside the names
 const SHORT: Record<string, string> = {
   'Ruby / Rails': 'Rails',
@@ -36,6 +38,9 @@ const TOC = ['推奨言語', '構成', '構成図', '運用の内訳', '条件�
     })
   }
 </ul>
+{
+  toc && (
+    <>
 <p class="side-g mt-9">このメモの目次</p>
 <ol class="side-toc">
   {
@@ -49,3 +54,6 @@ const TOC = ['推奨言語', '構成', '構成図', '運用の内訳', '条件�
     ))
   }
 </ol>
+    </>
+  )
+}

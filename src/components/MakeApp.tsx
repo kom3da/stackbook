@@ -99,8 +99,23 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
       localStorage.setItem(lastKey(kind), toQuery(answers));
     } catch {}
   }, [answers, pinned, kind]);
-  const [prof, setProf] = useState<Record<string, string>>({});
   const d = useMemo(() => decide(kind, answers), [kind, answers]);
+  // The home page offers to pick up where the reader left off
+  useEffect(() => {
+    if (!ready.current) return;
+    try {
+      localStorage.setItem(
+        'stackbook:last',
+        JSON.stringify({
+          kind,
+          url: `${location.pathname}${toQuery(answers)}`,
+          title: d.title,
+          summary: summaryOf(answers),
+        }),
+      );
+    } catch {}
+  });
+  const [prof, setProf] = useState<Record<string, string>>({});
   const qs = questionsFor(kind);
   const look: Lookup = { caseRows: (c) => p.caseRows[c], choice: (at, role) => p.choices[`${at}|${role}`] };
 

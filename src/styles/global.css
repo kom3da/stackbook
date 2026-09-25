@@ -595,6 +595,74 @@
       grid-template-columns: minmax(0, 880px) minmax(320px, 1fr);
     }
   }
+  /* Home: pick up where you left off, the kinds, the other doors */
+  .home-last {
+    @apply mt-6 rounded-[4px] border border-ink p-5;
+  }
+  .home-last-t {
+    @apply text-xl font-bold;
+  }
+  .home-h {
+    @apply mt-8 flex flex-wrap items-baseline gap-x-3 border-b border-ink pb-2 text-sm font-semibold;
+  }
+  .home-kinds {
+    @apply m-0 grid list-none p-0;
+  }
+  @container memo (min-width: 560px) {
+    .home-kinds {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .home-kinds a {
+    @apply block h-full border-b border-rule px-2 py-3 text-ink no-underline hover:bg-bg;
+  }
+  .home-kinds a[aria-current="true"] {
+    @apply bg-accent-soft shadow-[inset_0_-2px_0_var(--accent)];
+  }
+  .hk-n {
+    @apply block font-semibold;
+  }
+  .hk-d {
+    @apply block text-xs text-mute;
+  }
+  .hk-t {
+    @apply mt-1 block text-sm;
+  }
+  .home-doors {
+    @apply mt-10 grid gap-8;
+  }
+  @container memo (min-width: 560px) {
+    .home-doors {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .home-door-h {
+    @apply flex items-baseline justify-between border-b border-ink pb-1.5;
+  }
+  .home-door-h a {
+    @apply font-semibold text-ink no-underline hover:text-accent;
+  }
+  .home-doors ul {
+    @apply mt-2 grid list-none gap-1 p-0 text-sm;
+  }
+  .home-pv {
+    @apply mt-4 rounded-[4px] border border-rule bg-surface p-4;
+  }
+  .home-pv-t {
+    @apply mt-1 text-2xl font-bold;
+  }
+  .home-pv-rows {
+    @apply mt-3 w-full border-collapse text-sm;
+  }
+  .home-pv-rows tr {
+    @apply border-t border-rule;
+  }
+  .home-pv-rows th {
+    @apply w-24 py-1.5 pr-2 text-left align-top font-medium text-mute;
+  }
+  .home-pv-rows td {
+    @apply py-1.5 align-top;
+  }
   /* Dictionary: fields overview and the 名前で引く panel */
   .dict-fields {
     @apply mt-8 grid gap-x-10;

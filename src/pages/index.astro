@@ -1,78 +1,166 @@
 ---
+import { Inline, LinksContext } from '../components/Inline';
+import KindNav from '../components/KindNav.astro';
+import SideNav from '../components/SideNav.astro';
 import Base from '../layouts/Base.astro';
-import { guide } from '../lib/guide';
-import { Inline } from '../components/Inline';
-import { DEFAULTS, decide, KIND_GROUPS, KINDS } from '../lib/wizard';
+import { GROUPS, guide, SEC, secLabel } from '../lib/guide';
+import { LOOKUP } from '../lib/lookup';
+import { dictionary, TOOLS } from '../lib/tools';
+import { LINKS } from '../lib/view';
+import { DEFAULTS, decide, KIND_GROUPS, KINDS, resolve } from '../lib/wizard';
 
+// Each kind's answer under the default conditions, previewed in the marginalia before opening it
+const previews = KIND_GROUPS.flatMap(([, ids]) => ids).map((k) => {
+  const d = decide(k, DEFAULTS);
+  const rows = d.tables.flatMap((t) => resolve(t, LOOKUP));
+  return {
+    k,
+    name: KINDS.find((x) => x[0] === k)?.[1] ?? k,
+    title: d.title,
+    why: d.why[0] ?? '',
+    rows: rows.slice(0, 6).map((r) => ({
+      ...r,
+      ops: [...new Set(r.tools.map((id) => TOOLS.get(id)?.ops).filter(Boolean))] as string[],
+    })),
+    more: rows.slice(6).map((r) => r.layer),
+  };
+});
 const doors = [
-  ['/dict/', '辞書', '言語・ライブラリを名前や分野から引く'],
-  ['/read/', '考え方', '原則・根拠・目安の数値・費用'],
-  ['/kit/', '準備', 'チェックリスト・コマンド・習熟度'],
+  { href: '/dict/', name: '辞書', note: `${dictionary().length}件・${GROUPS.tools.length}分野`, text: '名前から、既定・代替・根拠・費用を引く。', ids: ['3', '4', '6'] },
+  { href: '/s/20/', name: '考え方', note: `${GROUPS.read.length}章`, text: '', ids: ['20', '22', '23'] },
+  { href: '/s/21/', name: '準備', note: `${GROUPS.kit.length - 1}章`, text: '', ids: ['21', '26', '27'] },
 ];
+const OPS = { code: '自分で書く', self: '自分で運用する', managed: 'マネージドに任せる' } as Record<string, string>;
 ---
 
-<Base tab="make" md="/llms.txt" wide>
-  <header class="max-w-2xl">
-    <p class="eyebrow">{guide.title}</p>
-    <h1 class="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">何を作る？</h1>
-    <p class="lead mt-4">選ぶと、使う技術の一覧と理由、構成図、最初のコマンドが1画面にまとまる。</p>
-  </header>
+<Base tab="make" md="/llms.txt" app>
+  <SideNav label="作るもの" rail="作るもの">
+    <KindNav slot="nav" toc={false} />
+    <div class="sec-grid has-marg">
+      <article class="paper">
+        <header class="sec-top">
+          <p class="sec-meta">{guide.title}</p>
+          <p class="sec-meta">{guide.meta.find((m) => m.startsWith('作成')) ?? ''}</p>
+        </header>
+        <h1 class="sec-h">作るものを選ぶと、言語と構成が決まる</h1>
+        <p class="mt-3 text-mute">
+          各カテゴリの「既定」は1つだけ。代替には乗り換える条件が付いている。バージョン番号と料金は書いていないので、採用時に最新を確認する。
+        </p>
 
-  <div class="mt-10 grid gap-x-12 gap-y-10 lg:grid-cols-2">
-    {
-      KIND_GROUPS.map(([label, ids]) => (
-        <section>
-          <h2 class="text-xs font-semibold tracking-wider text-faint">{label}</h2>
-          <ul class="mt-2 border-t border-rule">
-            {ids.map((k) => {
-              const [, name, desc] = KINDS.find((x) => x[0] === k) as (typeof KINDS)[number];
+        <section class="home-last" id="home-last" hidden aria-labelledby="home-last-h">
+          <p class="marg-k" id="home-last-h">前回の続き</p>
+          <p class="home-last-t"><span data-last="name"></span>　→　<span data-last="title"></span></p>
+          <p class="text-sm text-mute" data-last="summary"></p>
+          <p class="mt-3 flex flex-wrap gap-2 pager"><a class="btn btn-primary" data-last="url" href="/">続きから開く</a></p>
+        </section>
+
+        <h2 class="home-h">作るもの　{KINDS.length}<span class="sh-d">既定の推奨つき<span class="hidden xl:inline">。押すと右の欄で下見、もう一度押すと開く</span></span></h2>
+        <ul class="home-kinds">
+          {
+            previews.map((p) => {
+              const [, , desc] = KINDS.find((x) => x[0] === p.k) as (typeof KINDS)[number];
               return (
-                <li class="border-b border-rule">
-                  <a
-                    href={`/make/${k}/`}
-                    data-astro-prefetch
-                    class="group grid grid-cols-[minmax(0,1fr)_1rem] items-baseline gap-x-4 py-3.5 no-underline sm:grid-cols-[minmax(0,1fr)_9.5rem_1rem]"
-                  >
-                    <span class="col-start-1 row-start-1 min-w-0">
-                      <span class="block font-semibold group-hover:text-accent">{name}</span>
-                      <span class="block text-sm text-mute">{desc}</span>
-                    </span>
-                    <span class="col-start-1 row-start-2 mt-1 text-sm text-mute sm:col-start-2 sm:row-start-1 sm:mt-0">
-                      <span class="sr-only">既定：</span>
-                      {decide(k, DEFAULTS).title}
-                    </span>
-                    <span aria-hidden="true" class="col-start-2 row-start-1 text-faint group-hover:text-accent sm:col-start-3">
-                      ›
-                    </span>
+                <li>
+                  <a href={`/make/${p.k}/`} data-kind={p.k} data-astro-prefetch>
+                    <span class="hk-n">{p.name}</span>
+                    <span class="hk-d">{desc}</span>
+                    <span class="hk-t">{p.title}</span>
                   </a>
                 </li>
               );
-            })}
+            })
+          }
+        </ul>
+
+        <div class="home-doors">
+          {
+            doors.map((d) => (
+              <section>
+                <h2 class="home-door-h pager">
+                  <a href={d.href}>{d.name}</a>
+                  <span class="text-xs font-normal text-mute">{d.note}</span>
+                </h2>
+                {d.text && <p class="text-sm text-mute">{d.text}</p>}
+                <ul>
+                  {d.ids.map((id) => {
+                    const s = SEC.get(id);
+                    return s && <li><a class="ref" href={`/s/${id}/`}>{secLabel(s)}</a></li>;
+                  })}
+                </ul>
+              </section>
+            ))
+          }
+        </div>
+        <p class="mt-10 text-xs text-mute">AIエージェント向け：<a class="ref" href="/llms.txt">/llms.txt</a></p>
+      </article>
+
+      <aside class="marg" aria-label="下見">
+        <p class="marg-h">傍注 — 下見。ページは移らない</p>
+        <LinksContext.Provider value={LINKS}>
+          {
+            previews.map((p, i) => (
+              <section class="home-pv" data-preview={p.k} hidden={i !== 1}>
+                <p class="text-xs text-mute">既定の条件で判定すると</p>
+                <p class="mt-1 font-semibold">{p.name}</p>
+                <p class="home-pv-t">{p.title}</p>
+                {p.why && <p class="text-sm"><Inline text={p.why} /></p>}
+                <table class="home-pv-rows">
+                  <tbody>
+                    {p.rows.map((r) => (
+                      <tr class:list={[r.edited && 'st-ed']}>
+                        <th scope="row">{r.layer}</th>
+                        <td><Inline text={r.text} /></td>
+                        <td class="text-right whitespace-nowrap">
+                          {r.ops.map((o) => <span class={`om om-${o}`} role="img" aria-label={OPS[o]} />)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {p.more.length > 0 && <p class="mt-2 text-xs text-mute">ほか {p.more.join('・')} の{p.more.length}行</p>}
+                <p class="mt-3 pager"><a class="btn btn-primary" href={`/make/${p.k}/`}>条件を選んで開く</a></p>
+              </section>
+            ))
+          }
+        </LinksContext.Provider>
+        <div class="marg-b">
+          <p class="marg-k">引き方</p>
+          <p class="text-sm">上の検索に「pg-boss」や「§2-10」と打つと、この欄に開く。<kbd>/</kbd> でどの画面からでも検索へ。</p>
+        </div>
+        <div class="marg-b">
+          <p class="marg-k">記号</p>
+          <ul class="legend-list">
+            {Object.entries(OPS).map(([o, l]) => <li><span class={`om om-${o}`} aria-hidden="true" />{l}</li>)}
           </ul>
-        </section>
-      ))
-    }
-  </div>
-
-  <div class="mt-14 hidden gap-2.5 md:grid md:grid-cols-3">
-    {
-      doors.map(([href, name, desc]) => (
-        <a href={href} class="rounded-xl border border-dashed border-rule p-4 no-underline hover:border-accent">
-          <span class="block font-semibold">{name} →</span>
-          <span class="mt-0.5 block text-sm text-mute">{desc}</span>
-        </a>
-      ))
-    }
-  </div>
-
-  <footer class="mt-16 space-y-0.5 border-t border-rule pt-6 text-xs text-faint">
-    {
-      guide.meta.map((m) => (
-        <p>
-          <Inline text={m} />
-        </p>
-      ))
-    }
-    <p>AIエージェント向け：<a class="ref" href="/llms.txt">/llms.txt</a></p>
-  </footer>
+        </div>
+      </aside>
+    </div>
+  </SideNav>
 </Base>
+
+<script>
+  // First press previews in the marginalia (when it is shown); the second opens the kind
+  const wide = matchMedia('(min-width: 1280px)');
+  document.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-kind]');
+    if (!a || !wide.matches || e.metaKey || e.ctrlKey || e.shiftKey) return;
+    if (a.getAttribute('aria-current') === 'true') return;
+    e.preventDefault();
+    for (const x of document.querySelectorAll('a[data-kind]')) x.setAttribute('aria-current', String(x === a));
+    for (const p of document.querySelectorAll<HTMLElement>('[data-preview]')) p.hidden = p.dataset.preview !== a.dataset.kind;
+  });
+  // 前回の続き: the make page records where the reader left off
+  try {
+    const last = JSON.parse(localStorage.getItem('stackbook:last') || 'null');
+    const box = document.getElementById('home-last');
+    if (last && box) {
+      const name = document.querySelector(`a[data-kind="${CSS.escape(last.kind)}"] .hk-n`)?.textContent ?? '';
+      for (const el of box.querySelectorAll<HTMLElement>('[data-last]')) {
+        const k = el.dataset.last as string;
+        if (k === 'url') (el as HTMLAnchorElement).href = last.url;
+        else el.textContent = k === 'name' ? name : (last[k] ?? '');
+      }
+      box.hidden = false;
+    }
+  } catch {}
+</script>
