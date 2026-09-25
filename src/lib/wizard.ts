@@ -90,7 +90,7 @@ export const QUESTIONS: { q: keyof Answers; label: string; multi?: true; opts: [
     ],
   },
 ];
-const BACK: Kind[] = ['web', 'saas', 'toc', 'ai', 'rt'];
+const BACK = ['web', 'saas', 'toc', 'ai', 'rt'] as const satisfies Kind[];
 export const SHOW: Record<keyof Answers, Kind[]> = {
   load: [...BACK, 'cli', 'data'],
   env: [...BACK, 'site', 'ec', 'data'],
@@ -250,272 +250,368 @@ const RT: Partial<Record<Lang, string>> = {
 const HEAVY = T('Rustで切り出し（ワーカー、またはnapi-rs／PyO3でネイティブ拡張）', 'rust', 'napi-rs', 'pyo3');
 
 type Input = Omit<Answers, 'cons'> & { kind: Kind; cons: Set<string> };
+type Edit = Table['edits'][number];
+const edit = (layer: string, src: Src | null): Edit => ({ layer, src });
+const COMMON_REFS = ['23', '24', '25'];
 
-function pick(a: Input) {
-  const why: string[] = [];
-  let lang: Lang | null = null;
-  let hard = false;
-  let orig: Lang | null = null;
-  const c = a.cons;
-  if (a.env === 'edge') {
-    lang = 'ts';
-    hard = true;
-    why.push('実行環境がエッジなので、Cloudflare Workersで動くTypeScript（§2-10 手順1）');
-  } else if (c.has('unity')) {
-    lang = 'cs';
-    hard = true;
-    why.push('Unityとモデルや通信定義を共有できるC#（§2-10 手順1）');
-  } else if (c.has('java')) {
-    lang = 'kt';
-    hard = true;
-    why.push('既存のJava資産と直接連携できるKotlin（§2-10 手順1）');
-  } else if (c.has('ms')) {
-    lang = 'cs';
-    hard = true;
-    why.push('Microsoft／Azure環境との親和性が高いC#（§2-10 手順1）');
-  } else if (c.has('ml') || (a.kind === 'ai' && a.load === 'cpu')) {
-    lang = 'py';
-    hard = true;
-    why.push('機械学習ライブラリがPythonに集中している（§2-10 手順1）');
-  }
-  if (!lang) {
-    const byLoad: Record<string, [Lang, string]> = {
-      conn: ['ex', '大量の常時接続を軽量プロセスと自動復旧で扱えるElixir'],
-      p99: ['rust', 'GCによる停止がなく、p99の上振れを抑えられるRust'],
-      domain: ['kt', '状態を型で表現しやすく、トランザクション基盤が成熟したKotlin'],
-      batch: ['kt', '再実行・中断再開の仕組みが揃ったKotlin（Spring Batch／Kafka Streams）'],
-      io: ['ts', '非同期I/Oが書きやすく、フロントと型を共有できるTypeScript'],
-    };
-    if (byLoad[a.load]) {
-      [lang] = byLoad[a.load];
-      why.push(`${byLoad[a.load][1]}（§2-10 手順2）`);
-    } else {
-      if (a.kind === 'web') {
-        lang = 'rails';
-        why.push('DB中心のCRUDなので性能差は効かない。画面数の多い業務システムはRailsが最も速く作れる（§2-10 手順2）');
-      } else if (a.kind === 'saas') {
-        lang = a.team === 'solo' ? 'ts' : 'go';
-        why.push(
-          lang === 'go'
-            ? '中規模以上のAPIは、単一バイナリで運用が単純なGoが国内でも定番（§2-10 手順2）'
-            : '少人数なのでフロントと同じTypeScriptに揃える（§2-10 手順3）',
-        );
-      } else if (a.kind === 'rt') {
-        lang = 'ex';
-        why.push('常時接続とプレゼンスが中核なのでElixir（§2-10 手順2）');
-      } else {
-        lang = 'ts';
-        why.push('フロントと同じ言語に揃えられ、API呼び出し中心の処理に向くTypeScript（§2-10 手順2）');
-      }
-      if (a.load === 'cpu') why.push('CPU負荷の高い部分だけをRustで切り出す（§2-10 混在ルール）');
-    }
-  }
-  if (!hard && a.stage === 'mvp' && (['go', 'kt', 'rust', 'ex'] as Lang[]).includes(lang)) {
+// ---- Choosing the language (§2-10). Rules are checked top to bottom; the first match wins ----
+
+type Rule = { when: (a: Input) => boolean; lang: Lang; why: string };
+
+/** 手順1: an external constraint decides outright */
+const CONSTRAINTS: Rule[] = [
+  {
+    when: (a) => a.env === 'edge',
+    lang: 'ts',
+    why: '実行環境がエッジなので、Cloudflare Workersで動くTypeScript（§2-10 手順1）',
+  },
+  { when: (a) => a.cons.has('unity'), lang: 'cs', why: 'Unityとモデルや通信定義を共有できるC#（§2-10 手順1）' },
+  { when: (a) => a.cons.has('java'), lang: 'kt', why: '既存のJava資産と直接連携できるKotlin（§2-10 手順1）' },
+  { when: (a) => a.cons.has('ms'), lang: 'cs', why: 'Microsoft／Azure環境との親和性が高いC#（§2-10 手順1）' },
+  {
+    when: (a) => a.cons.has('ml') || (a.kind === 'ai' && a.load === 'cpu'),
+    lang: 'py',
+    why: '機械学習ライブラリがPythonに集中している（§2-10 手順1）',
+  },
+];
+
+/** 手順2: the nature of the load, then the kind of product */
+const LOADS: Rule[] = [
+  {
+    when: (a) => a.load === 'conn',
+    lang: 'ex',
+    why: '大量の常時接続を軽量プロセスと自動復旧で扱えるElixir（§2-10 手順2）',
+  },
+  {
+    when: (a) => a.load === 'p99',
+    lang: 'rust',
+    why: 'GCによる停止がなく、p99の上振れを抑えられるRust（§2-10 手順2）',
+  },
+  {
+    when: (a) => a.load === 'domain',
+    lang: 'kt',
+    why: '状態を型で表現しやすく、トランザクション基盤が成熟したKotlin（§2-10 手順2）',
+  },
+  {
+    when: (a) => a.load === 'batch',
+    lang: 'kt',
+    why: '再実行・中断再開の仕組みが揃ったKotlin（Spring Batch／Kafka Streams）（§2-10 手順2）',
+  },
+  {
+    when: (a) => a.load === 'io',
+    lang: 'ts',
+    why: '非同期I/Oが書きやすく、フロントと型を共有できるTypeScript（§2-10 手順2）',
+  },
+  {
+    when: (a) => a.kind === 'web',
+    lang: 'rails',
+    why: 'DB中心のCRUDなので性能差は効かない。画面数の多い業務システムはRailsが最も速く作れる（§2-10 手順2）',
+  },
+  {
+    when: (a) => a.kind === 'saas' && a.team !== 'solo',
+    lang: 'go',
+    why: '中規模以上のAPIは、単一バイナリで運用が単純なGoが国内でも定番（§2-10 手順2）',
+  },
+  { when: (a) => a.kind === 'saas', lang: 'ts', why: '少人数なのでフロントと同じTypeScriptに揃える（§2-10 手順3）' },
+  { when: (a) => a.kind === 'rt', lang: 'ex', why: '常時接続とプレゼンスが中核なのでElixir（§2-10 手順2）' },
+  {
+    when: () => true,
+    lang: 'ts',
+    why: 'フロントと同じ言語に揃えられ、API呼び出し中心の処理に向くTypeScript（§2-10 手順2）',
+  },
+];
+
+/** Languages that are slower to prototype in (手順3) */
+const SLOW_TO_START: Lang[] = ['go', 'kt', 'rust', 'ex'];
+
+function pickLanguage(a: Input): { lang: Lang; why: string[]; orig?: Lang } {
+  const hard = CONSTRAINTS.find((r) => r.when(a));
+  if (hard) return { lang: hard.lang, why: [hard.why] };
+  const r = LOADS.find((x) => x.when(a)) as Rule;
+  const why = [r.why];
+  let lang = r.lang;
+  let orig: Lang | undefined;
+  // CPU-heavy work does not change the language; the heavy part is carved out
+  if (a.load === 'cpu') why.push('CPU負荷の高い部分だけをRustで切り出す（§2-10 混在ルール）');
+  // 手順3: prototype in a fast-to-build language, and keep tiny teams on one language
+  if (a.stage === 'mvp' && SLOW_TO_START.includes(lang)) {
     orig = lang;
     lang = a.kind === 'web' ? 'rails' : 'ts';
     why.push(
       `試作段階なので開発速度を優先して${name(lang)}で始め、本番化の段階で${name(orig)}への切り替え・切り出しを検討する（§2-10 手順3、§24）`,
     );
   }
-  if (!hard && a.team === 'solo' && lang === 'go') {
+  if (a.team === 'solo' && lang === 'go') {
     lang = 'ts';
     why.push('開発者が1〜2人なので、フロントと同じTypeScriptに揃える（§2-10 手順3）');
   }
   return { lang, why, orig };
 }
 
-type Edit = Table['edits'][number];
-const edit = (layer: string, src: Src | null): Edit => ({ layer, src });
+// ---- Backend products: a §19 case adjusted to the chosen language and environment ----
+
+type Backend = (typeof BACK)[number];
+type BackendSpec = {
+  /** §19 case to start from for the chosen language; undefined means compose from the language's defaults */
+  base: (lang: Lang) => string | undefined;
+  /** Languages the case already covers; for others, `swap` replaces its language-specific rows */
+  covers?: Lang[];
+  swap?: (l: (typeof L)[Lang]) => Edit[];
+  /** Row the execution environment replaces, except in the environments listed in `keep` */
+  env?: { layer: string; keep: string[] };
+  /** Used when composing: the front-end and auth rows, and rows to append */
+  front?: (lang: Lang) => Src;
+  auth?: Src;
+  extra?: (lang: Lang) => Edit[];
+  /** §19 cases whose diagrams and commands apply */
+  cases: (lang: Lang) => string[];
+};
+
+const BACKEND: Record<Backend, BackendSpec> = {
+  web: {
+    base: (lang) => ({ rails: '19-4', ts: '19-5' })[lang as 'rails' | 'ts'],
+    env: { layer: 'デプロイ', keep: ['paas'] },
+    front: (lang) => (lang === 'ex' ? R('2-7', '画面') : C('19-5', 'フロント')),
+    auth: R('6', '社内ツール'),
+    cases: (lang) => [lang === 'rails' ? '19-4' : '19-5'],
+  },
+  saas: {
+    base: () => '19-6',
+    covers: ['go'],
+    swap: (l) => [edit('バックエンド', l.fw), edit('ジョブ', l.job)],
+    env: { layer: 'インフラ', keep: ['paas', 'aws'] },
+    cases: () => ['19-6'],
+  },
+  toc: {
+    base: () => '19-7',
+    covers: ['ts', 'go'],
+    swap: (l) => [edit('バックエンド', l.fw)],
+    env: { layer: 'インフラ', keep: ['paas'] },
+    cases: () => ['19-7'],
+  },
+  ai: {
+    base: () => '19-8',
+    covers: ['ts', 'py'],
+    swap: (l) => [edit('AIバックエンド', l.fw)],
+    env: { layer: 'インフラ', keep: ['paas'] },
+    cases: () => ['19-8'],
+  },
+  rt: {
+    // §19-9 is a menu, so compose and pick its row for the language
+    base: () => undefined,
+    front: (lang) => (lang === 'ex' ? R('2-7', '画面') : R('3', 'アプリ（SSR・フルスタック）')),
+    auth: R('6', 'マネージド（toC・スタートアップ）'),
+    extra: (lang) => [
+      edit('リアルタイム', C('19-9', RT[lang] ?? '同時接続が多い（Elixirを採用しない場合）')),
+      edit('共同編集', C('19-9', '共同編集')),
+      edit('片方向の配信', C('19-9', '片方向で足りる')),
+    ],
+    cases: () => ['19-9'],
+  },
+};
+
+/** A table from the language's defaults, for languages no §19 case covers */
+const composed = (l: (typeof L)[Lang], front: Src, auth: Src, env: string): Edit[] => [
+  edit('言語', T(l.n, ...l.tools)),
+  edit('フロント', front),
+  edit('バックエンド', l.fw),
+  edit('DB', R('4-1', 'RDB')),
+  edit('データアクセス', l.db),
+  edit('ジョブ', l.job),
+  edit('認証', auth),
+  edit('テスト', l.test),
+  edit('インフラ', ENV[env]),
+  edit('監視', R('14', 'エラー監視')),
+  edit('CI', R('13', 'CI/CD')),
+];
+
+function backend(kind: Backend, a: Input): Decision {
+  const spec = BACKEND[kind];
+  const p = pickLanguage(a);
+  const l = L[p.lang];
+  const base = spec.base(p.lang);
+  const edits: Edit[] = [];
+  if (!base)
+    edits.push(
+      ...composed(l, (spec.front as (x: Lang) => Src)(p.lang), spec.auth as Src, a.env),
+      ...(spec.extra?.(p.lang) ?? []),
+    );
+  else {
+    if (spec.covers && !spec.covers.includes(p.lang)) edits.push(...(spec.swap?.(l) ?? []));
+    if (spec.env && !spec.env.keep.includes(a.env)) edits.push(edit(spec.env.layer, ENV[a.env]));
+  }
+  if (a.env === 'aws') edits.push(edit('認証（AWSに集約する場合）', R('6', 'マネージド（AWS中心）')));
+  if (a.load === 'cpu' && p.lang !== 'rust') edits.push(edit('重い処理', HEAVY));
+  const notes: string[] = [];
+  if (p.orig)
+    notes.push(
+      `本番化で${name(p.orig)}に移るときの手順は §24 を確認する。APIをOpenAPIで定義しておくと差し替えやすい。`,
+    );
+  if (a.team === 'large')
+    notes.push('10人以上ならモジュール構造を強制する（TypeScriptならNestJS、Goならパッケージ境界のルール化。§23-4）。');
+  return {
+    title: l.n,
+    tables: [{ base, edits }],
+    why: p.why,
+    notes,
+    refs: ['2-10', l.ref, ...COMMON_REFS],
+    cases: spec.cases(p.lang),
+  };
+}
+
+// ---- Other products: one small definition each ----
+
+type Other = Omit<Decision, 'notes'>;
+const OTHER: Record<Exclude<Kind, Backend>, (a: Input) => Other> = {
+  site: (a) => ({
+    title: 'Astro＋ヘッドレスCMS',
+    tables: [
+      { base: '19-1', edits: a.env === 'aws' ? [edit('ホスティング', T('S3＋CloudFront', 's3', 'cloudfront'))] : [] },
+    ],
+    why: ['静的出力でサーバー保守がほぼ不要、非エンジニアの更新はCMSで賄える（§19-1）'],
+    refs: ['11'],
+    cases: ['19-1'],
+  }),
+  ec: (a) => ({
+    title: 'Shopify または Medusa',
+    tables: [
+      { title: '独自要件が少ない', base: '19-2', edits: [] },
+      { title: '独自要件が多い', base: '19-3', edits: a.env === 'onprem' ? [edit('インフラ', ENV.onprem)] : [] },
+    ],
+    why: [
+      '独自要件が少なければSaaSに任せるのが最も安全で安い。定期購入・BtoB価格など独自要件が多いならMedusa（§19-2、§19-3）',
+    ],
+    refs: ['7', '19-12'],
+    cases: ['19-2', '19-3'],
+  }),
+  cli: (a) => {
+    const fast = a.load === 'cpu';
+    return {
+      title: fast ? 'Rust' : 'Go',
+      tables: [
+        fast
+          ? {
+              edits: [
+                edit('言語', T('Rust', 'rust')),
+                edit('CLI', R('2-5', 'CLI')),
+                edit('配布', R('2-5', 'バイナリ配布')),
+                edit('クロスコンパイル', R('2-5', 'クロスコンパイル')),
+                edit('テスト', R('2-5', 'テスト実行')),
+                edit('脆弱性チェック', R('2-5', '脆弱性チェック')),
+              ],
+            }
+          : {
+              base: '19-10',
+              edits: [
+                edit('CLI', R('2-2', 'CLI')),
+                edit('テスト', R('2-2', 'テスト')),
+                edit('脆弱性チェック', R('2-2', '脆弱性チェック')),
+              ],
+            },
+      ],
+      why: [
+        fast
+          ? '起動時間・処理速度を詰める必要があるのでRust（§2-9）'
+          : '単一バイナリで配布しやすく、クロスコンパイルも簡単なGo（§2-9）',
+      ],
+      refs: ['2-9', fast ? '2-5' : '2-2'],
+      cases: ['19-10'],
+    };
+  },
+  devtool: () => ({
+    title: 'Rust',
+    tables: [
+      {
+        edits: [
+          edit('言語', R('2-9', '開発者向けツール（Linter、フォーマッタ、ビルドツール、パーサ）')),
+          edit('WebAssembly', R('2-5', 'WebAssembly')),
+          edit('Node.jsから呼ぶ', R('2-5', 'Node.jsから呼ぶネイティブ拡張')),
+          edit('Pythonから呼ぶ', R('2-5', 'Pythonから呼ぶネイティブ拡張')),
+          edit('テスト', R('2-5', 'テスト実行')),
+          edit('ベンチマーク', R('2-5', 'ベンチマーク')),
+          edit('配布', R('2-5', 'バイナリ配布')),
+        ],
+      },
+    ],
+    why: ['近年の高速な開発ツールの主流で、WebAssemblyやネイティブ拡張として他言語に組み込める（§2-9）'],
+    refs: ['2-9', '2-5'],
+    cases: [],
+  }),
+  desktop: (a) => {
+    const ms = a.cons.has('ms');
+    return {
+      title: ms ? 'C#（.NET）' : 'Tauri',
+      tables: [
+        {
+          edits: ms
+            ? [
+                edit('構成', T('C#（.NET）', 'csharp', 'net')),
+                edit('SDK', R('2-8', 'SDK')),
+                edit('テスト', R('2-8', 'テスト')),
+              ]
+            : [
+                edit('構成', R('2-5', 'デスクトップアプリ')),
+                edit('フロント', R('3', 'SPA（ログイン後の管理画面など）')),
+              ],
+        },
+      ],
+      why: [
+        ms
+          ? 'Windows専用の業務アプリでMicrosoft環境が中心なら.NET（§2-9）'
+          : 'UIはWeb技術、裏側はRustで軽量なバイナリになるTauri（§2-9）',
+      ],
+      refs: ['2-9', ms ? '2-8' : '2-5'],
+      cases: [],
+    };
+  },
+  embedded: () => ({
+    title: 'Rust',
+    tables: [
+      {
+        edits: [
+          edit('言語', R('2-9', '組み込み・IoT・ファームウェア')),
+          edit('非同期フレームワーク', R('2-5', '組み込み（非同期）')),
+          edit('テスト', R('2-5', 'テスト実行')),
+        ],
+      },
+    ],
+    why: ['メモリ安全性とC並みの性能を両立できる（§2-9）'],
+    refs: ['2-9', '2-5'],
+    cases: [],
+  }),
+  data: (a) => {
+    const kt = a.load === 'batch' || a.cons.has('java');
+    return {
+      title: kt ? 'Kotlin（Spring Batch）＋SQL' : 'SQL＋Python（Polars）',
+      tables: [
+        {
+          edits: [
+            edit('集計', R('2-9', 'データ分析・集計')),
+            ...(kt
+              ? [edit('バッチ', R('2-6', 'バッチ')), edit('ストリーム', R('2-6', 'ストリーム処理'))]
+              : [edit('変換', R('2-4', 'データ処理')), edit('Python環境', R('2-4', 'バージョン・依存管理'))]),
+            edit('ワークフロー', R('4-4', 'ワークフロー')),
+            edit('実行', ENV[a.env]),
+          ],
+        },
+      ],
+      why: [
+        '集計はまずSQLで書くのが最短で、SQLで表現しにくい変換だけPythonにする（§2-9）',
+        ...(kt ? ['再実行・中断再開が必要な大規模バッチやストリーム処理はKotlin（§2-10 手順2）'] : []),
+      ],
+      refs: ['2-9', '2-10'],
+      cases: [],
+    };
+  },
+};
+
+const isBackend = (k: Kind): k is Backend => (BACK as Kind[]).includes(k);
 
 export function decide(kind: Kind, answers: Answers): Decision {
   const a: Input = { ...answers, kind, cons: new Set(answers.cons) };
-  const why: string[] = [];
-  const refs: string[] = [];
-  const notes: string[] = [];
-  const cases: string[] = [];
-  const tables: Table[] = [];
-  const env = a.env;
-  let title = '';
-
-  if (BACK.includes(a.kind)) {
-    const p = pick(a);
-    const l = L[p.lang];
-    why.push(...p.why);
-    title = l.n;
-    const edits: Edit[] = [];
-    // Tables built from the language set when no §19 case matches the chosen language
-    const composed = (front: Src, auth: Src) => [
-      edit('言語', T(l.n, ...l.tools)),
-      edit('フロント', front),
-      edit('バックエンド', l.fw),
-      edit('DB', R('4-1', 'RDB')),
-      edit('データアクセス', l.db),
-      edit('ジョブ', l.job),
-      edit('認証', auth),
-      edit('テスト', l.test),
-      edit('インフラ', ENV[env]),
-      edit('監視', R('14', 'エラー監視')),
-      edit('CI', R('13', 'CI/CD')),
-    ];
-    let base: string | undefined;
-    if (a.kind === 'web') {
-      base = p.lang === 'rails' ? '19-4' : p.lang === 'ts' ? '19-5' : undefined;
-      if (base) {
-        if (env !== 'paas') edits.push(edit('デプロイ', ENV[env]));
-      } else edits.push(...composed(p.lang === 'ex' ? R('2-7', '画面') : C('19-5', 'フロント'), R('6', '社内ツール')));
-      cases.push(p.lang === 'rails' ? '19-4' : '19-5');
-    } else if (a.kind === 'saas') {
-      base = '19-6';
-      if (p.lang !== 'go') edits.push(edit('バックエンド', l.fw), edit('ジョブ', l.job));
-      if (env !== 'paas' && env !== 'aws') edits.push(edit('インフラ', ENV[env]));
-    } else if (a.kind === 'toc') {
-      base = '19-7';
-      if (p.lang !== 'ts' && p.lang !== 'go') edits.push(edit('バックエンド', l.fw));
-      if (env !== 'paas') edits.push(edit('インフラ', ENV[env]));
-    } else if (a.kind === 'ai') {
-      base = '19-8';
-      if (p.lang !== 'ts' && p.lang !== 'py') edits.push(edit('AIバックエンド', l.fw));
-      if (env !== 'paas') edits.push(edit('インフラ', ENV[env]));
-    } else {
-      // Real-time: §19-9 is a menu, so pick its row for the language
-      edits.push(
-        ...composed(
-          p.lang === 'ex' ? R('2-7', '画面') : R('3', 'アプリ（SSR・フルスタック）'),
-          R('6', 'マネージド（toC・スタートアップ）'),
-        ),
-        edit('リアルタイム', C('19-9', RT[p.lang] ?? '同時接続が多い（Elixirを採用しない場合）')),
-        edit('共同編集', C('19-9', '共同編集')),
-        edit('片方向の配信', C('19-9', '片方向で足りる')),
-      );
-    }
-    if (base && !cases.includes(base)) cases.push(base);
-    if (a.kind === 'rt') cases.push('19-9');
-    if (env === 'aws') edits.push(edit('認証（AWSに集約する場合）', R('6', 'マネージド（AWS中心）')));
-    if (a.load === 'cpu' && p.lang !== 'rust') edits.push(edit('重い処理', HEAVY));
-    tables.push({ base, edits });
-    refs.push('2-10', l.ref);
-    if (p.orig)
-      notes.push(
-        `本番化で${name(p.orig)}に移るときの手順は §24 を確認する。APIをOpenAPIで定義しておくと差し替えやすい。`,
-      );
-    if (a.team === 'large')
-      notes.push(
-        '10人以上ならモジュール構造を強制する（TypeScriptならNestJS、Goならパッケージ境界のルール化。§23-4）。',
-      );
-  } else if (a.kind === 'site') {
-    title = 'Astro＋ヘッドレスCMS';
-    why.push('静的出力でサーバー保守がほぼ不要、非エンジニアの更新はCMSで賄える（§19-1）');
-    tables.push({
-      base: '19-1',
-      edits: env === 'aws' ? [edit('ホスティング', T('S3＋CloudFront', 's3', 'cloudfront'))] : [],
-    });
-    cases.push('19-1');
-    refs.push('11');
-  } else if (a.kind === 'ec') {
-    title = 'Shopify または Medusa';
-    why.push(
-      '独自要件が少なければSaaSに任せるのが最も安全で安い。定期購入・BtoB価格など独自要件が多いならMedusa（§19-2、§19-3）',
-    );
-    tables.push(
-      { title: '独自要件が少ない', base: '19-2', edits: [] },
-      { title: '独自要件が多い', base: '19-3', edits: env === 'onprem' ? [edit('インフラ', ENV.onprem)] : [] },
-    );
-    cases.push('19-2', '19-3');
-    refs.push('7', '19-12');
-  } else if (a.kind === 'cli') {
-    const r = a.load === 'cpu' || a.load === 'p99';
-    title = r ? 'Rust' : 'Go';
-    why.push(
-      r
-        ? '起動時間・処理速度を詰める必要があるのでRust（§2-9）'
-        : '単一バイナリで配布しやすく、クロスコンパイルも簡単なGo（§2-9）',
-    );
-    tables.push(
-      r
-        ? {
-            edits: [
-              edit('言語', T('Rust', 'rust')),
-              edit('CLI', R('2-5', 'CLI')),
-              edit('配布', R('2-5', 'バイナリ配布')),
-              edit('クロスコンパイル', R('2-5', 'クロスコンパイル')),
-              edit('テスト', R('2-5', 'テスト実行')),
-              edit('脆弱性チェック', R('2-5', '脆弱性チェック')),
-            ],
-          }
-        : {
-            base: '19-10',
-            edits: [
-              edit('CLI', R('2-2', 'CLI')),
-              edit('テスト', R('2-2', 'テスト')),
-              edit('脆弱性チェック', R('2-2', '脆弱性チェック')),
-            ],
-          },
-    );
-    cases.push('19-10');
-    refs.push('2-9', r ? '2-5' : '2-2');
-  } else if (a.kind === 'devtool') {
-    title = 'Rust';
-    why.push('近年の高速な開発ツールの主流で、WebAssemblyやネイティブ拡張として他言語に組み込める（§2-9）');
-    tables.push({
-      edits: [
-        edit('言語', R('2-9', '開発者向けツール（Linter、フォーマッタ、ビルドツール、パーサ）')),
-        edit('WebAssembly', R('2-5', 'WebAssembly')),
-        edit('Node.jsから呼ぶ', R('2-5', 'Node.jsから呼ぶネイティブ拡張')),
-        edit('Pythonから呼ぶ', R('2-5', 'Pythonから呼ぶネイティブ拡張')),
-        edit('テスト', R('2-5', 'テスト実行')),
-        edit('ベンチマーク', R('2-5', 'ベンチマーク')),
-        edit('配布', R('2-5', 'バイナリ配布')),
-      ],
-    });
-    refs.push('2-9', '2-5');
-  } else if (a.kind === 'desktop') {
-    const ms = a.cons.has('ms');
-    title = ms ? 'C#（.NET）' : 'Tauri';
-    why.push(
-      ms
-        ? 'Windows専用の業務アプリでMicrosoft環境が中心なら.NET（§2-9）'
-        : 'UIはWeb技術、裏側はRustで軽量なバイナリになるTauri（§2-9）',
-    );
-    tables.push({
-      edits: ms
-        ? [
-            edit('構成', T('C#（.NET）', 'csharp', 'net')),
-            edit('SDK', R('2-8', 'SDK')),
-            edit('テスト', R('2-8', 'テスト')),
-          ]
-        : [edit('構成', R('2-5', 'デスクトップアプリ')), edit('フロント', R('3', 'SPA（ログイン後の管理画面など）'))],
-    });
-    refs.push('2-9', ms ? '2-8' : '2-5');
-  } else if (a.kind === 'embedded') {
-    title = 'Rust';
-    why.push('メモリ安全性とC並みの性能を両立できる（§2-9）');
-    tables.push({
-      edits: [
-        edit('言語', R('2-9', '組み込み・IoT・ファームウェア')),
-        edit('非同期フレームワーク', R('2-5', '組み込み（非同期）')),
-        edit('テスト', R('2-5', 'テスト実行')),
-      ],
-    });
-    refs.push('2-9', '2-5');
-  } else if (a.kind === 'data') {
-    const kt = a.load === 'batch' || a.cons.has('java');
-    title = kt ? 'Kotlin（Spring Batch）＋SQL' : 'SQL＋Python（Polars）';
-    why.push('集計はまずSQLで書くのが最短で、SQLで表現しにくい変換だけPythonにする（§2-9）');
-    if (kt) why.push('再実行・中断再開が必要な大規模バッチやストリーム処理はKotlin（§2-10 手順2）');
-    tables.push({
-      edits: [
-        edit('集計', R('2-9', 'データ分析・集計')),
-        ...(kt
-          ? [edit('バッチ', R('2-6', 'バッチ')), edit('ストリーム', R('2-6', 'ストリーム処理'))]
-          : [edit('変換', R('2-4', 'データ処理')), edit('Python環境', R('2-4', 'バージョン・依存管理'))]),
-        edit('ワークフロー', R('4-4', 'ワークフロー')),
-        edit('実行', ENV[env]),
-      ],
-    });
-    refs.push('2-9', '2-10');
-  }
-  refs.push('23', '24', '25');
-  return { title, tables, why, notes, refs, cases };
+  if (isBackend(kind)) return backend(kind, a);
+  const o = OTHER[kind](a);
+  return { title: o.title, tables: o.tables, why: o.why, notes: [], refs: [...o.refs, ...COMMON_REFS], cases: o.cases };
 }
 
 /** A resolved row, ready to render */
