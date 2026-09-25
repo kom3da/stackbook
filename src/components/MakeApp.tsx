@@ -457,15 +457,15 @@ function Bands({ tools }: { tools: ToolView[] }) {
   );
   if (!groups.length) return null;
   return (
-    <div className="bands" role="group" aria-label="運用の内訳">
+    <ul className="bands" aria-label="運用の内訳">
       {groups.map((g) => (
-        <div key={g.ops} className={`band band-${g.ops}`} style={{ flexGrow: g.names.length }}>
+        <li key={g.ops} className={`band band-${g.ops}`} style={{ flexGrow: g.names.length }}>
           <span className="band-k">
             {g.label}（{g.names.length}）
           </span>
           <span className="band-v">{g.names.join(' · ')}</span>
-        </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
