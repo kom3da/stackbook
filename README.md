@@ -42,7 +42,7 @@ pnpm check          # Biome と astro check
 | `src/lib/wizard.ts` `lookup.ts` | 「作る」の判定（§19 を土台に、条件に応じて本文の行で差し替える）と、その参照の解決 |
 | `src/lib/md.ts` | AIエージェント向け Markdown の生成（条件別の差分を含む） |
 | `src/lib/inline.ts` | 本文中の強調・コード・§参照・URL の分解 |
-| `src/components/` | React コンポーネント（`Blocks` `ToolBody` `Inline` は静的ページと島で共用、`MakeApp` は「作る」の島、`ui/` は shadcn/ui） |
+| `src/components/` | React コンポーネント（`Blocks` `ToolBody` `Inline` は静的ページと島で共用、`MakeApp` は「作る」の島） |
 | `src/pages/` | ルーティング（`/make/<kind>/`、`/dict/<slug>/`、`/s/<id>/` など） |
 | `src/scripts/global.ts` | 検索・習熟度・チェックリスト・コピー・Mermaid 描画 |
 | `src/styles/global.css` | Tailwind CSS とデザイントークン（ライトテーマのみ） |

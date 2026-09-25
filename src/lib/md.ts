@@ -1,5 +1,6 @@
 // Compact markdown views for AI agents: same facts as the HTML pages, no markup overhead
 import YAML from 'yaml';
+import { diffs } from './diff';
 import { GROUPS, guide, h3Text, plain, rawSub, SECS, stripNo, subBlocks } from './guide';
 import { LOOKUP } from './lookup';
 import { type Data, HEADS, isDataKind, parseData } from './schema';
@@ -159,25 +160,15 @@ const tablesMd = (d: Decision) =>
   ]);
 
 // For each single-condition change from the defaults, what changes (compactly)
-function diffMd(kind: Kind, base: Decision) {
-  const flat = (d: Decision) => new Map(d.tables.flatMap((t) => resolve(t, LOOKUP)).map((r) => [r.layer, r.text]));
-  const bases = (d: Decision) => d.tables.map((t) => t.base ?? '').join();
-  const before = flat(base);
-  const out: string[] = [];
-  for (const q of questionsFor(kind))
-    for (const [v, label] of q.opts) {
-      if (!q.multi && DEFAULTS[q.q] === v) continue;
-      const d = decide(kind, { ...DEFAULTS, ...(q.multi ? { cons: [v] } : { [q.q]: v }) });
-      const after = flat(d);
-      const changes = d.title !== base.title ? [`推奨が「${d.title}」になる`] : [];
-      const other = d.tables.find((t) => t.base && !base.tables.some((b) => b.base === t.base))?.base;
-      if (other) changes.push(`構成は §${other}（${stripNo(plain(h3Text(SECS.cases, other)))}）を使う`);
-      else if (bases(d) !== bases(base))
-        changes.push(`構成は言語別の既定から組み立てる：${[...after].map(([k, t]) => `${k}＝${plain(t)}`).join('、')}`);
-      else changes.push(...[...after].filter(([k, t]) => before.get(k) !== t).map(([k, t]) => `${k}＝${plain(t)}`));
-      if (changes.length) out.push(`- ${q.label}＝${label}：${changes.join('／')}`);
-    }
-  return out;
+function diffMd(kind: Kind) {
+  return diffs(kind, DEFAULTS, LOOKUP).flatMap((x) => {
+    const changes = x.title ? [`推奨が「${x.title}」になる`] : [];
+    if (x.base) changes.push(`構成は §${x.base}（${stripNo(plain(h3Text(SECS.cases, x.base)))}）を使う`);
+    else if (x.rebuilt)
+      changes.push(`構成は言語別の既定から組み立てる：${x.rows.map((r) => `${r.layer}＝${plain(r.text)}`).join('、')}`);
+    else changes.push(...x.rows.map((r) => `${r.layer}＝${plain(r.text)}`));
+    return changes.length ? [`- ${x.qLabel}＝${x.opt}：${changes.join('／')}`] : [];
+  });
 }
 
 // Who runs each part of the stack (content/tools.yaml `ops`)
@@ -195,7 +186,7 @@ export function makeMd(kind: Kind) {
   const d = decide(kind, DEFAULTS);
   const qs = questionsFor(kind);
   const def = (q: (typeof qs)[number]) => (q.multi ? 'なし' : (q.opts.find((o) => o[0] === DEFAULTS[q.q])?.[1] ?? ''));
-  const diff = diffMd(kind, d);
+  const diff = diffMd(kind);
   const out = [
     `# ${k?.[1]}：推奨構成`,
     '',

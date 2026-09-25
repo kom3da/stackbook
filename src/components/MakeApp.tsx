@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { type Diff, diffs } from '../lib/diff';
 import type { Block } from '../lib/guide';
 import type { ToolView } from '../lib/view';
 import {
@@ -14,15 +15,6 @@ import {
 } from '../lib/wizard';
 import { Blocks } from './Blocks';
 import { Inline, type Links, LinksContext } from './Inline';
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from './ui/drawer';
 
 export type MakeTool = Pick<ToolView, 'id' | 'name' | 'page' | 'ops' | 'prof'>;
 
@@ -119,8 +111,6 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
       multi ? { ...a, cons: a.cons.includes(v) ? a.cons.filter((x) => x !== v) : [...a.cons, v] } : { ...a, [q]: v },
     );
 
-  const [open, setOpen] = useState(false);
-  const wide = useWide();
   const summary = qs
     .map((q) =>
       q.multi
@@ -153,52 +143,14 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
 
   return (
     <>
-      {qs.length > 0 && (
-        <div className="cond-bar mt-6">
-          <p className="cond-sum">
-            <span className="cond-k">条件</span>
-            {summary}
-          </p>
-          <button
-            type="button"
-            className="cond-btn"
-            aria-expanded={open}
-            aria-controls={wide ? 'conds' : undefined}
-            onClick={() => setOpen((o) => !o)}
-          >
-            {open && wide ? '閉じる' : '変更'}
-          </button>
-        </div>
-      )}
-      {qs.length > 0 && wide && open && (
-        <div id="conds" className="cond-panel">
-          <Conditions qs={qs} answers={answers} set={set} />
-        </div>
-      )}
-      {qs.length > 0 && !wide && (
-        <Drawer open={open} onOpenChange={setOpen}>
-          <DrawerContent className="bg-surface">
-            <DrawerHeader>
-              <DrawerTitle>条件</DrawerTitle>
-              <DrawerDescription>選ぶと推奨がすぐ変わる</DrawerDescription>
-            </DrawerHeader>
-            <div className="max-h-[60vh] overflow-y-auto px-4">
-              <Conditions qs={qs} answers={answers} set={set} />
-            </div>
-            <DrawerFooter>
-              <DrawerClose className="cond-btn w-full">閉じる</DrawerClose>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
-      )}
-
+      <Conditions qs={qs} answers={answers} set={set} />
       <p className="sr-only" aria-live="polite">
         推奨：{d.title}
       </p>
       <div className="mt-4">
-        <section className="answer">
+        <section className="answer" id="memo">
           <div className="flex items-start justify-between gap-3">
-            <p className="eyebrow">推奨</p>
+            <p className="eyebrow">1　推奨</p>
             <CopyButton text={() => stackMarkdown(kind, d, tables, summary, bandTools)} />
           </div>
           <p className="ans">{d.title}</p>
@@ -209,7 +161,6 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
               </li>
             ))}
           </ul>
-          <OpsList tools={bandTools} />
           {d.notes.length > 0 && (
             <ul className="why note">
               {d.notes.map((n) => (
@@ -223,7 +174,8 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
 
         <section className="blk">
           <h2 className="sh">
-            構成<span className="sh-d">行を押すと詳細（乗り換える条件・根拠・費用・習熟度）</span>
+            <span className="sh-n">2</span>構成
+            <span className="sh-d">行を押すと詳細（乗り換える条件・根拠・費用・習熟度）</span>
           </h2>
           {tables.map((t) => (
             <div key={t.title ?? t.base ?? 'composed'} className="mt-4 first:mt-0">
@@ -298,13 +250,31 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
           )}
         </section>
 
+        {bandTools.length > 0 && (
+          <section className="blk">
+            <h2 className="sh">
+              <span className="sh-n">3</span>運用の内訳
+            </h2>
+            <OpsList tools={bandTools} />
+          </section>
+        )}
+
+        <DiffList
+          items={diffs(kind, answers, look)}
+          p={p}
+          pick={(a) => {
+            setAnswers(a);
+            document.getElementById('memo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }}
+        />
+
         {d.cases.map((c) => {
           const x = p.cases[c];
           return (
             x && (
               <section className="blk" key={c}>
                 <h2 className="sh">
-                  構成図{' '}
+                  <span className="sh-n">5</span>構成図{' '}
                   <a className="ref" href={x.href}>
                     {x.title}
                   </a>
@@ -319,7 +289,9 @@ export default function MakeApp({ kind, payload: p }: { kind: Kind; payload: Mak
         <CommandList keys={[p.sec.commandsCommon, ...d.commands]} p={p} />
 
         <section className="blk">
-          <h2 className="sh">次に読む</h2>
+          <h2 className="sh">
+            <span className="sh-n">7</span>次に読む
+          </h2>
           <div className="nxs">
             {[...new Set(d.refs)].map((r) => {
               const x = p.refs[r];
@@ -343,7 +315,9 @@ function CommandList({ keys, p }: { keys: string[]; p: MakePayload }) {
   if (!list.length) return null;
   return (
     <section className="blk">
-      <h2 className="sh">作り始める</h2>
+      <h2 className="sh">
+        <span className="sh-n">6</span>作り始める
+      </h2>
       {list.map(([k, c]) => (
         <div key={k}>
           <h3>{c.title}</h3>
@@ -355,6 +329,7 @@ function CommandList({ keys, p }: { keys: string[]; p: MakePayload }) {
 }
 
 type Q = ReturnType<typeof questionsFor>[number];
+/** The conditions, always in view: one select per question, checkboxes for the constraints */
 function Conditions({
   qs,
   answers,
@@ -364,42 +339,102 @@ function Conditions({
   answers: Answers;
   set: (q: keyof Answers, v: string, multi?: boolean) => void;
 }) {
+  if (!qs.length) return <p className="conds-none">この種類は、条件によって構成が変わらない。</p>;
   return (
-    <form className="conds" onSubmit={(e) => e.preventDefault()}>
-      {qs.map((q) => (
-        <fieldset key={q.q}>
-          <legend>{q.label}</legend>
-          <div className="chips">
-            {q.opts.map(([v, l]) => (
-              <label key={v}>
-                <input
-                  type={q.multi ? 'checkbox' : 'radio'}
-                  name={q.q}
-                  value={v}
-                  checked={q.multi ? answers.cons.includes(v) : answers[q.q] === v}
-                  onChange={() => set(q.q, v, q.multi)}
-                />
-                <span>{l}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
-      ))}
+    <form className="conds" aria-label="条件" onSubmit={(e) => e.preventDefault()}>
+      {qs.map((q) =>
+        q.multi ? (
+          <fieldset key={q.q} className="cf cf-multi">
+            <legend className="cf-k">{q.label}</legend>
+            <div className="cf-opts">
+              {q.opts.map(([v, l]) => (
+                <label key={v}>
+                  <input type="checkbox" checked={answers.cons.includes(v)} onChange={() => set(q.q, v, true)} />
+                  {l}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ) : (
+          <label key={q.q} className="cf">
+            <span className="cf-k">{q.label}</span>
+            <select value={answers[q.q] as string} onChange={(e) => set(q.q, e.target.value)}>
+              {q.opts.map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </label>
+        ),
+      )}
     </form>
   );
 }
 
-// Desktop shows the conditions inline; phones use a bottom sheet
-function useWide() {
-  const [wide, setWide] = useState(true);
-  useEffect(() => {
-    const m = matchMedia('(min-width: 768px)');
-    const on = () => setWide(m.matches);
-    on();
-    m.addEventListener('change', on);
-    return () => m.removeEventListener('change', on);
-  }, []);
-  return wide;
+/** What changes if one condition were different, with a button to switch to it */
+function DiffList({ items, p, pick }: { items: Diff[]; p: MakePayload; pick: (a: Answers) => void }) {
+  if (!items.length) return null;
+  return (
+    <section className="blk">
+      <h2 className="sh">
+        <span className="sh-n">4</span>条件が違うとき
+      </h2>
+      <ul className="diffs">
+        {items.map((x) => (
+          <li key={`${x.q}:${x.v}`}>
+            <div className="df-h">
+              <span className="df-k">{x.label}</span>
+              <button type="button" className="cond-btn text-xs" onClick={() => pick(x.answers)}>
+                この条件にする
+              </button>
+            </div>
+            <ul className="df-c">
+              {x.title && (
+                <li>
+                  <span className="df-l">推奨</span>
+                  <strong>{x.title}</strong>
+                </li>
+              )}
+              {x.base && (
+                <li>
+                  <span className="df-l">構成</span>
+                  <span>
+                    <a className="ref" href={`/s/${p.sec.cases}/#${x.base}`}>
+                      §{x.base}
+                    </a>{' '}
+                    {p.cases[x.base]?.title ?? ''} を使う
+                  </span>
+                </li>
+              )}
+              {x.rebuilt && (
+                <li>
+                  <span className="df-l">構成</span>
+                  <span>言語別の既定から組み立て直す</span>
+                </li>
+              )}
+              {!x.base &&
+                !x.rebuilt &&
+                x.rows.map((r) => (
+                  <li key={r.layer}>
+                    <span className="df-l">{r.layer}</span>
+                    <span>
+                      <Inline text={r.text} />
+                    </span>
+                  </li>
+                ))}
+              {x.removed.map((l) => (
+                <li key={l}>
+                  <span className="df-l">{l}</span>
+                  <span className="text-mute">なくなる</span>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }
 
 /** The current answer as Markdown, to paste into an AI agent or a README */
