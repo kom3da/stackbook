@@ -1062,6 +1062,18 @@
   .cmp-box {
     @apply mt-6 rounded-xl border border-rule bg-surface p-4 sm:p-6;
   }
+  .cmp-acts {
+    @apply flex flex-wrap gap-1.5;
+  }
+  .cmp-leg {
+    @apply mt-2 mb-3 grid gap-1 text-xs text-mute sm:hidden;
+  }
+  .cmp-leg p {
+    @apply flex gap-2;
+  }
+  .cmp-leg span {
+    @apply font-mono text-faint;
+  }
   .cmp {
     @apply w-full border-collapse text-sm;
   }
@@ -1069,8 +1081,11 @@
   .cmp td {
     @apply border-t border-rule px-2 py-2 text-left align-top;
   }
+  .cmp thead > tr > * {
+    @apply border-t-0;
+  }
   .cmp thead th {
-    @apply border-t-0 font-semibold;
+    @apply font-semibold;
   }
   .cmp-s {
     @apply block text-xs font-normal text-mute;
@@ -1085,6 +1100,13 @@
     @apply mr-1 font-semibold text-ink;
   }
   @media (max-width: 639px) {
+    /* Three equal buttons on their own row, not two and a stray one */
+    .cmp-acts {
+      @apply grid w-full grid-cols-3;
+    }
+    .cmp-acts .btn {
+      @apply justify-center;
+    }
     .cmp thead {
       @apply sr-only;
     }

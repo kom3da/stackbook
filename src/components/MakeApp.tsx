@@ -561,15 +561,29 @@ function Compare({
         <h2 className="sh" id="cmp-h">
           比較<span className="sh-d">違う行に ≠</span>
         </h2>
-        <span className="flex flex-wrap gap-1.5">
-          <CopyButton text={md} />
+        <span className="cmp-acts">
+          <CopyButton text={md} small />
           <button type="button" className="btn btn-s" onClick={restore}>
-            条件を A に戻す
+            {/* One flex item, so the space after 条件を is not trimmed */}
+            <span>
+              <span className="max-sm:sr-only">条件を </span>A に戻す
+            </span>
           </button>
           <button type="button" className="btn btn-s" onClick={unpin}>
             比較をやめる
           </button>
         </span>
+      </div>
+      {/* Phones hide the table head, so the two condition sets are named here */}
+      <div className="cmp-leg" aria-hidden="true">
+        <p>
+          <span>A</span>
+          {summaryOf(a)}
+        </p>
+        <p>
+          <span>B</span>
+          {summaryOf(b)}
+        </p>
       </div>
       <LinksContext.Provider value={p.links}>
         <table className="cmp">
@@ -701,12 +715,22 @@ function stackMarkdown(
   ].join('\n');
 }
 
-function CopyButton({ text, primary, short }: { text: () => string; primary?: boolean; short?: boolean }) {
+function CopyButton({
+  text,
+  primary,
+  short,
+  small,
+}: {
+  text: () => string;
+  primary?: boolean;
+  short?: boolean;
+  small?: boolean;
+}) {
   const [done, setDone] = useState(false);
   return (
     <button
       type="button"
-      className={short ? undefined : primary ? 'btn btn-primary' : 'btn'}
+      className={short ? undefined : primary ? 'btn btn-primary' : small ? 'btn btn-s' : 'btn'}
       onClick={() =>
         navigator.clipboard?.writeText(text()).then(() => {
           setDone(true);
@@ -714,7 +738,17 @@ function CopyButton({ text, primary, short }: { text: () => string; primary?: bo
         })
       }
     >
-      {done ? 'コピーしました' : short ? 'コピー' : 'Markdownでコピー'}
+      {done ? (
+        'コピーしました'
+      ) : short ? (
+        'コピー'
+      ) : small ? (
+        <>
+          <span className="max-sm:sr-only">Markdownで</span>コピー
+        </>
+      ) : (
+        'Markdownでコピー'
+      )}
     </button>
   );
 }
