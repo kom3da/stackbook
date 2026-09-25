@@ -180,34 +180,21 @@ async function draw() {
   const { default: mermaid } = await import('mermaid');
   const nodes = pending();
   if (!nodes.length) return;
-  const root = document.documentElement.dataset.theme;
-  const dark = root === 'dark' || (root !== 'light' && matchMedia('(prefers-color-scheme: dark)').matches);
   const base = {
     background: 'transparent',
     fontFamily: '"IBM Plex Sans JP","Hiragino Sans",sans-serif',
     fontSize: '14px',
   };
-  const themeVariables = dark
-    ? {
-        ...base,
-        primaryColor: '#1B2B3A',
-        primaryBorderColor: '#8DB6E0',
-        primaryTextColor: '#E5EAEE',
-        lineColor: '#9BA8B2',
-        secondaryColor: '#101519',
-        tertiaryColor: '#171F25',
-        edgeLabelBackground: '#171F25',
-      }
-    : {
-        ...base,
-        primaryColor: '#E6EEF6',
-        primaryBorderColor: '#1F4E79',
-        primaryTextColor: '#1B232B',
-        lineColor: '#5B6770',
-        secondaryColor: '#F7F7F4',
-        tertiaryColor: '#FFFFFF',
-        edgeLabelBackground: '#FFFFFF',
-      };
+  const themeVariables = {
+    ...base,
+    primaryColor: '#E6EEF6',
+    primaryBorderColor: '#1F4E79',
+    primaryTextColor: '#1B232B',
+    lineColor: '#5B6770',
+    secondaryColor: '#F7F7F4',
+    tertiaryColor: '#FFFFFF',
+    edgeLabelBackground: '#FFFFFF',
+  };
   mermaid.initialize({
     startOnLoad: false,
     theme: 'base',

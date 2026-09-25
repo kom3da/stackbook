@@ -45,7 +45,7 @@ pnpm check          # Biome と astro check
 | `src/components/` | React コンポーネント（`Blocks` `ToolBody` `Inline` は静的ページと島で共用、`MakeApp` は「作る」の島、`ui/` は shadcn/ui） |
 | `src/pages/` | ルーティング（`/make/<kind>/`、`/dict/<slug>/`、`/s/<id>/` など） |
 | `src/scripts/global.ts` | 検索・習熟度・チェックリスト・コピー・Mermaid 描画 |
-| `src/styles/global.css` | Tailwind CSS とデザイントークン（ライト／ダーク） |
+| `src/styles/global.css` | Tailwind CSS とデザイントークン（ライトテーマのみ） |
 
 ## AIエージェント向けの配信
 
